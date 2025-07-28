@@ -51,16 +51,18 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     }
 
     const user = await prisma.detso_User.findUnique({
-      where: { id: decoded.id },
+      where: {
+        id: decoded.id,
+        deleted_at: null,
+      },
       select: {
         id: true,
         email: true,
         role: true,
-        deleted_at: null,
       }
     });
 
-    if (!user || user.isDeleted) {
+    if (!user) {
       responseData(res, 401, 'User tidak valid atau sudah dihapus');
       return;
     }
@@ -87,7 +89,7 @@ const requireRole = (allowedRoles: string[]) => {
 
       if (!allowedRoles.includes(req.user.role)) {
         responseData(res, 403, 'Anda tidak memiliki akses ke resource ini');
-        return; 
+        return;
       }
 
       next();
