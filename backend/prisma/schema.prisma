@@ -1,0 +1,153 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["fullTextSearchPostgres", "driverAdapters"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Detso_User {
+    id         String         @id @default(cuid())
+    username   String         @unique
+    email      String         @unique
+    password   String
+    created_at DateTime       @default(now())
+    updated_at DateTime       @updatedAt
+    deleted_at DateTime?
+    profile    Detso_Profile?
+
+    role Detso_Role @default(TEKNISI)
+    refresh_tokens Detso_Refresh_Token[]
+    
+    @@index([deleted_at])
+    @@map("detso_users")
+}
+
+model Detso_Profile {
+    id         String    @id @default(cuid())
+    user_id    String    @unique
+    full_name  String
+    avatar     String?
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    user Detso_User @relation(fields: [user_id], references: [id])
+
+    @@index([deleted_at])
+    @@map("detso_profiles")
+}
+
+model Detso_Refresh_Token {
+    id          String    @id @default(cuid())
+    user_id     String
+    token       String    @unique
+    device_info String?   // Info device (Android/Web + browser/app version)
+    ip_address  String?
+    user_agent  String?
+    expires_at  DateTime
+    created_at  DateTime  @default(now())
+    updated_at  DateTime  @updatedAt
+    revoked_at  DateTime?
+    is_active   Boolean   @default(true)
+
+    user Detso_User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+    @@index([user_id])
+    @@index([token])
+    @@index([expires_at])
+    @@map("detso_refresh_tokens")
+}
+
+model Detso_Customer {
+    id         String                @id @default(cuid())
+    name       String
+    address    String?
+    phone      String?
+    email      String?
+    nik        String?
+    created_at DateTime              @default(now())
+    updated_at DateTime              @updatedAt
+    deleted_at DateTime?
+    status     Detso_Customer_Status @default(ACTIVE)
+
+    documents Detso_Customer_Document[]
+    photos    Detso_Customer_Photo[]
+    service   Detso_Service_Connection[]
+
+    @@index([deleted_at])
+    @@index([phone])
+    @@index([nik])
+    @@map("detso_customers")
+}
+
+model Detso_Customer_Document {
+    id            String   @id @default(cuid())
+    customer_id   String
+    document_type String
+    document_url  String
+    uploaded_at   DateTime @default(now())
+
+    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+
+    @@index([customer_id])
+    @@map("detso_customer_documents")
+}
+
+model Detso_Customer_Photo {
+    id          String   @id @default(cuid())
+    customer_id String
+    photo_type  String
+    photo_url   String
+    uploaded_at DateTime @default(now())
+
+    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+
+    @@index([customer_id])
+    @@map("detso_customer_photos")
+}
+
+model Detso_Service_Connection {
+    id            String    @id @default(cuid())
+    customer_id   String
+    package_id    String
+    package_name  String
+    package_speed String
+    ip_address    String?
+    mac_address   String?
+    created_at    DateTime  @default(now())
+    updated_at    DateTime  @updatedAt
+    deleted_at    DateTime?
+    notes         String?
+
+    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+    package  Detso_Package  @relation(fields: [package_id], references: [id])
+
+    @@index([deleted_at])
+    @@map("detso_service_connections")
+}
+
+model Detso_Package {
+    id    String @id @default(cuid())
+    name  String
+    speed String
+    price Int
+
+    service Detso_Service_Connection[]
+
+    @@map("detso_packages")
+}
+
+enum Detso_Customer_Status {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+}
+
+enum Detso_Role {
+    TEKNISI
+    ADMIN
+    SUPER_ADMIN
+}
