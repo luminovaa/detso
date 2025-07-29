@@ -40,7 +40,7 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response): Prom
         }
     }
 
-    // Clear cookies
+    
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 

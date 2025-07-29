@@ -134,6 +134,9 @@ model Detso_Package {
     name  String
     speed String
     price Int
+    deleted_at DateTime?
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
 
     service Detso_Service_Connection[]
 

@@ -1,9 +1,4 @@
 import { z } from 'zod'
-export const registerSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-  username: z.string().min(3, 'Username minimal 3 karakter'),
-})
 
 
 export const paginationSchema = z.object({
@@ -22,10 +17,9 @@ export const paginationSchema = z.object({
 export const updateUserSchema = z.object({
   email: z.string().email('Email tidak valid').optional(),
   username: z.string().min(3, 'Username minimal 3 karakter').optional(),
-  role: z.enum(['USER', 'ADMIN']).optional(),
-  bio: z.string().optional(),
-  name: z.string().optional(),
-  photoUrl: z.string().optional(),
+  role: z.enum(['TEKNISI', 'ADMIN', 'SUPER_ADMIN']).optional(),
+  full_name: z.string().optional(),
+  avatar: z.string().optional(),
 }).strict()
 
 export const updatePasswordSchema = z
@@ -41,6 +35,6 @@ export const updatePasswordSchema = z
 
 export const userIdSchema = z.object({
   id: z.string().refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
-    message: 'ID proyek harus berupa ObjectId MongoDB yang valid (24 karakter heksadesimal)',
+    message: 'ID User harus berupa ObjectId  yang valid (24 karakter heksadesimal)',
   }),
 });

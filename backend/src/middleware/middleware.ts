@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { responseData } from "../utils/response-handler";
+import { AuthenticationError, AuthorizationError, DatabaseError } from "../utils/error-handler";
 
 // Inisialisasi Prisma
 const prisma = new PrismaClient();
@@ -24,19 +25,17 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     // Prioritaskan Authorization header
     if (authHeader?.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
-    } else if (req.cookies?.token) {
+    } else if (req.cookies?.accessToken) {
       // Fallback ke cookie jika tidak ada di header
-      token = req.cookies.token;
+      token = req.cookies.accessToken;
     }
 
     if (!token) {
-      responseData(res, 401, 'Access token tidak ditemukan (dari header maupun cookie)');
-      return;
+      throw new AuthenticationError( 'Access token tidak ditemukan (dari header maupun cookie)');
     }
 
     if (!process.env.JWT_SECRET_TOKEN) {
-      responseData(res, 500, 'JWT_SECRET is not defined in environment variables');
-      return;
+      throw new DatabaseError('JWT_SECRET is not defined in environment variables');
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_TOKEN) as {
@@ -46,8 +45,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     };
 
     if (!decoded?.id) {
-      responseData(res, 401, 'Token tidak valid (ID tidak ditemukan)');
-      return;
+      throw new AuthenticationError('Token tidak valid (ID tidak ditemukan)');
     }
 
     const user = await prisma.detso_User.findUnique({
@@ -63,8 +61,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     });
 
     if (!user) {
-      responseData(res, 401, 'User tidak valid atau sudah dihapus');
-      return;
+      throw new AuthenticationError('User tidak valid atau sudah dihapus');
     }
 
     req.user = {
@@ -83,13 +80,11 @@ const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        responseData(res, 401, 'Autentikasi dibutuhkan');
-        return;
+        throw new AuthenticationError('Autentikasi dibutuhkan');
       }
 
       if (!allowedRoles.includes(req.user.role)) {
-        responseData(res, 403, 'Anda tidak memiliki akses ke resource ini');
-        return;
+        throw new AuthorizationError('Anda tidak memiliki akses ke resource ini');
       }
 
       next();

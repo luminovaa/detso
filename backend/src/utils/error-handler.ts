@@ -60,6 +60,76 @@ interface ErrorResponse {
   code?: string;
 }
 
+export class FileUploadError extends AppError {
+  constructor(message: string, public field?: string) {
+    super(400, message);
+    this.name = 'FileUploadError';
+  }
+}
+
+export class FileTooLargeError extends FileUploadError {
+  constructor(maxSize: number) {
+    super(`Ukuran file melebihi batas maksimal ${maxSize / 1024 / 1024}MB`);
+    this.name = 'FileTooLargeError';
+  }
+}
+
+export class InvalidFileTypeError extends FileUploadError {
+  constructor(allowedTypes: string[]) {
+    super(`Tipe file tidak valid. Hanya diperbolehkan: ${allowedTypes.join(', ')}`);
+    this.name = 'InvalidFileTypeError';
+  }
+}
+
+export class FileNotFoundError extends FileUploadError {
+  constructor() {
+    super('File tidak ditemukan');
+    this.name = 'FileNotFoundError';
+  }
+}
+
+export class FileDeleteError extends AppError {
+  constructor(message: string) {
+    super(500, message);
+    this.name = 'FileDeleteError';
+  }
+}
+
+// Tambahkan handler untuk error upload file
+export const handleFileUploadError = (error: Error): ErrorResponse => {
+  if (error instanceof FileTooLargeError) {
+    return {
+      success: false,
+      message: error.message,
+      code: error.name
+    };
+  }
+
+  if (error instanceof InvalidFileTypeError) {
+    return {
+      success: false,
+      message: error.message,
+      code: error.name
+    };
+  }
+
+  if (error instanceof FileNotFoundError) {
+    return {
+      success: false,
+      message: error.message,
+      code: error.name
+    };
+  }
+
+  console.error('File Upload Error:', error);
+
+  return {
+    success: false,
+    message: 'Terjadi kesalahan saat mengupload file',
+    code: 'FILE_UPLOAD_ERROR'
+  };
+};
+
 export const handleValidationError = (errors: any[]): ErrorResponse => ({
   success: false,
   message: 'Kesalahan validasi',
@@ -119,6 +189,12 @@ export const handleError = (error: unknown, res: Response): void => {
       res.status(500).json(handleDatabaseError(error));
       return;
     }
+
+    if (error.name.includes('File') || error.message.includes('file')) {
+      res.status(400).json(handleFileUploadError(error));
+      return;
+    }
+
 
     res.status(500).json({
       success: false,

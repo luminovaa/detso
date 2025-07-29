@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import { PrismaClient, Role } from '@prisma/client'
+import {  Detso_Role } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { registerSchema } from './validation/validation.user'
-import { asyncHandler } from '../../utils/error-handler'
+import { registerSchema } from './validation/validation.auth'
+import { asyncHandler, AuthenticationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
+import { prisma } from '../../utils/prisma'
 
-const prisma = new PrismaClient()
 
 export const registerUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const validationResult = registerSchema.safeParse(req.body)
@@ -15,11 +15,11 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
       return
     }
 
-    const { email, password, username } = validationResult.data
+    const { email, password, username, role } = validationResult.data
 
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.detso_User.findFirst({
       where: {
-        isDeleted: false,
+        deleted_at: null,
         OR: [
           { email },
           { username }
@@ -29,23 +29,21 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
     
     if (existingUser) {
       if (existingUser.email === email) {
-        responseData(res, 409, 'Email sudah digunakan')
-        return 
+        throw new AuthenticationError('Email sudah digunakan') 
       }
       if (existingUser.username === username) {
-        responseData(res, 409, 'Username sudah digunakan')
-        return 
+        throw new AuthenticationError('Username sudah digunakan')
       }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.detso_User.create({
       data: {
         email,
         password: hashedPassword,
         username,
-        role: Role.USER
+        role: role || Detso_Role.TEKNISI
       },
       select: {
         id: true,
@@ -55,10 +53,10 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
       }
     })
 
-    const profile = await prisma.profile.create({
+    const profile = await prisma.detso_Profile.create({
       data: {
-        name: 'user',
-        userId: newUser.id
+        full_name: 'user',
+        user_id: newUser.id
       },
       select: {
         id: true

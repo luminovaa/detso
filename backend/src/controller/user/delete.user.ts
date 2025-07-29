@@ -1,56 +1,44 @@
-import { Request, Response } from 'express'
-import { PrismaClient } from '@prisma/client'
-import { asyncHandler } from '../../utils/error-handler'
-import { responseData } from '../../utils/response-handler'
-import { cloudinary } from '../../../config/cloudinary'
-
-const prisma = new PrismaClient();
+import { Request, Response } from 'express';
+import { asyncHandler, AuthorizationError, NotFoundError } from '../../utils/error-handler';
+import { responseData } from '../../utils/response-handler';
+import { prisma } from '../../utils/prisma';
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userId = req.params.id;
-    const currentUser = req.user;
-    const isAdmin = currentUser?.role === 'ADMIN';
+  const { id } = req.params;
 
-    const userToDelete = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-            id: true,
-            role: true,
-            profile: {
-                select: {
-                    publicPhotoId: true
-                }
-            }
-        }
-    });
-
-    if (!userToDelete) {
-        responseData(res, 404, 'Pengguna tidak ditemukan');
-        return;
+  const user = await prisma.detso_User.findUnique({
+    where: {
+      id: id,
+      deleted_at: null
     }
+  });
 
-    if (!isAdmin && currentUser?.id !== userId) {
-        responseData(res, 403, 'Anda tidak memiliki izin untuk menghapus pengguna ini');
-        return;
+  if (!user) {
+  throw new NotFoundError('User tidak ditemukan atau sudah dihapus');
+  }
+
+  if (user.id === req.user?.id) {
+    throw new AuthorizationError('Anda tidak dapat menghapus akun Anda sendiri');
+  }
+
+  await prisma.detso_User.update({
+    where: { id: id },
+    data: {
+      deleted_at: new Date()
     }
+  });
 
-    if (userToDelete.profile?.publicPhotoId) {
-        try {
-            await cloudinary.uploader.destroy(userToDelete.profile.publicPhotoId);
-        } catch (error) {
-            console.error('Gagal menghapus foto dari Cloudinary:', error);
-        }
+  await prisma.detso_Refresh_Token.updateMany({
+    where: { user_id: id },
+    data: {
+      is_active: false,
+      revoked_at: new Date()
     }
+  });
 
-    await prisma.user.update({
-        where: { id: userId },
-        data: {
-            email: `deleted_${Date.now()}_${userToDelete.id}`,
-            username: `deleted_${Date.now()}_${userToDelete.id}`,
-            password: '',
-            isDeleted: true
-        }
-    })
-
-    responseData(res, 200, 'Pengguna berhasil dihapus (soft delete)');
+  responseData(res, 200, 'User berhasil dihapus (soft delete)', {
+    id: user.id,
+    email: user.email,
+    deletedAt: new Date()
+  });
 });

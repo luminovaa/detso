@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import { asyncHandler, AuthenticationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
-import { loginSchema, refreshTokenSchema } from './validation/validation.auth'
 import { prisma } from '../../utils/prisma'
 import { generateAccessToken } from './login.auth'
 

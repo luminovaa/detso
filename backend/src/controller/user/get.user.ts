@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { paginationSchema, userIdSchema } from './validation/validation.user'
-import { asyncHandler, ValidationError } from '../../utils/error-handler'
+import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
 import { getPagination } from '../../utils/pagination'
 
@@ -11,14 +11,14 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
   const validationResult = paginationSchema.safeParse(req.query)
 
   if (!validationResult.success) {
-  throw new ValidationError('Validasi gagal', validationResult.error.format());
+  throw new ValidationError('Validasi gagal', validationResult.error.errors);
   }
 
   const { page, limit } = validationResult.data
 
-  const totalUsers = await prisma.user.count({
+  const totalUsers = await prisma.detso_User.count({
     where: {
-      isDeleted: false
+      deleted_at: null
     }
   })
 
@@ -28,9 +28,9 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
     totalItems: totalUsers
   })
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.detso_User.findMany({
     where: {
-      isDeleted: false
+      deleted_at: null
     },
     skip,
     take: limit,
@@ -40,7 +40,7 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
       username: true,
       role: true,
       profile: {
-        select: { id: true, name: true, bio: true, photoUrl: true }
+        select: { id: true, full_name: true,  avatar: true }
       }
     }
   })
@@ -55,16 +55,15 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
   const validationResult = userIdSchema.safeParse(req.params);
 
   if (!validationResult.success) {
-    responseData(res, 400, 'Validasi Gagal', validationResult.error.format());
-    return;
+    throw new ValidationError('Validasi gagal', validationResult.error.errors);
   }
 
   const { id } = validationResult.data;
 
-  const user = await prisma.user.findFirst({
+  const user = await prisma.detso_User.findFirst({
     where: {
       id,
-      isDeleted: false,
+      deleted_at: null,
     },
     select: {
       id: true,
@@ -74,17 +73,15 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
       profile: {
         select: {
           id: true,
-          name: true,
-          bio: true,
-          photoUrl: true,
+          full_name: true,
+          avatar: true,
         },
       },
     },
   });
 
   if (!user) {
-    responseData(res, 404, 'Pengguna tidak ditemukan atau telah dihapus', null);
-    return;
+    throw new NotFoundError('Pengguna tidak ditemukan atau telah dihapus');
   }
 
   responseData(res, 200, 'Data pengguna berhasil diambil', user );
@@ -100,26 +97,25 @@ export const getPhotoUserById = asyncHandler(async (req: Request, res: Response)
 
   const { id } = validationResult.data;
 
-  const user = await prisma.user.findFirst({
+  const user = await prisma.detso_User.findFirst({
     where: {
       id,
-      isDeleted: false,
+      deleted_at: null,
     },
     select: {
       profile: {
         select: {
-          photoUrl: true,
+          avatar: true,
         },
       },
     },
   });
 
-  if (!user || !user.profile?.photoUrl) {
-    responseData(res, 404, 'Foto pengguna tidak ditemukan', null);
-    return;
+  if (!user || !user.profile?.avatar) {
+    throw new NotFoundError('Foto pengguna tidak ditemukan atau telah dihapus');
   }
 
   responseData(res, 200, 'Foto pengguna berhasil diambil',
-    user.profile.photoUrl,
+    user.profile.avatar,
   );
 });
