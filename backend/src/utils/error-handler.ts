@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import multer from 'multer';
 
 export class AppError extends Error {
   constructor(
@@ -174,6 +175,42 @@ export const handleRateLimitError = (): ErrorResponse => ({
 export const handleError = (error: unknown, res: Response): void => {
   console.error('Error:', error);
 
+  if (error instanceof multer.MulterError) {
+    let message = 'Terjadi kesalahan saat mengupload file';
+    let statusCode = 400;
+
+    switch (error.code) {
+      case 'LIMIT_FILE_SIZE':
+        message = 'Ukuran file melebihi batas maksimal';
+        break;
+      case 'LIMIT_FILE_COUNT':
+        message = 'Jumlah file melebihi batas maksimal';
+        break;
+      case 'LIMIT_UNEXPECTED_FILE':
+        message = 'Field file tidak sesuai dengan yang diharapkan';
+        break;
+      case 'LIMIT_FIELD_KEY':
+        message = 'Nama field terlalu panjang';
+        break;
+      case 'LIMIT_FIELD_VALUE':
+        message = 'Nilai field terlalu panjang';
+        break;
+      case 'LIMIT_FIELD_COUNT':
+        message = 'Jumlah field melebihi batas maksimal';
+        break;
+      case 'LIMIT_PART_COUNT':
+        message = 'Jumlah bagian form melebihi batas maksimal';
+        break;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message,
+      code: error.code
+    });
+    return;
+  }
+
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       success: false,
@@ -195,7 +232,6 @@ export const handleError = (error: unknown, res: Response): void => {
       return;
     }
 
-
     res.status(500).json({
       success: false,
       message: error.message || 'Terjadi kesalahan pada server',
@@ -210,7 +246,6 @@ export const handleError = (error: unknown, res: Response): void => {
     code: 'UNKNOWN_ERROR'
   });
 };
-
 export const asyncHandler = (fn: Function) => {
   return (req: any, res: any, next: any) => {
     Promise.resolve(fn(req, res, next)).catch((error) => handleError(error, res));

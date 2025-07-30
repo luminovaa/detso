@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import routes from './src/router/routes';
+import path from 'path';
 
 const PORT: number = parseInt(process.env.PORT || '0');
 
@@ -13,13 +14,11 @@ app.use(cookieParser());
 // Middleware
 app.use(helmet());
 app.use(express.json());
-
+app.use('/image', express.static('image'));
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || [];
-    console.log('Request Origin:', origin);
-    console.log('Allowed Origins:', allowedOrigins);
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {

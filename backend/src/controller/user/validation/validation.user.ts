@@ -32,9 +32,3 @@ export const updatePasswordSchema = z
     message: 'Password baru dan konfirmasi tidak cocok',
     path: ['confirmPassword']
   })
-
-export const userIdSchema = z.object({
-  id: z.string().refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
-    message: 'ID User harus berupa ObjectId  yang valid (24 karakter heksadesimal)',
-  }),
-});

@@ -1,6 +1,7 @@
 import { Express, Router } from 'express';
 import userRouter from '../controller/user';
 import authRouter from '../controller/auth';
+import packageRouter from '../controller/package';
 
 export default (app: Express) => {
     const apiRouter = Router();
@@ -8,6 +9,7 @@ export default (app: Express) => {
     app.use('/api', apiRouter);
     apiRouter.use('/user', userRouter)
     apiRouter.use('/auth', authRouter)
+    apiRouter.use('/package', packageRouter)
     
     apiRouter.use('*', (req, res) => {
         res.status(404).send('Not found!!!');

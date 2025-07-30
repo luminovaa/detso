@@ -1,116 +1,124 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { updatePasswordSchema, updateUserSchema } from './validation/validation.user';
 import { asyncHandler, AuthenticationError, AuthorizationError, FileUploadError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import bcrypt from 'bcryptjs';
-import { deleteFile, uploadFile } from '../../utils/upload-file';
+import { deleteFile, getUploadedFileInfo } from '../../utils/upload-file';
+import { prisma } from '../../utils/prisma';
 
-const prisma = new PrismaClient();
 
 export const editUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    try {
-        const userId = req.params.id;
-        const currentUser = req.user;
-        const isAdmin = currentUser?.role === 'SUPER_ADMIN';
+    const userId = req.params.id;
+    const currentUser = req.user;
+    const isAdmin = currentUser?.role === 'SUPER_ADMIN';
 
-        // Upload file jika ada
-        let uploadedPhoto;
-        try {
-            if (req.files?.photo) {
-                uploadedPhoto = await uploadFile(req, {
-                    fieldName: 'photo',
-                    destination: 'image/profile',
-                    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
-                    maxFileSize: 5 * 1024 * 1024 // 5MB
-                });
-            }
-        } catch (uploadError) {
-            throw new FileUploadError('Gagal mengupload file');
+    const cleanupUploadedFile = async () => {
+        if (req.file) {
+            await deleteFile(req.file.path).catch(err =>
+                console.error('Gagal menghapus file:', err)
+            );
         }
+    };
 
-        const userExists = await prisma.detso_User.findUnique({
+    // Cek apakah user exists
+    const userExists = await prisma.detso_User.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+            profile: {
+                select: { avatar: true }
+            }
+        }
+    });
+
+    if (!userExists) {
+        await cleanupUploadedFile();
+        throw new NotFoundError('Pengguna tidak ditemukan');
+    }
+
+    // Authorization check
+    if (!isAdmin && currentUser?.id !== userId) {
+        await cleanupUploadedFile();
+        throw new AuthorizationError('Anda tidak memiliki izin untuk mengedit pengguna ini');
+    }
+
+    // Get uploaded file info jika ada
+    let uploadedPhoto: { path: string; fileName: string; fullPath: string } | undefined;
+    if (req.file) {
+        uploadedPhoto = getUploadedFileInfo(req.file, 'image/profile');
+    }
+
+    // Validasi data
+    const validationResult = updateUserSchema.safeParse({
+        ...req.body,
+        avatar: uploadedPhoto?.path
+    });
+
+    if (!validationResult.success) {
+        await cleanupUploadedFile();
+        throw new ValidationError('Validasi Gagal', validationResult.error.errors);
+    }
+
+    const { email, username, role, full_name, avatar } = validationResult.data;
+
+    if (uploadedPhoto && userExists.profile?.avatar) {
+        await deleteFile(userExists.profile.avatar).catch(error =>
+            console.error('Gagal menghapus file lama:', error)
+        );
+    }
+
+    const [updatedUser, updatedProfile] = await prisma.$transaction([
+        prisma.detso_User.update({
             where: { id: userId },
+            data: {
+                email,
+                username,
+                role: isAdmin ? role : userExists.role,
+                updated_at: new Date()
+            },
             select: {
                 id: true,
                 email: true,
                 username: true,
                 role: true,
                 profile: {
-                    select: { avatar: true }
-                }
-            }
-        });
-
-        if (!userExists) {
-            if (uploadedPhoto) await deleteFile(uploadedPhoto.path);
-            throw new NotFoundError('Pengguna tidak ditemukan');
-        }
-
-        if (!isAdmin && currentUser?.id !== userId) {
-            if (uploadedPhoto) await deleteFile(uploadedPhoto.path);
-            throw new AuthorizationError('Anda tidak memliki izin untuk mengedit pengguna ini');
-        }
-
-        const validationResult = updateUserSchema.safeParse({
-            ...req.body,
-            photoUrl: uploadedPhoto?.path
-        });
-
-        if (!validationResult.success) {
-            if (uploadedPhoto) await deleteFile(uploadedPhoto.path);
-            throw new ValidationError('Validasi Gagal', validationResult.error.errors);
-        }
-
-        const { email, username, role, full_name, avatar } = validationResult.data;
-
-        // Hapus foto lama jika ada foto baru yang diupload
-        if (uploadedPhoto && userExists.profile?.avatar) {
-            try {
-                await deleteFile(userExists.profile.avatar);
-            } catch (error) {
-                console.error('Gagal menghapus file lama:', error);
-            }
-        }
-
-        const [updatedUser] = await prisma.$transaction([
-            prisma.detso_User.update({
-                where: { id: userId },
-                data: {
-                    email,
-                    username,
-                    role: isAdmin ? role : userExists.role,
-                    updated_at: new Date()
-                },
-                select: {
-                    id: true,
-                    email: true,
-                    username: true,
-                    role: true,
-                    profile: {
-                        select: {
-                            id: true,
-                            full_name: true,
-                            avatar: true
-                        }
+                    select: {
+                        id: true,
+                        full_name: true,
+                        avatar: true
                     }
                 }
-            }),
-            prisma.detso_Profile.update({
-                where: { user_id : userId },
-                data: {
-                    full_name,
-                    avatar,
-                    updated_at: new Date()
-                }
-            })
-        ]);
+            }
+        }),
+        prisma.detso_Profile.update({
+            where: { user_id: userId },
+            data: {
+                full_name,
+                avatar,
+                updated_at: new Date()
+            },
+            select: {
+                id: true,
+                full_name: true,
+                avatar: true
+            }
+        })
+    ]);
 
-        responseData(res, 200, 'Data pengguna berhasil diperbarui', updatedUser);
-    } catch (error) {
-        console.error('Error in editUser:', error);
-        responseData(res, 500, 'Terjadi kesalahan server');
-    }
+    responseData(res, 200, 'Data pengguna berhasil diperbarui', {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        profile: {
+            id: updatedProfile.id,
+            full_name: updatedProfile.full_name,
+            avatar: updatedProfile.avatar
+        }
+    });
 });
 
 export const editUserPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -142,7 +150,7 @@ export const editUserPassword = asyncHandler(async (req: Request, res: Response)
     if (!isAdmin) {
         const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
         if (!isPasswordValid) {
-        throw new AuthenticationError('Password lama salah');
+            throw new AuthenticationError('Password lama salah');
         }
     }
 

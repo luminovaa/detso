@@ -23,7 +23,7 @@ export const updatePackageSchema = z.object({
 export const createPackageSchema = z.object({
   name: z.string().min(3, 'Nama paket harus minimal 3 karakter'),
   speed: z.string().min(1, 'Kecepatan harus diisi'),
-  price: z.number().optional(),
+  price: z.number().nonnegative().optional(),
 }).strict()
 
 export const packageIdSchema = z.object({

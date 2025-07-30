@@ -1,9 +1,8 @@
 import { Request, Response } from 'express'
 import { asyncHandler, AuthorizationError, ValidationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
-import { createPackageSchema } from './validation/validation.pacakage'
+import { createPackageSchema } from './validation/validation.package'
 import { prisma } from '../../utils/prisma'
-
 
 export const createPackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPER_ADMIN'
@@ -27,5 +26,5 @@ export const createPackage = asyncHandler(async (req: Request, res: Response): P
         }
     })
 
-    responseData(res, 201, 'Perusahaan berhasil dibuat', packageData)
+    responseData(res, 201, 'Paket berhasil dibuat', packageData)
 })

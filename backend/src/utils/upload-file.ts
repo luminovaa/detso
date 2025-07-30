@@ -1,7 +1,7 @@
+import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { Request } from 'express';
-import fileUpload from 'express-fileupload';
 
 interface UploadedFile {
     path: string;
@@ -10,60 +10,70 @@ interface UploadedFile {
 }
 
 interface UploadOptions {
-    fieldName: string;
     destination: string;
     allowedMimeTypes?: string[];
     maxFileSize?: number;
+    fieldName?: string;
 }
 
-export const uploadFile = (req: Request, options: UploadOptions): Promise<UploadedFile> => {
-    return new Promise((resolve, reject) => {
-        if (!req.files || !req.files[options.fieldName]) {
-            return reject(new Error('No file uploaded'));
-        }
-
-        const file = req.files[options.fieldName] as fileUpload.UploadedFile;
-        const uploadDir = path.join(__dirname, '../../..', options.destination);
-
-        // Validasi tipe file
-        if (options.allowedMimeTypes && !options.allowedMimeTypes.includes(file.mimetype)) {
-            return reject(new Error(`File type not allowed. Allowed types: ${options.allowedMimeTypes.join(', ')}`));
-        }
-
-        // Validasi ukuran file
-        if (options.maxFileSize && file.size > options.maxFileSize) {
-            return reject(new Error(`File too large. Max size: ${options.maxFileSize / 1024 / 1024}MB`));
-        }
-
-        // Buat direktori jika belum ada
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        const fileName = `${options.fieldName}_${Date.now()}${path.extname(file.name)}`;
-        const filePath = path.join(uploadDir, fileName);
-        const relativePath = path.join(options.destination, fileName);
-
-        file.mv(filePath, (err) => {
-            if (err) {
-                return reject(err);
+const createStorage = (destination: string) => {
+    return multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadDir = path.join(__dirname, '../..', destination);
+            
+            // Buat direktori jika belum ada
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
             }
-
-            resolve({
-                path: relativePath.replace(/\\/g, '/'), // Convert backslash to forward slash for consistency
-                fileName,
-                fullPath: filePath
-            });
-        });
+            
+            cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+            const fileName = `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`;
+            cb(null, fileName);
+        }
     });
+};
+
+const createFileFilter = (allowedMimeTypes?: string[]) => {
+    return (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+        if (allowedMimeTypes && !allowedMimeTypes.includes(file.mimetype)) {
+            return cb(new Error(`File type not allowed. Allowed types: ${allowedMimeTypes.join(', ')}`));
+        }
+        cb(null, true);
+    };
+};
+
+// Factory function untuk membuat multer instance
+export const createUploadMiddleware = (options: UploadOptions) => {
+    const storage = createStorage(options.destination);
+    const fileFilter = createFileFilter(options.allowedMimeTypes);
+    
+    return multer({
+        storage,
+        fileFilter,
+        limits: {
+            fileSize: options.maxFileSize || 5 * 1024 * 1024 // Default 5MB
+        }
+    });
+};
+
+export const getUploadedFileInfo = (file: Express.Multer.File, destination: string): UploadedFile => {
+    const relativePath = path.join(destination, file.filename);
+    
+    return {
+        path: relativePath.replace(/\\/g, '/'), // Convert backslash to forward slash
+        fileName: file.filename,
+        fullPath: file.path
+    };
 };
 
 export const deleteFile = (filePath: string): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const fullPath = path.join(__dirname, '../../..', filePath);
+        const fullPath = path.join(__dirname, '../..', filePath);
 
         if (!fs.existsSync(fullPath)) {
-            return resolve(); // File doesn't exist, consider deletion successful
+            return resolve(); 
         }
 
         fs.unlink(fullPath, (err) => {
