@@ -11,7 +11,7 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
   const validationResult = paginationSchema.safeParse(req.query)
 
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.errors)
   }
 
   const { page, limit } = validationResult.data
@@ -40,17 +40,31 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
       username: true,
       role: true,
       profile: {
-        select: { id: true, full_name: true, avatar: true }
+        select: {
+          id: true,
+          full_name: true,
+          avatar: true // hanya path, belum URL
+        }
       }
     }
   })
 
+  const baseUrl = process.env.BASE_URL 
+  const usersWithAvatarUrl = users.map(user => ({
+    ...user,
+    profile: user.profile
+      ? {
+          ...user.profile,
+          avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null
+        }
+      : null
+  }))
+
   responseData(res, 200, 'Daftar pengguna berhasil diambil', {
-    users,
+    users: usersWithAvatarUrl,
     pagination
   })
 })
-
 export const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
 
 

@@ -3,7 +3,7 @@ import { updatePasswordSchema, updateUserSchema } from './validation/validation.
 import { asyncHandler, AuthenticationError, AuthorizationError, FileUploadError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import bcrypt from 'bcryptjs';
-import { deleteFile, getUploadedFileInfo } from '../../utils/upload-file';
+import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { prisma } from '../../utils/prisma';
 
 
@@ -39,19 +39,16 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
         throw new NotFoundError('Pengguna tidak ditemukan');
     }
 
-    // Authorization check
     if (!isAdmin && currentUser?.id !== userId) {
         await cleanupUploadedFile();
         throw new AuthorizationError('Anda tidak memiliki izin untuk mengedit pengguna ini');
     }
 
-    // Get uploaded file info jika ada
     let uploadedPhoto: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
         uploadedPhoto = getUploadedFileInfo(req.file, 'image/profile');
     }
 
-    // Validasi data
     const validationResult = updateUserSchema.safeParse({
         ...req.body,
         avatar: uploadedPhoto?.path

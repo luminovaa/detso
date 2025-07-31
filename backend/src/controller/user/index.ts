@@ -3,15 +3,8 @@ import { getAllUsers, getPhotoUserById, getUserById } from "./get.user";
 import authMiddleware, { requireRole } from "../../middleware/middleware";
 import { editUser, editUserPassword } from "./edit.user";
 import { deleteUser } from "./delete.user";
-import { createUploadMiddleware } from "../../utils/upload-file";
+import { avatarUpload } from "../../config/upload.config";
 const userRouter = express.Router();
-
-const avatarUpload = createUploadMiddleware({
-    destination: 'image/profile',
-    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
-    maxFileSize: 5 * 1024 * 1024, // 5MB
-    fieldName: 'avatar'
-});
 
 
 userRouter.get('/:id', getUserById); 
