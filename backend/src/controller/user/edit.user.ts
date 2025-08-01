@@ -46,7 +46,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
 
     let uploadedPhoto: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
-        uploadedPhoto = getUploadedFileInfo(req.file, 'image/profile');
+        uploadedPhoto = getUploadedFileInfo(req.file, 'storage/image/profile');
     }
 
     const validationResult = updateUserSchema.safeParse({

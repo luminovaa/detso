@@ -13,7 +13,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   const customerId = req.params.id;
   const files = req.files as UpdateCustomerFiles;
 
-  // Validasi input
   const requestData = {
     ...req.body,
     documents: req.body.documents ? JSON.parse(req.body.documents) : undefined
@@ -26,7 +25,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
 
   const { name, phone, email, nik, documents } = validationResult.data;
 
-  // Cek apakah customer ada
   const existingCustomer = await prisma.detso_Customer.findUnique({
     where: { id: customerId },
     include: {
@@ -38,7 +36,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
     throw new NotFoundError('Customer tidak ditemukan');
   }
 
-  // Bersihkan file jika terjadi error
   const cleanupUploadedFiles = async () => {
     if (files.documents) {
       await Promise.all(
@@ -48,7 +45,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   };
 
   try {
-    // Cek duplikasi NIK (kecuali milik customer ini sendiri)
     if (nik && nik !== existingCustomer.nik) {
       const duplicate = await prisma.detso_Customer.findFirst({
         where: {
@@ -63,11 +59,9 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
       }
     }
 
-    // Ambil BASE_URL untuk membuat URL dokumen
     const baseUrl = process.env.BASE_URL;
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Update data customer
       const updatedCustomer = await tx.detso_Customer.update({
         where: { id: customerId },
         data: {
@@ -79,14 +73,11 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
         }
       });
 
-      // 2. Handle dokumen
       if (documents !== undefined) {
-        // Hapus semua dokumen lama
         await tx.detso_Customer_Document.deleteMany({
           where: { customer_id: customerId }
         });
 
-        // Hapus file lama dari storage
         existingCustomer.documents.forEach(async (doc) => {
           if (doc.document_url) {
             await deleteFile(doc.document_url).catch(err =>
@@ -95,7 +86,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
           }
         });
 
-        // Upload dokumen baru jika ada
         if (documents.length > 0 && files.documents) {
           if (files.documents.length !== documents.length) {
             await cleanupUploadedFiles();
@@ -105,7 +95,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
           await Promise.all(
             documents.map(async (doc, index) => {
               const file = files.documents![index];
-              const fileInfo = getUploadedFileInfo(file, 'image/customer/documents');
+              const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/documents');
 
               await tx.detso_Customer_Document.create({
                 data: {
@@ -120,7 +110,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
         }
       }
 
-      // 3. Ambil data terbaru untuk respons
       const finalCustomer = await tx.detso_Customer.findUnique({
         where: { id: customerId },
         include: {
@@ -139,7 +128,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
         throw new Error('Gagal mengambil data customer setelah update');
       }
 
-      // Tambahkan URL lengkap ke dokumen
       const documentsWithUrl = finalCustomer.documents.map(doc => ({
         ...doc,
         document_url: `${baseUrl}/${doc.document_url}`.replace(/\/+/g, '/')

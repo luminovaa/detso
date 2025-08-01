@@ -39,7 +39,7 @@ export const deleteCustomer = asyncHandler(async (req: Request, res: Response): 
 
   // 2. Tambahkan foto dari semua service connections
   console.log('Customer service photos:', customer.service.flatMap(s => s.photos));
-  customer.service.forEach(service => {
+  customer.service.forEach((service) => {
     service.photos.forEach(photo => {
       if (photo.photo_url) {
         filesToDelete.push(photo.photo_url);
@@ -58,6 +58,16 @@ export const deleteCustomer = asyncHandler(async (req: Request, res: Response): 
     prisma.detso_Service_Connection.updateMany({
       where: { customer_id: customerId },
       data: { deleted_at: new Date() }
+    }),
+    prisma.detso_Customer_Document.deleteMany({
+      where: { customer_id: customerId }
+    }),
+    prisma.detso_Service_Photo.deleteMany({
+      where: {
+        service: {
+          customer_id: customerId
+        }
+      }
     })
   ]);
 

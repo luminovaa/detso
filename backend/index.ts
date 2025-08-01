@@ -2,9 +2,10 @@ import { Server } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import routes from './src/router/routes';
-import path from 'path';
+import { handleError } from './src/utils/error-handler';
+import { initializeWhatsApp } from './src/config/whatsapp.init';
 
 const PORT: number = parseInt(process.env.PORT || '0');
 
@@ -13,7 +14,6 @@ app.use(cookieParser());
 
 // Middleware
 app.use(helmet());
-app.use(express.json());
 app.use('/image', express.static('image'));
 
 const corsOptions = {
@@ -44,11 +44,19 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 });
 
+app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+  handleError(error, res);
+});
+
 routes(app);
 
+initializeWhatsApp();
 const server: Server = app.listen(PORT, () => {
   const address = server.address();
-
+  
   if (address) {
     if (typeof address === 'string') {
       console.log(`Server is running on socket: ${address}`);

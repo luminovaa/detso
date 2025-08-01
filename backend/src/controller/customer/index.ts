@@ -5,6 +5,7 @@ import { uploadCustomerFiles } from "../../config/upload.config";
 import { getAllCustomers, getCustomerById } from "./get.customer";
 import { deleteCustomer } from "./delete.customer";
 import { editCustomer } from "./edit.customer";
+import { downloadInstallationReport, viewInstallationReport } from "./pdf.customer";
 
 const customerRouter = express.Router();
 
@@ -19,4 +20,6 @@ customerRouter.get('/', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TE
 customerRouter.get('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getCustomerById);
 customerRouter.put('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), uploadCustomerFiles, editCustomer);
 customerRouter.delete('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), deleteCustomer);
+customerRouter.get('/pdf/:id/download', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), downloadInstallationReport);
+customerRouter.get('/pdf/:id/view', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), viewInstallationReport);
 export default customerRouter;

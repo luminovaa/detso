@@ -71,13 +71,32 @@ model Detso_Customer {
     updated_at DateTime  @updatedAt
     deleted_at DateTime?
 
-    documents Detso_Customer_Document[]
-    service   Detso_Service_Connection[]
+    documents          Detso_Customer_Document[]
+    service            Detso_Service_Connection[]
+    pdf                Detso_Customer_PDF[]
+    whatsApp_Log Detso_WhatsApp_Log[]
 
     @@index([deleted_at])
     @@index([phone])
     @@index([nik])
     @@map("detso_customers")
+}
+
+model Detso_WhatsApp_Log {
+    id            String   @id @default(cuid())
+    customer_id   String
+    phone_number  String
+    message_type  String // 'installation_report', 'payment_reminder', etc.
+    status        String // 'sent', 'failed', 'pending'
+    error_message String? // jika ada error
+    sent_at       DateTime @default(now())
+    created_at    DateTime @default(now())
+    updated_at    DateTime @updatedAt
+
+    // Relasi ke customer
+    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+
+    @@map("detso_whatsapp_logs")
 }
 
 model Detso_Customer_Document {
@@ -96,6 +115,7 @@ model Detso_Customer_Document {
 model Detso_Service_Connection {
     id            String                @id @default(cuid())
     customer_id   String
+    id_pel        String?               @unique
     package_id    String
     address       String?
     package_name  String
@@ -111,6 +131,7 @@ model Detso_Service_Connection {
     customer Detso_Customer        @relation(fields: [customer_id], references: [id])
     package  Detso_Package         @relation(fields: [package_id], references: [id])
     photos   Detso_Service_Photo[]
+    pdf      Detso_Customer_PDF[]
 
     @@index([deleted_at])
     @@map("detso_service_connections")
@@ -128,6 +149,20 @@ model Detso_Service_Photo {
 
     @@index([service_id])
     @@map("detso_service_photos")
+}
+
+model Detso_Customer_PDF {
+    id                    String   @id @default(cuid())
+    customer_id           String
+    service_connection_id String
+    pdf_type              String   @default("installation_report")
+    pdf_path              String
+    generated_at          DateTime @default(now())
+
+    customer           Detso_Customer           @relation(fields: [customer_id], references: [id])
+    service_connection Detso_Service_Connection @relation(fields: [service_connection_id], references: [id])
+
+    @@map("detso_customer_pdfs")
 }
 
 model Detso_Package {
