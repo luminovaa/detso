@@ -26,7 +26,12 @@ export const updateCustomerSchema = z.object({
     .optional()
     .nullable()
     .transform(val => val === '' ? null : val), // string kosong → null
-
+  birth_date: z.preprocess((arg) => {
+    if (!arg || arg === '') return undefined;
+    const date = new Date(String(arg));
+    return isNaN(date.getTime()) ? undefined : date;
+  }, z.date().optional()),
+  birth_place: z.string().optional(),
   nik: z
     .string()
     .length(16, { message: 'NIK harus tepat 16 digit' })
@@ -54,23 +59,29 @@ export const updateCustomerSchema = z.object({
 
 // Schema untuk foto
 const photoSchema = z.object({
-    type: z.string().min(1, 'Jenis foto harus diisi'),
+  type: z.string().min(1, 'Jenis foto harus diisi'),
 });
 
 export const createCustomerSchema = z.object({
-    name: z.string().min(3, 'Nama minimal 3 karakter'),
-    phone: z.string().min(10, 'Nomor telepon minimal 10 karakter').optional(),
-    email: z.string().email('Email tidak valid').optional(),
-    nik: z.string().min(16, 'NIK harus 16 karakter').optional(),
-    package_id: z.string().min(1, 'Package ID harus diisi'),
-    address: z.string().min(10, 'Alamat minimal 10 karakter'),
-    package_name: z.string().min(1, 'Nama paket harus diisi'),
-    package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
-    ip_address: z.string().ip('Alamat IP tidak valid').optional(),
-    mac_address: z.string().min(12, 'MAC address minimal 12 karakter').optional(),
-    notes: z.string().optional(),
-    documents: z.array(documentSchema).optional(), 
-    photos: z.array(photoSchema).optional(),      
+  name: z.string().min(3, 'Nama minimal 3 karakter'),
+  phone: z.string().min(10, 'Nomor telepon minimal 10 karakter').optional(),
+  email: z.string().email('Email tidak valid').optional(),
+  nik: z.string().min(16, 'NIK harus 16 karakter').optional(),
+  package_id: z.string().min(1, 'Package ID harus diisi'),
+  address: z.string().min(10, 'Alamat minimal 10 karakter'),
+  package_name: z.string().min(1, 'Nama paket harus diisi'),
+  package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
+  ip_address: z.string().ip('Alamat IP tidak valid').optional(),
+  birth_date: z.preprocess((arg) => {
+    if (!arg || arg === '') return undefined;
+    const date = new Date(String(arg));
+    return isNaN(date.getTime()) ? undefined : date;
+  }, z.date().optional()),
+  birth_place: z.string().optional(),
+  mac_address: z.string().min(12, 'MAC address minimal 12 karakter').optional(),
+  notes: z.string().optional(),
+  documents: z.array(documentSchema).optional(),
+  photos: z.array(photoSchema).optional(),
 });
 
 

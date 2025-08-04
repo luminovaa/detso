@@ -67,10 +67,10 @@ export class WhatsAppService {
             this.isReady = false;
         });
 
-        this.client.on('message', async (message) => {
-            // Handle incoming messages if needed
-            console.log('Received message:', message.body);
-        });
+        // this.client.on('message', async (message) => {
+        //     // Handle incoming messages if needed
+        //     console.log('Received message:', message.body);
+        // });
 
         this.client.initialize();
     }

@@ -8,6 +8,8 @@ interface CustomerData {
     name: string;
     phone: string | null;
     email: string | null;
+    birth_date: Date | null;
+    birth_place: string | null;
     nik: string | null;
 }
 
@@ -42,7 +44,7 @@ interface PDFGenerationData {
 export class PDFGeneratorService {
     private readonly WATERMARK_TEXT = 'DETSO NETWORK';
     private readonly PDF_DIR = 'storage/pdfs/installation-reports';
-    private readonly LOGO_LEFT_PATH = 'assets/logo.png'; // Path logo kiri
+    private readonly LOGO_LEFT_PATH = 'assets/mgs.png'; // Path logo kiri
     private readonly LOGO_RIGHT_PATH = 'assets/logo.png'; // Path logo kanan
 
     constructor() {
@@ -98,6 +100,7 @@ export class PDFGeneratorService {
         doc.save();
 
         doc.fillOpacity(0.5)
+            .font('Helvetica') // Keep as Helvetica for watermark
             .fontSize(50)
             .rotate(-45, { origin: [300, 400] })
             .fillColor('#cccccc')
@@ -110,142 +113,150 @@ export class PDFGeneratorService {
     }
 
     private addHeader(doc: PDFKit.PDFDocument) {
-    const logoY = 20;
-    const logoWidth = 75;
-    const logoHeight = 60;
-    const textY1 = 25;
-    const textY2 = 40;
-    const textY3 = 55;
-    const addressY = 70;
-    const lineY = 90;
+        const logoY = 20;
+        const logoWidth = 95;
+        const logoHeight = 60;
+        const textY1 = 25;
+        const textY2 = 42;
+        const textY3 = 58;
+        const addressY = 72;
+        const lineY = 95;
 
-    // Left logo
-    try {
-        if (fs.existsSync(this.LOGO_LEFT_PATH)) {
-            doc.image(this.LOGO_LEFT_PATH, 50, logoY, { 
-                width: logoWidth, 
-                height: logoHeight,
-            });
+        try {
+            if (fs.existsSync(this.LOGO_LEFT_PATH)) {
+                doc.image(this.LOGO_LEFT_PATH, 30, logoY, {
+                    width: logoWidth,
+                    height: logoHeight,
+                });
+            }
+        } catch (error) {
+            doc.rect(50, logoY, logoWidth, logoHeight)
+                .strokeColor('#000000')
+                .stroke();
         }
-    } catch (error) {
-        doc.rect(50, logoY, logoWidth, logoHeight)
+
+        // Company information (centered, more formal) - Using Arial font
+        doc.font('Helvetica-Bold') // PDFKit uses Helvetica as Arial equivalent
+            .fontSize(16)
+            .fillColor('#000000')
+            .text('PT. MULTI GUNA SINERGI', 0, textY1, {
+                align: 'center',
+                width: 612
+            });
+
+        // Added spacing between company names
+        doc.font('Helvetica-Bold')
+            .fontSize(14)
+            .fillColor('#000000')
+            .text('DEWA TELEKOMUNIKASI SOLUSINDO', 0, textY2, {
+                align: 'center',
+                width: 612
+            });
+
+        doc.font('Helvetica-Bold')
+            .fontSize(10)
+            .fillColor('#000000')
+            .text('Penyedia Layanan Jaringan Internet', 0, textY3, {
+                align: 'center',
+                width: 612
+            });
+
+        // Company address (more compact)
+        doc.font('Helvetica')
+            .fontSize(9)
+            .fillColor('#000000')
+            .text('Dsn. Luwung Ds. Sidomojo RT 001/RW 003 Kec. Krian Kab. Sidoarjo', 0, addressY, {
+                align: 'center',
+                width: 612
+            })
+            .text('HP/WA: 0851-0013-4712 | Email: info@detso.net', 0, addressY + 12, {
+                align: 'center',
+                width: 612
+            })
+
+        // Right logo
+        try {
+            if (fs.existsSync(this.LOGO_RIGHT_PATH)) {
+                doc.image(this.LOGO_RIGHT_PATH, 490, logoY, {
+                    width: logoWidth,
+                    height: logoHeight,
+                    align: 'right',
+                });
+            }
+        } catch (error) {
+            doc.rect(502, logoY, logoWidth, logoHeight)
+                .strokeColor('#000000')
+                .stroke();
+        }
+
+        doc.moveDown(1)
+
+        // Double horizontal lines (moved down and made double)
+        doc.moveTo(50, lineY)
+            .lineTo(562, lineY)
             .strokeColor('#000000')
+            .lineWidth(1.5)
+            .stroke();
+
+        // Second line for double effect
+        doc.moveTo(50, lineY + 3)
+            .lineTo(562, lineY + 3)
+            .strokeColor('#000000')
+            .lineWidth(1.5)
             .stroke();
     }
-
-    // Company information (centered, more formal)
-    doc.font('Helvetica-Bold')
-       .fontSize(16)
-       .fillColor('#000000')
-       .text('PT. MULTI GUNA SINERGI', 0, textY1, {
-           align: 'center',
-           width: 612
-       });
-
-    doc.font('Helvetica-Bold')
-       .fontSize(14)
-       .fillColor('#000000')
-       .text('Dewa Telekomunikasi Solusindo', 0, textY2, {
-           align: 'center',
-           width: 612
-       });
-
-    doc.font('Helvetica')
-       .fontSize(10)
-       .fillColor('#000000')
-       .text('Penyedia Layanan Jaringan Internet', 0, textY3, {
-           align: 'center',
-           width: 612
-       });
-
-    // Company address (more compact)
-    doc.font('Helvetica')
-       .fontSize(9)
-       .fillColor('#000000')
-       .text('Kantor Pusat: Dsn. Luwung Ds. Sidomojo RT 001/RW 003 Kec. Krian Kab. Sidoarjo', 0, addressY, {
-           align: 'center',
-           width: 612
-       })
-       .text('HP/WA: 0851-0013-4712 | Email: info@detso.net', 0, addressY + 12, {
-           align: 'center',
-           width: 612
-       })
-
-    // Right logo
-    try {
-        if (fs.existsSync(this.LOGO_RIGHT_PATH)) {
-            doc.image(this.LOGO_RIGHT_PATH, 502, logoY, { 
-                width: logoWidth, 
-                height: logoHeight,
-                align: 'right',
-            });
-        }
-    } catch (error) {
-        doc.rect(502, logoY, logoWidth, logoHeight)
-            .strokeColor('#000000')
-            .stroke();
-    }
-
-    doc.moveDown(1)
-
-    // Horizontal line (full width, thicker)
-    doc.moveTo(50, lineY)
-       .lineTo(562, lineY)
-       .strokeColor('#000000')
-       .lineWidth(1.5)
-       .stroke();
-
-    // Small decorative lines
-    doc.moveTo(50, lineY + 3)
-       .lineTo(100, lineY + 3)
-       .strokeColor('#000000')
-       .lineWidth(0.5)
-       .stroke();
-
-    doc.moveTo(512, lineY + 3)
-       .lineTo(562, lineY + 3)
-       .strokeColor('#000000')
-       .lineWidth(0.5)
-       .stroke();
-}
 
     private addMainContent(doc: PDFKit.PDFDocument, data: PDFGenerationData) {
         const { customer, serviceConnection } = data;
 
-        // Title dan tanggal (warna hitam)
-        doc.fontSize(18)
+        // Title dan tanggal (warna hitam) - Using Arial font
+        doc.font('Helvetica-Bold')
+            .fontSize(18)
             .fillColor('#000000')
-            .text('Formulir Pendaftaran Data Pelanggan', 50, 110, { align: 'center' });
+            .text('Formulir Pendaftaran Data Pelanggan', 50, 120, { align: 'center' });
 
-        // Tabel informasi pelanggan seperti di foto
-        let currentY = 140;
+        // Tabel informasi pelanggan
+        let currentY = 150;
         const tableX = 50;
         const tableWidth = 512;
-        const rowHeight = 18;
+        const col1Width = 120;
+        const col2Width = tableWidth - col1Width;
+        const padding = 10;
+        const minRowHeight = 18;
 
-        // Data untuk tabel
         const tableData = [
             ['Nama', customer.name],
             ['NIK', customer.nik || '-'],
-            ['Tempat', '-'], // Bisa ditambahkan field baru jika diperlukan
-            ['Tanggal Lahir', '-'], // Bisa ditambahkan field baru jika diperlukan
+            ['Tempat', customer.birth_place || '-'],
+            ['Tanggal Lahir', customer.birth_date || '-'],
             ['Alamat', serviceConnection.address || '-'],
             ['No.WA Aktif', customer.phone || '-'],
             ['Email', customer.email || '-'],
-            ['Titik Koordinat', '-'] // Bisa ditambahkan field baru jika diperlukan
         ];
 
-        // Gambar tabel dengan border
-        doc.rect(tableX, currentY, tableWidth, tableData.length * rowHeight)
+        let totalTableHeight = 0;
+        const rowHeights: number[] = [];
+
+        tableData.forEach(row => {
+            doc.font('Helvetica').fontSize(10);
+            const labelHeight = doc.heightOfString(String(row[0]), { width: col1Width - padding * 2 });
+            const contentHeight = doc.heightOfString(String(row[1]), { width: col2Width - padding * 2 });
+            const rowHeight = Math.max(minRowHeight, Math.max(labelHeight, contentHeight) + padding);
+            rowHeights.push(rowHeight);
+            totalTableHeight += rowHeight;
+        });
+
+        doc.rect(tableX, currentY, tableWidth, totalTableHeight)
             .strokeColor('#000000')
             .lineWidth(1)
             .stroke();
 
-        // Gambar setiap baris
+        // Gambar setiap baris dan isi teks
+        let rowY = currentY;
         tableData.forEach((row, index) => {
-            const rowY = currentY + (index * rowHeight);
-            
-            // Border horizontal
+            const rowHeight = rowHeights[index];
+
+            // Gambar garis horizontal (kecuali baris pertama)
             if (index > 0) {
                 doc.moveTo(tableX, rowY)
                     .lineTo(tableX + tableWidth, rowY)
@@ -253,27 +264,32 @@ export class PDFGeneratorService {
                     .lineWidth(1)
                     .stroke();
             }
-            
-            // Border vertikal (pemisah kolom)
-            doc.moveTo(tableX + 120, rowY)
-                .lineTo(tableX + 120, rowY + rowHeight)
+
+            // Gambar garis vertikal (pemisah kolom)
+            doc.moveTo(tableX + col1Width, rowY)
+                .lineTo(tableX + col1Width, rowY + rowHeight)
                 .strokeColor('#000000')
                 .lineWidth(1)
                 .stroke();
 
             // Isi teks
-            doc.fontSize(10)
+            doc.font('Helvetica')
+                .fontSize(10)
                 .fillColor('#000000')
-                .text(row[0], tableX + 10, rowY + 8, { width: 100 })
-                .text(row[1], tableX + 130, rowY + 8, { width: 370 });
+                .text(String(row[0]), tableX + padding, rowY + padding / 2, { width: col1Width - padding * 2 })
+                .text(String(row[1]), tableX + col1Width + padding, rowY + padding / 2, { width: col2Width - padding * 2 });
+
+            rowY += rowHeight;
         });
 
-        // Syarat/Lampiran dan Ketentuan
-        currentY = currentY + (tableData.length * rowHeight) + 30;
+        // Perbarui currentY untuk konten berikutnya
+        currentY = rowY + 30;
 
         // Syarat/Lampiran
-        doc.fontSize(12)
+        doc.font('Helvetica-Bold')
+            .fontSize(14)
             .fillColor('#000000')
+            .underline(50, currentY + 14, 120, 2)
             .text('Syarat/Lampiran', 50, currentY);
 
         currentY += 20;
@@ -287,16 +303,19 @@ export class PDFGeneratorService {
         ];
 
         syaratLampiran.forEach(item => {
-            doc.fontSize(10)
+            doc.font('Helvetica')
+                .fontSize(12)
                 .fillColor('#000000')
-                .text(item, 50, currentY);
+                .text(item, 70, currentY);
             currentY += 15;
         });
 
         currentY += 10;
 
         // Ketentuan
-        doc.fontSize(12)
+        doc.font('Helvetica-Bold')
+            .fontSize(14)
+            .underline(50, currentY + 14, 80, 2)
             .fillColor('#000000')
             .text('Ketentuan', 50, currentY, { width: 500 });
 
@@ -307,20 +326,18 @@ export class PDFGeneratorService {
             '   (Dipinjami dan Bukan untuk di perjual belikan)',
             '3. Internet aktif di hari pemasangan',
             '4. Tagihan Internet akan di tangguhkan pada bulan berikutnya setelah pemasangan',
-            '5. Membayar tagihan internet sebesar paket yang di ambil tertanggal 1 – 10 pada awal bulan',
-            '6. Data pelanggan akan di simpan dan di rekam untuk arsip penyedia layanan jaringan internet',
+            '5. Membayar tagihan internet sebesar paket yang di ambil tertanggal 1 - 10 pada awal bulan',
+            '6. Data pelanggan akan di simpan dan di rekam untuk arsip penyedia layanan jaringan', 
+            '   internet',
             '7. Bila ada gangguan diharap segera lapor ke CS Admin Penyedia layanan jaringan'
         ];
 
         ketentuan.forEach(item => {
-            doc.fontSize(10)
+            doc.font('Helvetica')
+                .fontSize(12)
                 .fillColor('#000000')
-                .text(item, 50, currentY, { width: 500 });
-            if (item.includes('(Dipinjami')) {
-                currentY += 15;
-            } else {
-                currentY += 20;
-            }
+                .text(item, 70, currentY, { width: 500 });
+            currentY += 15;
         });
     }
 
@@ -329,11 +346,12 @@ export class PDFGeneratorService {
         this.addWatermark(doc);
         this.addHeader(doc);
 
-        doc.fontSize(16)
+        doc.font('Helvetica-Bold')
+            .fontSize(16)
             .fillColor('#000000')
-            .text('DOKUMEN PELANGGAN', 50, 110);
+            .text('DOKUMEN PELANGGAN', 50, 120);
 
-        let yPosition = 150;
+        let yPosition = 160;
 
         documents.forEach((document, index) => {
             // Container dokumen
@@ -346,7 +364,8 @@ export class PDFGeneratorService {
                 .fillColor('#f3f4f6')
                 .fill();
 
-            doc.fontSize(12)
+            doc.font('Helvetica-Bold')
+                .fontSize(12)
                 .fillColor('#000000')
                 .text(`${index + 1}. ${document.document_type}`, 60, yPosition);
 
@@ -367,7 +386,8 @@ export class PDFGeneratorService {
                         .strokeColor('#000000')
                         .stroke();
 
-                    doc.fontSize(12)
+                    doc.font('Helvetica')
+                        .fontSize(12)
                         .fillColor('#000000')
                         .text('Dokumen tidak ditemukan', 0, yPosition + 95, {
                             align: 'center',
@@ -381,7 +401,8 @@ export class PDFGeneratorService {
                     .strokeColor('#000000')
                     .stroke();
 
-                doc.fontSize(12)
+                doc.font('Helvetica')
+                    .fontSize(12)
                     .fillColor('#000000')
                     .text('Error memuat dokumen', 0, yPosition + 95, {
                         align: 'center',
@@ -396,7 +417,7 @@ export class PDFGeneratorService {
                 doc.addPage();
                 this.addWatermark(doc);
                 this.addHeader(doc);
-                yPosition = 150;
+                yPosition = 160;
             }
         });
     }
@@ -406,11 +427,12 @@ export class PDFGeneratorService {
         this.addWatermark(doc);
         this.addHeader(doc);
 
-        doc.fontSize(16)
+        doc.font('Helvetica-Bold')
+            .fontSize(16)
             .fillColor('#000000')
-            .text('DOKUMENTASI PEMASANGAN', 50, 110);
+            .text('DOKUMENTASI PEMASANGAN', 50, 120);
 
-        let yPosition = 150;
+        let yPosition = 160;
 
         photos.forEach((photo, index) => {
             // Container foto
@@ -423,7 +445,8 @@ export class PDFGeneratorService {
                 .fillColor('#f3f4f6')
                 .fill();
 
-            doc.fontSize(12)
+            doc.font('Helvetica-Bold')
+                .fontSize(12)
                 .fillColor('#000000')
                 .text(`${index + 1}. ${photo.photo_type}`, 60, yPosition);
 
@@ -444,7 +467,8 @@ export class PDFGeneratorService {
                         .strokeColor('#000000')
                         .stroke();
 
-                    doc.fontSize(12)
+                    doc.font('Helvetica')
+                        .fontSize(12)
                         .fillColor('#000000')
                         .text('Foto tidak ditemukan', 0, yPosition + 130, {
                             align: 'center',
@@ -458,7 +482,8 @@ export class PDFGeneratorService {
                     .strokeColor('#000000')
                     .stroke();
 
-                doc.fontSize(12)
+                doc.font('Helvetica')
+                    .fontSize(12)
                     .fillColor('#000000')
                     .text('Error memuat foto', 0, yPosition + 130, {
                         align: 'center',
@@ -473,7 +498,7 @@ export class PDFGeneratorService {
                 doc.addPage();
                 this.addWatermark(doc);
                 this.addHeader(doc);
-                yPosition = 150;
+                yPosition = 160;
             }
         });
     }

@@ -66,7 +66,6 @@ const createFileFilter = (allowedMimeTypes?: string[]) => {
     };
 };
 
-// Factory function untuk membuat multer instance
 export const createUploadMiddleware = (options: UploadOptions) => {
     const storage = createStorage(options.destination);
     const fileFilter = createFileFilter(options.allowedMimeTypes);
@@ -84,7 +83,7 @@ export const getUploadedFileInfo = (file: Express.Multer.File, destination: stri
     const relativePath = path.join(destination, file.filename);
     
     return {
-        path: relativePath.replace(/\\/g, '/'), // Convert backslash to forward slash
+        path: relativePath.replace(/\\/g, '/'), 
         fileName: file.filename,
         fullPath: file.path
     };
@@ -112,7 +111,6 @@ export const deleteFile = (filePath: string): Promise<void> => {
     });
 };
 
-// Utility function untuk membuat direktori secara eksplisit
 export const createDirectory = (dirPath: string): Promise<void> => {
     return new Promise((resolve, reject) => {
         const fullPath = path.isAbsolute(dirPath) 
@@ -124,7 +122,6 @@ export const createDirectory = (dirPath: string): Promise<void> => {
     });
 };
 
-// Utility function untuk mengecek apakah file ada
 export const fileExists = (filePath: string): boolean => {
     const fullPath = path.isAbsolute(filePath) 
         ? filePath 

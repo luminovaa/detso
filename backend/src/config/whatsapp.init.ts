@@ -7,7 +7,7 @@ export const initializeWhatsApp = async (): Promise<void> => {
         
         
         let retryCount = 0;
-        const maxRetries = 60; // 5 menit (60 * 5 detik)
+        const maxRetries = 60;
         
         while (retryCount < maxRetries) {
             const isReady = await whatsappService.isClientReady();

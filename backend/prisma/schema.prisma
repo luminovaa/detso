@@ -62,18 +62,20 @@ model Detso_Refresh_Token {
 }
 
 model Detso_Customer {
-    id         String    @id @default(cuid())
-    name       String
-    phone      String?
-    email      String?
-    nik        String?
-    created_at DateTime  @default(now())
-    updated_at DateTime  @updatedAt
-    deleted_at DateTime?
+    id           String    @id @default(cuid())
+    name         String
+    phone        String?
+    email        String?
+    nik          String?
+    birth_date   DateTime?
+    birth_place String?
+    created_at   DateTime  @default(now())
+    updated_at   DateTime  @updatedAt
+    deleted_at   DateTime?
 
-    documents          Detso_Customer_Document[]
-    service            Detso_Service_Connection[]
-    pdf                Detso_Customer_PDF[]
+    documents    Detso_Customer_Document[]
+    service      Detso_Service_Connection[]
+    pdf          Detso_Customer_PDF[]
     whatsApp_Log Detso_WhatsApp_Log[]
 
     @@index([deleted_at])

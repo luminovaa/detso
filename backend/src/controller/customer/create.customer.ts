@@ -38,6 +38,8 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
         package_speed,
         ip_address,
         mac_address,
+        birth_date,
+        birth_place,
         notes,
         documents,
         photos
@@ -88,6 +90,8 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     name,
                     phone,
                     email,
+                    birth_date,
+                    birth_place,
                     nik,
                     created_at: new Date()
                 }
@@ -180,74 +184,72 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             });
 
             // 7. Kirim PDF via WhatsApp
-            if (pdfPath) {
-                try {
-                    // Cek apakah WhatsApp client siap
-                    const isWhatsAppReady = await whatsappService.isClientReady();
+//             if (pdfPath) {
+//                 try {
+//                     // Cek apakah WhatsApp client siap
+//                     const isWhatsAppReady = await whatsappService.isClientReady();
                     
-                    if (isWhatsAppReady) {
-                        // Kirim pesan teks terlebih dahulu
-                        const textMessage = `Halo ${name}! 👋
+//                     if (isWhatsAppReady) {
+//                         // Kirim pesan teks terlebih dahulu
+//                         const textMessage = `Halo ${name}! 👋
 
-Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
+// Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
 
-📋 Detail Layanan:
-• ID Pelanggan: ${idPel}
-• Paket: ${package_name}
-• Kecepatan: ${package_speed}
-• Alamat: ${address}
+// 📋 Detail Layanan:
+// • ID Pelanggan: ${idPel}
+// • Paket: ${package_name}
+// • Kecepatan: ${package_speed}
+// • Alamat: ${address}
 
-Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
+// Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
 
-Terima kasih telah mempercayai layanan kami! 🚀
+// Terima kasih telah mempercayai layanan kami! 🚀
 
----
-Tim Teknis DETSO`;
+// ---
+// Tim Teknis DETSONET`;
 
-                        await whatsappService.sendMessage(phone!, textMessage);
+//                         await whatsappService.sendMessage(phone!, textMessage);
 
-                        // Kirim dokumen PDF
-                        const fileName = `Laporan_Instalasi_${idPel}_${name.replace(/\s+/g, '_')}.pdf`;
-                        const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
+//                         // Kirim dokumen PDF
+//                         const fileName = `Laporan_Instalasi_${idPel}_${name.replace(/\s+/g, '_')}.pdf`;
+//                         const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
                         
-                        whatsappSent = await whatsappService.sendDocument(
-                            phone!, 
-                            pdfPath, 
-                            caption,
-                            fileName
-                        );
+//                         whatsappSent = await whatsappService.sendDocument(
+//                             phone!, 
+//                             pdfPath, 
+//                             caption,
+//                             fileName
+//                         );
 
-                        if (whatsappSent) {
-                            // Log pengiriman WhatsApp ke database
-                            await prisma.detso_WhatsApp_Log.create({
-                                data: {
-                                    customer_id: result.customer.id,
-                                    phone_number: phone || '',
-                                    message_type: 'installation_report',
-                                    status: 'sent',
-                                    sent_at: new Date()
-                                }
-                            });
-                        }
-                    } else {
-                        console.warn('WhatsApp client is not ready. PDF generated but not sent.');
-                    }
-                } catch (whatsappError) {
-                    console.error('Error sending WhatsApp message:', whatsappError);
+//                         if (whatsappSent) {
+//                             await prisma.detso_WhatsApp_Log.create({
+//                                 data: {
+//                                     customer_id: result.customer.id,
+//                                     phone_number: phone || '',
+//                                     message_type: 'installation_report',
+//                                     status: 'sent',
+//                                     sent_at: new Date()
+//                                 }
+//                             });
+//                         }
+//                     } else {
+//                         console.warn('WhatsApp client is not ready. PDF generated but not sent.');
+//                     }
+//                 } catch (whatsappError) {
+//                     console.error('Error sending WhatsApp message:', whatsappError);
                     
-                    // Log error ke database
-                    await prisma.detso_WhatsApp_Log.create({
-                        data: {
-                            customer_id: result.customer.id,
-                            phone_number: phone || '',
-                            message_type: 'installation_report',
-                            status: 'failed',
-                            error_message: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
-                            sent_at: new Date()
-                        }
-                    });
-                }
-            }
+//                     await prisma.detso_WhatsApp_Log.create({
+//                         data: {
+//                             customer_id: result.customer.id,
+//                             phone_number: phone || '',
+//                             message_type: 'installation_report',
+//                             status: 'failed',
+//                             error_message: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
+//                             sent_at: new Date()
+//                         }
+//                     });
+//                 }
+//             }
 
         } catch (pdfError) {
             console.error('Error generating PDF:', pdfError);
