@@ -8,7 +8,10 @@
     "dev": "nodemon index.ts",
     "format": "prettier-eslint \"$PWD/{,!(node_modules)/**/}*.{js,json}\"",
     "format:fix": "prettier-eslint --write \"$PWD/{,!(node_modules)/**/}*.{js,json}\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db_push": "npx prisma db push",
+    "db_migrate": "npx prisma migrate dev",
+    "db_generate": "npx prisma generate"
   },
   "author": "Neon Code",
   "dependencies": {

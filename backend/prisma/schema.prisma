@@ -122,7 +122,10 @@ model Detso_Service_Connection {
     address       String?
     package_name  String
     package_speed String
+    package_price String
     ip_address    String?
+    lat           String?
+    long          String?
     mac_address   String?
     status        Detso_Customer_Status @default(ACTIVE)
     created_at    DateTime              @default(now())

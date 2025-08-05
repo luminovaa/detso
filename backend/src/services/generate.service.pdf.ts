@@ -18,6 +18,8 @@ interface ServiceConnectionData {
     id_pel: string | null;
     package_name: string;
     package_speed: string;
+    lat: string | null;
+    long: string | null;
     address: string | null;
     ip_address: string | null;
     mac_address: string | null;
@@ -232,6 +234,7 @@ export class PDFGeneratorService {
             ['Alamat', serviceConnection.address || '-'],
             ['No.WA Aktif', customer.phone || '-'],
             ['Email', customer.email || '-'],
+            ['Titik Lokasi', `https://maps.google.com/place/${serviceConnection.lat},${serviceConnection.long}`],
         ];
 
         let totalTableHeight = 0;

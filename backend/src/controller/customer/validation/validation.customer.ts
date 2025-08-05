@@ -71,7 +71,10 @@ export const createCustomerSchema = z.object({
   address: z.string().min(10, 'Alamat minimal 10 karakter'),
   package_name: z.string().min(1, 'Nama paket harus diisi'),
   package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
+  package_price: z.number().min(1, 'Harga paket harus diisi'),
   ip_address: z.string().ip('Alamat IP tidak valid').optional(),
+  lat: z.string().optional(),
+  long: z.string().optional(),
   birth_date: z.preprocess((arg) => {
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
