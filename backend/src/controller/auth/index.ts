@@ -7,7 +7,7 @@ import { refreshAccessToken } from "./token.auth";
 import { registerUser } from "./register.auth";
 const authRouter = express.Router();
 
-authRouter.post('/sign-in', loginUser);
+authRouter.post('/login', loginUser);
 authRouter.post('/refresh', refreshAccessToken);
 authRouter.post('/register', registerUser)
 
