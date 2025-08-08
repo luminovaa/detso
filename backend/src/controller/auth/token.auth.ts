@@ -7,7 +7,6 @@ import { generateAccessToken } from './login.auth'
 
 export const refreshAccessToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
-
     if (!refreshToken) {
         throw new AuthenticationError('Refresh token tidak ditemukan');
     }
@@ -34,7 +33,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
                 }
             }
         }
-    })
+    });
 
     if (!tokenRecord) {
         throw new AuthenticationError('Refresh token tidak valid atau expired');
@@ -44,16 +43,19 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
         id: tokenRecord.user.id,
         email: tokenRecord.user.email,
         role: tokenRecord.user.role
-    })
+    });
+
+    const decoded = jwt.verify(newAccessToken, process.env.JWT_SECRET_TOKEN as string) as any;
+    const exp = decoded.exp;
 
     await prisma.detso_Refresh_Token.update({
         where: { id: tokenRecord.id },
         data: { updated_at: new Date() }
-    })
+    });
 
     res.cookie("accessToken", newAccessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "none",
         maxAge: 15 * 60 * 1000,
     });
@@ -66,30 +68,28 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
             email: tokenRecord.user.email,
             username: tokenRecord.user.username,
             role: tokenRecord.user.role,
-            profile: tokenRecord.user.profile
+            profile: tokenRecord.user.profile,
+            exp // ✅ Tambahkan exp ke user
         }
-    }
+    };
 
-    responseData(res, 200, 'Token berhasil diperbarui', result)
-})
+    responseData(res, 200, 'Token berhasil diperbarui', result);
+});
 
-
-
-// Middleware untuk extract user dari token
 export const extractUserFromToken = asyncHandler(async (req: Request, res: Response, next: any) => {
     const token = req.cookies.accessToken;
 
     if (!token) {
         throw new AuthenticationError('Token tidak ditemukan');
     }
-
+    
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_TOKEN as string) as any;
-        
+
         const user = await prisma.detso_User.findUnique({
-            where: { 
+            where: {
                 id: decoded.id,
-                deleted_at: null 
+                deleted_at: null
             },
             select: {
                 id: true,
@@ -113,14 +113,31 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
     }
 });
 
-// Endpoint untuk get current user
 export const getCurrentUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const user = req.user; // Dari middleware extractUserFromToken
-    
-    responseData(res, 200, 'User berhasil diambil', user);
+    const user = req.user;
+    const token = req.cookies.accessToken;
+
+    let exp = null;
+
+    if (token) {
+        try {
+            const decoded = jwt.decode(token) as { exp?: number } | null;
+            if (decoded && typeof decoded.exp === 'number') {
+                exp = decoded.exp;
+            }
+        } catch (error) {
+            console.warn('Gagal decode token untuk exp:', error);
+        }
+    }
+
+    const responseDataWithExp = {
+        ...user,
+        exp: exp || null,
+    };
+
+    responseData(res, 200, 'User berhasil diambil', responseDataWithExp);
 });
 
-// Endpoint untuk verify session
 export const verifySession = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const token = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
@@ -137,9 +154,9 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET_TOKEN as string) as any;
             user = await prisma.detso_User.findUnique({
-                where: { 
+                where: {
                     id: decoded.id,
-                    deleted_at: null 
+                    deleted_at: null
                 },
                 select: {
                     id: true,
@@ -151,7 +168,7 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
                     }
                 }
             });
-            
+
             if (user) {
                 isValid = true;
             }
@@ -196,8 +213,8 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
         throw new AuthenticationError('Session tidak valid');
     }
 
-    responseData(res, 200, 'Session valid', { 
-        isValid: true, 
-        user 
+    responseData(res, 200, 'Session valid', {
+        isValid: true,
+        user
     });
 });

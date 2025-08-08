@@ -8,18 +8,38 @@ import { getPagination } from '../../utils/pagination'
 const prisma = new PrismaClient()
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const validationResult = paginationSchema.safeParse(req.query)
+  const validationResult = paginationSchema.safeParse({
+    page: req.query.page,
+    limit: req.query.limit,
+    search: req.query.search,
+    role: req.query.role
+  })
 
   if (!validationResult.success) {
     throw new ValidationError('Validasi gagal', validationResult.error.errors)
   }
 
-  const { page, limit } = validationResult.data
+  const { page, limit, search, role } = validationResult.data
+
+  const condition: any = {
+    deleted_at: null
+  }
+
+  if (role) {
+    condition.role = role
+  }
+
+  if (search) {
+    condition.OR = [
+      { username: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+      { profile: { full_name: { contains: search, mode: 'insensitive' } } },
+      { phone: { contains: search, mode: 'insensitive' } }
+    ]
+  }
 
   const totalUsers = await prisma.detso_User.count({
-    where: {
-      deleted_at: null
-    }
+    where: condition
   })
 
   const { skip, pagination } = getPagination({
@@ -29,9 +49,7 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
   })
 
   const users = await prisma.detso_User.findMany({
-    where: {
-      deleted_at: null
-    },
+    where: condition,
     skip,
     take: limit,
     select: {
@@ -43,20 +61,20 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
         select: {
           id: true,
           full_name: true,
-          avatar: true // hanya path, belum URL
+          avatar: true 
         }
       }
     }
   })
 
-  const baseUrl = process.env.BASE_URL 
+  const baseUrl = process.env.BASE_URL
   const usersWithAvatarUrl = users.map(user => ({
     ...user,
     profile: user.profile
       ? {
-          ...user.profile,
-          avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null
-        }
+        ...user.profile,
+        avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null
+      }
       : null
   }))
 
@@ -65,6 +83,8 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
     pagination
   })
 })
+
+
 export const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
 
 
