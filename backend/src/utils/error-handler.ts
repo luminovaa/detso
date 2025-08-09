@@ -21,7 +21,7 @@ export class ValidationError extends AppError {
  
 export class AuthenticationError extends AppError {
   constructor(message: string) {
-    super(401, message);
+    super(409, message);
     this.name = 'AuthenticationError';
   }
 }
