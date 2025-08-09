@@ -63,7 +63,7 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
           full_name: true,
           avatar: true 
         }
-      }
+      },
     }
   })
 
@@ -86,7 +86,6 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
 
 
 export const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-
 
   const { id } = req.params;
 

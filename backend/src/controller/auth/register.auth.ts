@@ -15,7 +15,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
       return
     }
 
-    const { email, password, username, role } = validationResult.data
+    const { email, password, username, role, phone, full_name } = validationResult.data
 
     const existingUser = await prisma.detso_User.findFirst({
       where: {
@@ -43,11 +43,13 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
         email,
         password: hashedPassword,
         username,
+        phone,
         role: role || Detso_Role.TEKNISI
       },
       select: {
         id: true,
         email: true,
+        phone: true,
         username: true,
         role: true
       }
@@ -55,7 +57,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
 
     const profile = await prisma.detso_Profile.create({
       data: {
-        full_name: 'user',
+        full_name: full_name || 'user',
         user_id: newUser.id
       },
       select: {

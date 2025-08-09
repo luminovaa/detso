@@ -13,7 +13,7 @@ export const paginationSchema = z.object({
     .transform((val) => parseInt(val))
     .refine((val) => val > 0, { message: 'Batas harus lebih besar dari 0' }),
   search: z.string().trim().optional(),
-  role: z.enum(['ADMIN', 'USER', 'MODERATOR']).optional(),
+  role: z.enum(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']).optional(),
 })
 
 export const updateUserSchema = z.object({
