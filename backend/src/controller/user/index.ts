@@ -8,7 +8,7 @@ const userRouter = express.Router();
 
 
 userRouter.get('/:id', getUserById); 
-userRouter.put('/:id/password', authMiddleware, editUserPassword)
+userRouter.patch('/change-password', authMiddleware, editUserPassword)
 userRouter.put('/:id', authMiddleware, avatarUpload.single('avatar'), editUser); 
 userRouter.get('/image/:id/photo', authMiddleware, getPhotoUserById)
 userRouter.get('/',authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), getAllUsers)

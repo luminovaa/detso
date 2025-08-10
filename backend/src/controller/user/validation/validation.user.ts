@@ -21,8 +21,9 @@ export const updateUserSchema = z.object({
   username: z.string().min(3, 'Username minimal 3 karakter').optional(),
   role: z.enum(['TEKNISI', 'ADMIN', 'SUPER_ADMIN']).optional(),
   full_name: z.string().optional(),
+  phone: z.string().optional(),
   avatar: z.string().optional(),
-}).strict()
+})
 
 export const updatePasswordSchema = z
   .object({

@@ -12,9 +12,13 @@ const PORT: number = parseInt(process.env.PORT || '0');
 const app = express();
 app.use(cookieParser());
 
-// Middleware
 app.use(helmet());
-app.use('/image', express.static('image'));
+app.use('/storage', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); 
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+}, express.static('storage'))
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {

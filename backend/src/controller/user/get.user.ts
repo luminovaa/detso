@@ -99,6 +99,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
       email: true,
       username: true,
       role: true,
+      phone: true,
       profile: {
         select: {
           id: true,
@@ -113,7 +114,18 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
     throw new NotFoundError('Pengguna tidak ditemukan atau telah dihapus');
   }
 
-  responseData(res, 200, 'Data pengguna berhasil diambil', user);
+  const baseUrl = process.env.BASE_URL;
+  const userWithAvatarUrl = {
+    ...user,
+    profile: user.profile
+      ? {
+        ...user.profile,
+        avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null,
+      }
+      : null,
+  };
+
+  responseData(res, 200, 'Data pengguna berhasil diambil', userWithAvatarUrl);
 });
 
 export const getPhotoUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {

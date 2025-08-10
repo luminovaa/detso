@@ -28,6 +28,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
             email: true,
             username: true,
             role: true,
+            phone: true,
             profile: {
                 select: { avatar: true }
             }
@@ -59,7 +60,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
         throw new ValidationError('Validasi Gagal', validationResult.error.errors);
     }
 
-    const { email, username, role, full_name, avatar } = validationResult.data;
+    const { email, username, role, full_name, avatar, phone } = validationResult.data;
 
     if (uploadedPhoto && userExists.profile?.avatar) {
         await deleteFile(userExists.profile.avatar).catch(error =>
@@ -73,6 +74,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
             data: {
                 email,
                 username,
+                phone,
                 role: isAdmin ? role : userExists.role,
                 updated_at: new Date()
             },
@@ -80,6 +82,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
                 id: true,
                 email: true,
                 username: true,
+                phone: true,
                 role: true,
                 profile: {
                     select: {
@@ -119,9 +122,11 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
 });
 
 export const editUserPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userId = req.params.id;
     const currentUser = req.user;
-
+    if (!currentUser?.id) {
+        throw new AuthenticationError('User belum login');
+    }
+    const userId = currentUser.id;
     const isAdmin = currentUser?.role === 'ADMIN';
 
     const validationResult = updatePasswordSchema.safeParse(req.body);
@@ -129,19 +134,15 @@ export const editUserPassword = asyncHandler(async (req: Request, res: Response)
         throw new ValidationError('Validasi Gagal', validationResult.error.errors);
     }
 
-    const { oldPassword, password } = validationResult.data
+    const { oldPassword, password, confirmPassword } = validationResult.data;
 
     const user = await prisma.detso_User.findUnique({
         where: { id: userId },
         select: { id: true, password: true }
-    })
+    });
 
     if (!user) {
         throw new NotFoundError('Pengguna tidak ditemukan');
-    }
-
-    if (!isAdmin && currentUser?.id !== userId) {
-        throw new AuthorizationError('Anda tidak memliki izin untuk mengubah password pengguna ini');
     }
 
     if (!isAdmin) {
@@ -156,7 +157,7 @@ export const editUserPassword = asyncHandler(async (req: Request, res: Response)
     await prisma.detso_User.update({
         where: { id: userId },
         data: { password: hashedPassword }
-    })
+    });
 
-    responseData(res, 200, 'Password berhasil diperbarui')
-})
+    responseData(res, 200, 'Password berhasil diperbarui');
+});
