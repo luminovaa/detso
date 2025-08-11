@@ -1,4 +1,3 @@
-// services/whatsapp.service.ts
 import { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 import fs from 'fs';

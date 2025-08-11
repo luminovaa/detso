@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { prisma } from '../../utils/prisma';
 
-
 export const editUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.params.id;
     const currentUser = req.user;

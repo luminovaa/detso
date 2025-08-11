@@ -1,11 +1,10 @@
 import { Request, Response } from 'express'
-import { PrismaClient } from '@prisma/client'
 import { paginationSchema } from './validation/validation.user'
 import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
 import { getPagination } from '../../utils/pagination'
+import { prisma } from '../../utils/prisma'
 
-const prisma = new PrismaClient()
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const validationResult = paginationSchema.safeParse({
