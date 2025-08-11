@@ -68,6 +68,7 @@ model Detso_Customer {
     phone       String?
     email       String?
     nik         String?
+    address      String?
     birth_date  DateTime?
     birth_place String?
     created_at  DateTime  @default(now())
@@ -87,7 +88,7 @@ model Detso_Customer {
 
 model Detso_WhatsApp_Log {
     id            String   @id @default(cuid())
-    customer_id   String
+    customer_id   String?
     phone_number  String
     message_type  String // 'installation_report', 'payment_reminder', etc.
     status        String // 'sent', 'failed', 'pending'
@@ -97,7 +98,7 @@ model Detso_WhatsApp_Log {
     updated_at    DateTime @updatedAt
 
     // Relasi ke customer
-    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+    customer Detso_Customer? @relation(fields: [customer_id], references: [id])
 
     @@map("detso_whatsapp_logs")
 }
@@ -123,7 +124,7 @@ model Detso_Service_Connection {
     address       String?
     package_name  String
     package_speed String
-    package_price String?
+    package_price Int?
     ip_address    String?
     lat           String?
     long          String?

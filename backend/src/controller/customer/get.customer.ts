@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { paginationSchema } from './validation/validation.customer';
 import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../utils/prisma';
 
 export const getAllCustomers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const validationResult = paginationSchema.safeParse(req.query);
@@ -14,12 +12,23 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
         throw new ValidationError('Validasi gagal', validationResult.error.errors);
     }
 
-    const { page, limit } = validationResult.data;
+    const { page, limit, search } = validationResult.data;
+
+    const whereClause: any = {
+        deleted_at: null
+    };
+
+    if (search) {
+        whereClause.OR = [
+            { name: { contains: search, mode: 'insensitive' } },
+            { address: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search } },
+            { email: { contains: search, mode: 'insensitive' } }
+        ];
+    }
 
     const totalCustomers = await prisma.detso_Customer.count({
-        where: {
-            deleted_at: null
-        }
+        where: whereClause
     });
 
     const { skip, pagination } = getPagination({
@@ -29,9 +38,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
     });
 
     const customers = await prisma.detso_Customer.findMany({
-        where: {
-            deleted_at: null
-        },
+        where: whereClause,
         skip,
         take: limit,
         include: {
@@ -85,6 +92,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
         phone: customer.phone,
         email: customer.email,
         nik: customer.nik,
+        address: customer.address,
         created_at: customer.created_at,
         documents: customer.documents.map(doc => ({
             ...doc,

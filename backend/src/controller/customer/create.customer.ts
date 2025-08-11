@@ -34,8 +34,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
         nik,
         package_id,
         address,
-        package_name,
-        package_speed,
+        address_service,
         ip_address,
         lat,
         long,
@@ -85,6 +84,19 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
 
         const idPel = await generateUniqueIdPel();
 
+        const packageData = await prisma.detso_Package.findUnique({
+            where: { id: package_id, deleted_at: null }
+        });
+
+        if (!packageData) {
+            throw new NotFoundError('Paket tidak ditemukan');
+        }
+
+        // Gunakan data dari database
+        const finalPackageName = packageData.name;
+        const finalPackageSpeed = packageData.speed;
+        const finalPackagePrice = packageData.price;
+
         const result = await prisma.$transaction(async (tx) => {
             // 1. Buat customer
             const customer = await tx.detso_Customer.create({
@@ -94,6 +106,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     email,
                     birth_date,
                     birth_place,
+                    address,
                     nik,
                     created_at: new Date()
                 }
@@ -105,11 +118,12 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     customer_id: customer.id,
                     id_pel: idPel,
                     package_id,
-                    address,
-                    package_name,
+                    address: address_service,
+                    package_name: finalPackageName,
+                    package_price: finalPackagePrice,
                     lat,
                     long,
-                    package_speed,
+                    package_speed: finalPackageSpeed,
                     ip_address,
                     mac_address,
                     notes,
@@ -124,7 +138,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     const doc = documents[index];
                     const file = documentFiles[index];
                     const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/documents');
-                    
+
                     const createdDoc = await tx.detso_Customer_Document.create({
                         data: {
                             customer_id: customer.id,
@@ -133,7 +147,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                             uploaded_at: new Date()
                         }
                     });
-                    
+
                     createdDocuments.push(createdDoc);
                 }
             }
@@ -145,7 +159,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     const photo = photos[index];
                     const file = servicePhotoFiles[index];
                     const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
-                    
+
                     const createdPhoto = await tx.detso_Service_Photo.create({
                         data: {
                             service_id: serviceConnection.id,
@@ -154,7 +168,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                             uploaded_at: new Date()
                         }
                     });
-                    
+
                     createdPhotos.push(createdPhoto);
                 }
             }
@@ -165,10 +179,10 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
         // 5. Generate PDF Report
         let pdfPath = null;
         let whatsappSent = false;
-        
+
         try {
             const pdfGenerator = new PDFGeneratorService();
-            
+
             pdfPath = await pdfGenerator.generateInstallationReport({
                 customer: result.customer,
                 serviceConnection: result.serviceConnection,
@@ -188,72 +202,72 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             });
 
             // 7. Kirim PDF via WhatsApp
-//             if (pdfPath) {
-//                 try {
-//                     // Cek apakah WhatsApp client siap
-//                     const isWhatsAppReady = await whatsappService.isClientReady();
-                    
-//                     if (isWhatsAppReady) {
-//                         // Kirim pesan teks terlebih dahulu
-//                         const textMessage = `Halo ${name}! 👋
+            if (pdfPath) {
+                try {
+                    // Cek apakah WhatsApp client siap
+                    const isWhatsAppReady = await whatsappService.isClientReady();
 
-// Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
+                    if (isWhatsAppReady) {
+                        // Kirim pesan teks terlebih dahulu
+                        const textMessage = `Halo ${name}! 👋
 
-// 📋 Detail Layanan:
-// • ID Pelanggan: ${idPel}
-// • Paket: ${package_name}
-// • Kecepatan: ${package_speed}
-// • Alamat: ${address}
+                            Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
 
-// Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
+                            📋 Detail Layanan:
+                            • ID Pelanggan: ${idPel}
+                            • Paket: ${finalPackageName}
+                            • Kecepatan: ${finalPackageSpeed}
+                            • Alamat: ${address}
 
-// Terima kasih telah mempercayai layanan kami! 🚀
+                            Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
 
-// ---
-// Tim Teknis DETSONET`;
+                            Terima kasih telah mempercayai layanan kami! 🚀
 
-//                         await whatsappService.sendMessage(phone!, textMessage);
+                            ---
+                            Tim Teknis DETSONET`;
 
-//                         // Kirim dokumen PDF
-//                         const fileName = `Laporan_Instalasi_${idPel}_${name.replace(/\s+/g, '_')}.pdf`;
-//                         const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
-                        
-//                         whatsappSent = await whatsappService.sendDocument(
-//                             phone!, 
-//                             pdfPath, 
-//                             caption,
-//                             fileName
-//                         );
+                        await whatsappService.sendMessage(phone!, textMessage);
 
-//                         if (whatsappSent) {
-//                             await prisma.detso_WhatsApp_Log.create({
-//                                 data: {
-//                                     customer_id: result.customer.id,
-//                                     phone_number: phone || '',
-//                                     message_type: 'installation_report',
-//                                     status: 'sent',
-//                                     sent_at: new Date()
-//                                 }
-//                             });
-//                         }
-//                     } else {
-//                         console.warn('WhatsApp client is not ready. PDF generated but not sent.');
-//                     }
-//                 } catch (whatsappError) {
-//                     console.error('Error sending WhatsApp message:', whatsappError);
-                    
-//                     await prisma.detso_WhatsApp_Log.create({
-//                         data: {
-//                             customer_id: result.customer.id,
-//                             phone_number: phone || '',
-//                             message_type: 'installation_report',
-//                             status: 'failed',
-//                             error_message: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
-//                             sent_at: new Date()
-//                         }
-//                     });
-//                 }
-//             }
+                        // Kirim dokumen PDF
+                        const fileName = `Laporan_Instalasi_${idPel}_${name.replace(/\s+/g, '_')}.pdf`;
+                        const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
+
+                        whatsappSent = await whatsappService.sendDocument(
+                            phone!,
+                            pdfPath,
+                            caption,
+                            fileName
+                        );
+
+                        if (whatsappSent) {
+                            await prisma.detso_WhatsApp_Log.create({
+                                data: {
+                                    customer_id: result.customer.id,
+                                    phone_number: phone || '',
+                                    message_type: 'installation_report',
+                                    status: 'sent',
+                                    sent_at: new Date()
+                                }
+                            });
+                        }
+                    } else {
+                        console.warn('WhatsApp client is not ready. PDF generated but not sent.');
+                    }
+                } catch (whatsappError) {
+                    console.error('Error sending WhatsApp message:', whatsappError);
+
+                    await prisma.detso_WhatsApp_Log.create({
+                        data: {
+                            customer_id: result.customer.id,
+                            phone_number: phone || '',
+                            message_type: 'installation_report',
+                            status: 'failed',
+                            error_message: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
+                            sent_at: new Date()
+                        }
+                    });
+                }
+            }
 
         } catch (pdfError) {
             console.error('Error generating PDF:', pdfError);

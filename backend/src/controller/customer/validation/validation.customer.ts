@@ -68,10 +68,11 @@ export const createCustomerSchema = z.object({
   email: z.string().email('Email tidak valid').optional(),
   nik: z.string().min(16, 'NIK harus 16 karakter').optional(),
   package_id: z.string().min(1, 'Package ID harus diisi'),
+  address_service: z.string().min(10, 'Alamat minimal 10 karakter'),
   address: z.string().min(10, 'Alamat minimal 10 karakter'),
-  package_name: z.string().min(1, 'Nama paket harus diisi'),
-  package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
-  package_price: z.number().min(1, 'Harga paket harus diisi'),
+  package_name: z.string().optional(),
+  package_speed: z.string().optional(),
+  package_price: z.number().optional(),
   ip_address: z.string().ip('Alamat IP tidak valid').optional(),
   lat: z.string().optional(),
   long: z.string().optional(),
@@ -98,5 +99,6 @@ export const paginationSchema = z.object({
     .string()
     .default('10')
     .transform((val) => parseInt(val))
-    .refine((val) => val > 0, { message: 'Batas harus lebih besar dari 0' })
+    .refine((val) => val > 0, { message: 'Batas harus lebih besar dari 0' }),
+  search: z.string().trim().optional(),
 })

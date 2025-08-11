@@ -5,7 +5,9 @@ import cookieParser from 'cookie-parser';
 import express, { NextFunction, Request, Response } from 'express';
 import routes from './src/router/routes';
 import { handleError } from './src/utils/error-handler';
-import { initializeWhatsApp } from './src/config/whatsapp.init';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { whatsappService } from './src/services/whatsapp.service';
 
 const PORT: number = parseInt(process.env.PORT || '0');
 
@@ -15,7 +17,7 @@ app.use(cookieParser());
 app.use(helmet());
 app.use('/storage', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); 
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 }, express.static('storage'))
@@ -38,7 +40,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({
@@ -57,10 +58,46 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
 
 routes(app);
 
-initializeWhatsApp();
-const server: Server = app.listen(PORT, () => {
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || '*',
+    methods: ['GET', 'POST']
+  }
+});
+whatsappService.setSocketIO(io);
+
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  socket.on('get-whatsapp-status', async () => {
+    try {
+      const isReady = await whatsappService.isClientReady();
+      socket.emit('whatsapp-status', { isReady });
+      console.log('WhatsApp status sent:', { isReady });
+    } catch (error) {
+      console.error('Error getting WhatsApp status:', error);
+      socket.emit('whatsapp-status', { isReady: false });
+    }
+  });
+
+  socket.on('reconnect-whatsapp', async () => {
+    try {
+      const isReady = await whatsappService.isClientReady();
+      socket.emit('whatsapp-status', { isReady });
+    } catch (error) {
+      console.error('Error reconnecting WhatsApp:', error);
+      socket.emit('whatsapp-status', { isReady: false });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+const server = httpServer.listen(PORT, () => {
   const address = server.address();
-  
+
   if (address) {
     if (typeof address === 'string') {
       console.log(`Server is running on socket: ${address}`);

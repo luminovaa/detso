@@ -2,13 +2,18 @@
 import { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 import fs from 'fs';
-import path from 'path';
-import puppeteer from 'puppeteer';
+import { Server } from 'socket.io';
+
 
 export class WhatsAppService {
     private client: Client;
     private isReady: boolean = false;
     private static instance: WhatsAppService;
+    private io?: Server;
+
+    public setSocketIO(io: Server): void {
+        this.io = io;
+    }
 
     constructor() {
         this.client = new Client({
@@ -44,28 +49,47 @@ export class WhatsAppService {
     private initializeClient(): void {
         this.client.on('qr', (qr) => {
             console.log('QR Code received, scan please!');
+            if (this.io) {
+                this.io.emit('whatsapp-qr', qr);
+            }
+
             qrcode.generate(qr, { small: true }, (code) => {
-                console.log(code); 
+                console.log(code);
             });
         });
 
         this.client.on('ready', () => {
             console.log('WhatsApp Client is ready!');
             this.isReady = true;
-        });
-
-        this.client.on('authenticated', () => {
-            console.log('WhatsApp Client authenticated!');
-        });
-
-        this.client.on('auth_failure', (msg) => {
-            console.error('WhatsApp authentication failed:', msg);
+            if (this.io) {
+                this.io.emit('whatsapp-ready');
+            }
         });
 
         this.client.on('disconnected', (reason) => {
             console.log('WhatsApp Client was logged out:', reason);
             this.isReady = false;
+            if (this.io) {
+                this.io.emit('whatsapp-disconnected', reason);
+            }
         });
+
+
+        this.client.on('authenticated', () => {
+            console.log('WhatsApp Client authenticated!');
+            if (this.io) {
+                this.io.emit('whatsapp-authenticated');
+            }
+        });
+
+        this.client.on('auth_failure', (msg) => {
+            console.error('WhatsApp authentication failed:', msg);
+            if (this.io) {
+                this.io.emit('whatsapp-auth-failure', msg);
+            }
+        });
+
+        
 
         // this.client.on('message', async (message) => {
         //     // Handle incoming messages if needed
@@ -85,7 +109,6 @@ export class WhatsAppService {
                 throw new Error('WhatsApp client is not ready');
             }
 
-            // Format nomor telepon (pastikan format internasional)
             const formattedNumber = this.formatPhoneNumber(phoneNumber);
             const chatId = `${formattedNumber}@c.us`;
 
