@@ -105,12 +105,12 @@ model Detso_WhatsApp_Log {
 
 model Detso_Customer_Document {
     id            String   @id @default(cuid())
-    customer_id   String
+    customer_id   String?
     document_type String
     document_url  String
     uploaded_at   DateTime @default(now())
 
-    customer Detso_Customer @relation(fields: [customer_id], references: [id])
+    customer Detso_Customer? @relation(fields: [customer_id], references: [id])
 
     @@index([customer_id])
     @@map("detso_customer_documents")

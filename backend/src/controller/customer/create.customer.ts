@@ -49,13 +49,13 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     const documentFiles = files.documents;
     const servicePhotoFiles = files.photos;
 
-    if (documents && documentFiles?.length !== documents.length) {
-        throw new ValidationError('Jumlah dokumen tidak sesuai dengan file yang diupload');
-    }
+    // if (documents && documentFiles?.length !== documents.length) {
+    //     throw new ValidationError('Jumlah dokumen tidak sesuai dengan file yang diupload');
+    // }
 
-    if (photos && servicePhotoFiles?.length !== photos.length) {
-        throw new ValidationError('Jumlah foto tidak sesuai dengan file yang diupload');
-    }
+    // if (photos && servicePhotoFiles?.length !== photos.length) {
+    //     throw new ValidationError('Jumlah foto tidak sesuai dengan file yang diupload');
+    // }
 
     const cleanupFiles = async () => {
         if (documentFiles) {
@@ -211,20 +211,20 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                         // Kirim pesan teks terlebih dahulu
                         const textMessage = `Halo ${name}! 👋
 
-                            Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
+Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
 
-                            📋 Detail Layanan:
-                            • ID Pelanggan: ${idPel}
-                            • Paket: ${finalPackageName}
-                            • Kecepatan: ${finalPackageSpeed}
-                            • Alamat: ${address}
+📋 Detail Layanan:
+• ID Pelanggan: ${idPel}
+• Paket: ${finalPackageName}
+• Kecepatan: ${finalPackageSpeed}
+• Alamat: ${address}
 
-                            Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
+Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
 
-                            Terima kasih telah mempercayai layanan kami! 🚀
+Terima kasih telah mempercayai layanan kami! 🚀
 
-                            ---
-                            Tim Teknis DETSONET`;
+---
+Tim Teknis DETSONET`;
 
                         await whatsappService.sendMessage(phone!, textMessage);
 
