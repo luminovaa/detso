@@ -1,0 +1,59 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    ports:
+      - "6589:6589"
+    networks:
+      - detso
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6589/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    restart: always
+    env_file:
+      - ./frontend/.env.production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - detso
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: always
+    env_file:
+      - ./postgres.env  # Simpan credentials di file terpisah
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - detso
+    # ports:  # Hapus jika tidak perlu diakses dari host
+    #   - "5432:5432"
+
+networks:
+  detso:
+    external: true
+
+volumes:
+  postgres_data:
