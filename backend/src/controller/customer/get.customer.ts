@@ -23,6 +23,13 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
             { name: { contains: search, mode: 'insensitive' } },
             { address: { contains: search, mode: 'insensitive' } },
             { phone: { contains: search } },
+            {
+                service: {
+                    some: {
+                        id_pel: { contains: search, mode: 'insensitive' }
+                    }
+                }
+            },
             { email: { contains: search, mode: 'insensitive' } }
         ];
     }
@@ -104,7 +111,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
             package_speed: service.package_speed,
             status: service.status,
             address: service.address,
-            ip_address: service.ip_address,
+            id_pel: service.id_pel,
             mac_address: service.mac_address,
             created_at: service.created_at,
             package_details: service.package,
