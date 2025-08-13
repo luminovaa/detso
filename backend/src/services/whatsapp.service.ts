@@ -18,10 +18,11 @@ export class WhatsAppService {
         this.client = new Client({
             authStrategy: new LocalAuth({
                 clientId: "customer-service-bot",
-                dataPath: "./whatsapp-auth"
+                dataPath: "./whatsapp-auth" // Pastikan folder ini ada
             }),
             puppeteer: {
                 headless: true,
+                executablePath: '/usr/bin/google-chrome',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
