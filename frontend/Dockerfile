@@ -2,13 +2,11 @@ FROM node:22-alpine AS base
 
 # === STAGE 1: Builder ===
 FROM base AS builder
-WORKDIR /
 COPY . .
 RUN yarn install && yarn build
 
 # === STAGE 2: Runner ===
 FROM base AS runner
-WORKDIR /
 
 # Buat user sistem
 RUN addgroup --system --gid 1001 nodejs && \
