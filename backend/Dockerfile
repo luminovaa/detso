@@ -28,7 +28,6 @@ RUN yarn install
 RUN yarn global add ts-node
 
 COPY prisma ./prisma
-RUN npx prisma db push
 RUN npx prisma generate
 
 COPY . .
