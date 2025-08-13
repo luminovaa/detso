@@ -1,9 +1,8 @@
-# Tahap 1: Build TypeScript
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 
 WORKDIR /src
 
-# Install chromium & deps
+# Install Chromium & dependencies
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -12,21 +11,29 @@ RUN apk add --no-cache \
     ca-certificates \
     ttf-freefont \
     wqy-zenhei \
+    dumb-init \
+    udev \
+    mesa-gl \
+    libx11 \
+    alsa-lib \
     && rm -rf /var/cache/apk/*
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Copy package files
+RUN mkdir -p /src/whatsapp-auth && chmod -R 777 /src/whatsapp-auth
+
 COPY package.json yarn.lock ./
 RUN yarn install
 RUN yarn global add ts-node
 
-# Copy prisma schema & generate
 COPY prisma ./prisma
 RUN npx prisma generate
 
-# Copy semua source code
 COPY . .
 
 EXPOSE 6589
+
+# Jalankan pakai dumb-init supaya Chrome nggak zombie process
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["ts-node", "index.ts"]
