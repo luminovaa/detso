@@ -15,10 +15,10 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Salin file dari builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./.next/standalone
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /public ./public
+COPY --from=builder /.next/standalone ./.next/standalone
+COPY --from=builder /.next/static ./.next/static
+COPY --from=builder /node_modules ./node_modules
 
 # 🔥 Penting: Buat folder .next/cache dan set ownership ke nextjs
 RUN mkdir -p .next/cache && \
