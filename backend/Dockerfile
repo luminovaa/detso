@@ -36,4 +36,4 @@ EXPOSE 6589
 
 # Jalankan pakai dumb-init supaya Chrome nggak zombie process
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["ts-node", "index.ts"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && ts-node index.ts"]
