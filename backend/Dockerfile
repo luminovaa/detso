@@ -1,44 +1,32 @@
 # Tahap 1: Build TypeScript
-FROM node:20-slim AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /src
 
+# Install chromium & deps
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    wqy-zenhei \
+    && rm -rf /var/cache/apk/*
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Copy package files
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install
+RUN yarn global add ts-node
 
-# Install prisma & generate client
+# Copy prisma schema & generate
 COPY prisma ./prisma
-RUN yarn prisma generate
+RUN npx prisma generate
 
-# Copy source dan build
+# Copy semua source code
 COPY . .
-RUN yarn build  # Asumsi kamu punya: "build": "tsc" di package.json
 
-
-# Install Chrome (wajib untuk whatsapp-web.js)
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    ca-certificates \
-    libglib2.0-0 \
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libdrm-dev \
-    libxkbcommon-dev \
-    libxcomposite-dev \
-    libxdamage-dev \
-    libxrandr-dev \
-    libgbm-dev \
-    libasound2 \
-    libxss1 \
-    fonts-liberation \
-    xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Tambahkan Google Chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome-keyring.gpg
-RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
-RUN apt-get update && apt-get install -y google-chrome-stable
-
-# Pindahkan build
+EXPOSE 6589
+CMD ["ts-node", "index.ts"]

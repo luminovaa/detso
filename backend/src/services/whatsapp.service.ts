@@ -22,7 +22,7 @@ export class WhatsAppService {
             }),
             puppeteer: {
                 headless: true,
-                executablePath: '/usr/bin/google-chrome',
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -34,6 +34,7 @@ export class WhatsAppService {
                     '--disable-gpu'
                 ]
             }
+
         });
 
         this.initializeClient();
@@ -89,7 +90,7 @@ export class WhatsAppService {
             }
         });
 
-        
+
 
         // this.client.on('message', async (message) => {
         //     // Handle incoming messages if needed
