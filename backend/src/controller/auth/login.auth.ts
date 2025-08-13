@@ -98,14 +98,14 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         // secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 15 * 60 * 1000, // 15 menit
     });
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         // secure: true,
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 hari
     });
 
