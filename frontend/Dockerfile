@@ -4,7 +4,6 @@ FROM node:22-alpine AS base
 FROM base AS builder
 COPY . .
 RUN yarn install && yarn build
-
 # === STAGE 2: Runner ===
 FROM base AS runner
 
@@ -29,6 +28,11 @@ USER nextjs
 # Pastikan environment untuk standalone
 ENV NODE_ENV=production
 
+# Set the working directory to the location of package.json
+WORKDIR /app
+
+# Expose port 3000
 EXPOSE 3000
 
+# Command to start the application
 CMD ["yarn", "start"]
