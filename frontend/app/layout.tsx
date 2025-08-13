@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Detsonet - Internet Service Provider",
-  description: "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
+  description:
+    "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
   keywords: [
     "Detsonet",
     "Internet Service Provider",
@@ -25,12 +26,13 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Detsonet - Internet Service Provider",
-    description: "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
-    url: "https://www.detsonet.co.id ",
+    description:
+      "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
+    url: "https://www.detsonet.co.id",
     siteName: "Detsonet",
     images: [
       {
-        url: "https://www.detsonet.co.id/og-image.jpg ",
+        url: "https://www.detsonet.co.id/og-image.jpg",
         width: 800,
         height: 600,
         alt: "Detsonet Logo",
@@ -42,11 +44,11 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Detsonet - Internet Service Provider",
-    description: "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
-    images: ["https://www.detsonet.co.id/og-image.jpg "],
+    description:
+      "Detsonet is a leading Internet Service Provider (ISP) in Indonesia, offering high-speed internet solutions for homes and businesses.",
+    images: ["https://www.detsonet.co.id/og-image.jpg"],
   },
 };
-
 
 export default function RootLayout({
   children,
@@ -54,10 +56,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br" suppressHydrationWarning>
+    <html lang="id-ID" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
-        <link rel="icon" href="/logo.png" type="image/png"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="canonical" href="https://www.detsonet.co.id" />
+        <meta name="author" content="Detsonet" />
       </head>
       <body className={cn("min-h-screen bg-background", inter.className)}>
         <ThemeProvider

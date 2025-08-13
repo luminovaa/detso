@@ -8,23 +8,28 @@ export async function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value;
   const pathname = request.nextUrl.pathname;
 
-  // Redirect ke dashboard jika sudah login dan mengakses login page
+  // 1. Jika akses `/admin` (tepat), redirect ke `/admin/sign-in`
+  if (pathname === adminPrefix) {
+    return NextResponse.redirect(new URL('/admin/sign-in', request.url));
+  }
+
+  // 2. Jika akses halaman sign-in tapi sudah login, redirect ke dashboard
   if (pathname === '/admin/sign-in' && token) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }
 
-  // Jika akses route admin
+  // 3. Jika akses route admin (kecuali sign-in), cek autentikasi
   if (pathname.startsWith(adminPrefix) && !publicRoutes.includes(pathname)) {
-    // Jika tidak ada access token, cek apakah ada refresh token untuk coba verifikasi
+    // Jika tidak punya token dan tidak punya refreshToken → wajib login
     if (!token && !refreshToken) {
       return NextResponse.redirect(new URL('/admin/sign-in', request.url));
     }
 
-    // Jika ada refreshToken tapi tidak ada accessToken, biarkan frontend handle refresh
-    // Tapi tetap izinkan request lewat ke frontend
+    // Jika hanya punya refreshToken, izinkan frontend handle refresh
     return NextResponse.next();
   }
 
+  // 4. Untuk route non-admin, lanjutkan
   return NextResponse.next();
 }
 
