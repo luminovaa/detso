@@ -31,9 +31,13 @@ export class WhatsAppService {
                     '--no-first-run',
                     '--no-zygote',
                     '--single-process',
-                    '--disable-gpu'
+                    '--disable-gpu',
+                    '--disable-extensions',
+                    '--disable-software-rasterizer',
+                    '--remote-debugging-port=9222'
                 ]
             }
+
 
         });
 
