@@ -12,7 +12,7 @@ import {
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { ToggleTheme } from "./toogle-theme";
+import { ToggleTheme, ToggleThemeLandingPage } from "./toogle-theme";
 import Image from "next/image";
 
 interface RouteProps {
@@ -47,7 +47,7 @@ const Logo = ({ className = "" }: { className?: string }) => (
 
 // Desktop Header Component
 const DesktopHeader = () => (
-  <header className="hidden md:flex bg-opacity-15 w-full h-16 sticky top-0 border-b-2 border-secondary z-40 justify-between items-center px-6 lg:px-20 xl:px-80 bg-card">
+  <header className="hidden md:flex bg-opacity-15 w-full h-16 sticky top-0 border-b-2 border-secondary/10 z-40 justify-between items-center px-6 lg:px-20 xl:px-80 bg-card">
     <Logo className="ml-4" />
     
     <div className="flex items-center gap-4 mr-4">
@@ -64,7 +64,7 @@ const DesktopHeader = () => (
       </nav>
       
       <div className="flex items-center gap-2 ml-4">
-        <ToggleTheme />
+        <ToggleThemeLandingPage />
       </div>
     </div>
   </header>
