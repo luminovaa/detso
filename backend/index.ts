@@ -17,7 +17,7 @@ app.use(cookieParser());
 app.use(helmet());
 app.use('/storage', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 }, express.static('storage'))
