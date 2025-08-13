@@ -5,11 +5,15 @@ FROM base AS builder
 COPY . .
 RUN yarn install && yarn build
 # === STAGE 2: Runner ===
+# === STAGE 2: Runner ===
 FROM base AS runner
 
 # Buat user sistem
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
+
+# 🔥 PENTING: Salin package.json terlebih dahulu
+COPY package.json ./
 
 # Salin file dari builder
 COPY --from=builder /public ./public
@@ -17,7 +21,7 @@ COPY --from=builder /.next/standalone ./.next/standalone
 COPY --from=builder /.next/static ./.next/static
 COPY --from=builder /node_modules ./node_modules
 
-# 🔥 Penting: Buat folder .next/cache dan set ownership ke nextjs
+# 🔥 Buat folder cache dan atur ownership
 RUN mkdir -p .next/cache && \
     chown -R nextjs:nodejs .next && \
     chmod -R 755 .next
@@ -25,14 +29,14 @@ RUN mkdir -p .next/cache && \
 # Gunakan user non-root
 USER nextjs
 
-# Pastikan environment untuk standalone
+# Environment
 ENV NODE_ENV=production
+ENV NEXT_RUNTIME=server
 
-# Set the working directory to the location of package.json
+# Set working directory
 WORKDIR /app
 
-# Expose port 3000
 EXPOSE 3000
 
-# Command to start the application
+# Jalankan aplikasi
 CMD ["yarn", "start"]
