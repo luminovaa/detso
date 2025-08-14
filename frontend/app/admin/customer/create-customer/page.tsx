@@ -24,6 +24,7 @@ import {
 } from "@/components/admin/toast-reusable";
 import { Package } from "@/types/package.types";
 import { FileDropzone } from "@/components/admin/dropzone-reusable";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function CreateCustomer() {
   const router = useRouter();
@@ -35,6 +36,7 @@ function CreateCustomer() {
   const { success, warning } = useToast();
   const { showApiError, showValidationError } = useErrorToast();
   const [showFormErrors, setShowFormErrors] = useState(false);
+  const [sameAsDomicile, setSameAsDomicile] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(createCustomerSchema),
@@ -84,6 +86,13 @@ function CreateCustomer() {
     { value: "paspor", label: "Paspor" },
     { value: "other", label: "Lainnya" },
   ];
+
+  useEffect(() => {
+    if (sameAsDomicile) {
+      const domicileAddress = form.getValues("address");
+      form.setValue("address_service", domicileAddress);
+    }
+  }, [form, sameAsDomicile]);
 
   // Photo types for each step
   const getPhotoTypesForStep = (currentStep: number) => {
@@ -147,11 +156,10 @@ function CreateCustomer() {
     }
   }, [step]);
 
-
   // Lanjut ke langkah berikutnya
   const nextStep = () => {
-      setStep((prev) => (prev < 5 ? ((prev + 1) as 1 | 2 | 3 | 4 | 5) : 5));
-      setShowFormErrors(false);
+    setStep((prev) => (prev < 5 ? ((prev + 1) as 1 | 2 | 3 | 4 | 5) : 5));
+    setShowFormErrors(false);
   };
 
   // Kembali ke langkah sebelumnya
@@ -221,16 +229,6 @@ function CreateCustomer() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCancel = () => {
-    if (form.formState.isDirty || documents.length > 0 || photos.length > 0) {
-      warning("Data yang sudah diisi akan hilang jika dibatalkan.", {
-        title: "Konfirmasi Pembatalan",
-      });
-      return;
-    }
-    router.push("/admin/customer");
   };
 
   const getStepTitle = () => {
@@ -342,14 +340,32 @@ function CreateCustomer() {
                       selectOptions={packageOptions}
                       disabled={isLoading}
                     />
-                    <FormField
-                      form={form}
-                      name="address_service"
-                      label="Alamat Instalasi *"
-                      type="textarea"
-                      placeholder="Masukkan alamat instalasi"
-                      disabled={isLoading}
-                    />
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="same-address"
+                        checked={sameAsDomicile}
+                        onCheckedChange={(checked) =>
+                          setSameAsDomicile(!!checked)
+                        }
+                      />
+                      <label
+                        htmlFor="same-address"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Alamat instalasi sama dengan alamat domisili
+                      </label>
+                    </div>
+
+                    {!sameAsDomicile && (
+                      <FormField
+                        form={form}
+                        name="address_service"
+                        label="Alamat Instalasi *"
+                        type="textarea"
+                        placeholder="Masukkan alamat instalasi"
+                        disabled={isLoading}
+                      />
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         form={form}
