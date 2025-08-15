@@ -15,10 +15,17 @@ export function getLogs(params?: GetLogsParams) {
   });
 }
 
-export function sendMessage(data: SendMessageFormData){
-    return services({
-        url: '/whatsapp/message',
-        method: 'post',
-        data,
-    });
+export function sendMessage(data: SendMessageFormData) {
+  return services({
+    url: '/whatsapp/message',
+    method: 'post',
+    data,
+  });
+}
+
+export function logoutWhatsapp() {
+  return services({
+    url: '/whatsapp/disconnect',
+    method: 'post',
+  });
 }

@@ -51,6 +51,13 @@ export class WhatsAppService {
         return WhatsAppService.instance;
     }
 
+    public static clearInstance(): void {
+        if (WhatsAppService.instance) {
+            WhatsAppService.instance.destroy();
+            WhatsAppService.instance = undefined!;
+        }
+    }
+
     private initializeClient(): void {
         this.client.on('qr', (qr) => {
             console.log('QR Code received, scan please!');
@@ -180,11 +187,22 @@ export class WhatsAppService {
 
     public async destroy(): Promise<void> {
         try {
-            await this.client.destroy();
+            if (this.isReady) {
+                await this.client.logout();
+            } else {
+                await this.client.destroy();
+            }
+
             this.isReady = false;
-            console.log('WhatsApp client destroyed');
+
+            const authPath = './whatsapp-auth';
+            if (fs.existsSync(authPath)) {
+                fs.rmSync(authPath, { recursive: true, force: true });
+            }
+
+            console.log('WhatsApp logged out and auth data cleared');
         } catch (error) {
-            console.error('Error destroying WhatsApp client:', error);
+            console.error('Error during logout/destroy:', error);
         }
     }
 }

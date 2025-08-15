@@ -6,6 +6,7 @@ import QRCode from "react-qr-code";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   QrCode,
   CheckCircle2,
@@ -19,7 +20,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AdminPanelLayout from "@/components/admin/admin-layout";
-import { getLogs } from "@/api/whatsapp.api";
+import { getLogs, logoutWhatsapp } from "@/api/whatsapp.api";
 import { Whatsapp_logs } from "@/types/whatsapp.types";
 import {
   Pagination,
@@ -27,6 +28,7 @@ import {
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
 import { SendMessageDialog } from "./_components/send-message";
+import { DisconnectDialog } from "./_components/dialog-disconnect";
 
 interface WhatsappResponse {
   logs: Whatsapp_logs[];
@@ -38,13 +40,13 @@ const WhatsAppAuthPage = () => {
   const searchParams = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
-
   // WhatsApp Auth States
   const [qrCode, setQrCode] = useState<string>("");
   const [status, setStatus] = useState<"connecting" | "waiting" | "ready">(
     "connecting"
   );
   const [isConnected, setIsConnected] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
 
   // WhatsApp Logs States
   const [whatsapps, setWhatsapp] = useState<Whatsapp_logs[]>([]);
@@ -69,29 +71,35 @@ const WhatsAppAuthPage = () => {
       if (data.isReady) {
         setStatus("ready");
         setQrCode("");
+        setQrLoading(false);
       } else {
         setStatus("waiting");
+        setQrLoading(true); // Set loading ketika waiting tapi QR belum ada
       }
     });
 
-     socket.on("whatsapp-disconnected", () => {
+    socket.on("whatsapp-disconnected", () => {
       setStatus("connecting");
       setQrCode("");
+      setQrLoading(false);
     });
 
     socket.on("whatsapp-authenticated", () => {
       setStatus("ready");
       setQrCode("");
+      setQrLoading(false);
     });
 
     socket.on("whatsapp-qr", (qr: string) => {
       setQrCode(qr);
       setStatus("waiting");
+      setQrLoading(false); // QR sudah tersedia, hilangkan loading
     });
 
     socket.on("whatsapp-ready", () => {
       setStatus("ready");
       setQrCode("");
+      setQrLoading(false);
     });
 
     return () => {
@@ -272,6 +280,30 @@ const WhatsAppAuthPage = () => {
     </Card>
   );
 
+  // QR Code Skeleton Component
+  const QRCodeSkeleton = () => (
+    <div className="flex flex-col items-center space-y-4">
+      <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-yellow-200">
+        <Skeleton className="w-[200px] h-[200px]" />
+      </div>
+      
+      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 w-full">
+        <div className="flex items-start gap-3">
+          <Skeleton className="w-5 h-5 rounded" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-32" />
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+              <Skeleton className="h-3 w-3/4" />
+              <Skeleton className="h-3 w-5/6" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <AdminPanelLayout
       showSearch={false}
@@ -281,6 +313,17 @@ const WhatsAppAuthPage = () => {
         <div className="space-y-4">
           <WhatsAppStatus />
           <div className="flex justify-end gap-3">
+            <DisconnectDialog onDisconnectSuccess={() => router.refresh()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 rounded-3xl p-5"
+                disabled={loading}
+              >
+                <AlertCircle className="w-4 h-4" />
+                Putuskan Koneksi
+              </Button>
+            </DisconnectDialog>
             <SendMessageDialog onSuccess={fetchWhatsapp} />
           </div>
 
@@ -339,33 +382,47 @@ const WhatsAppAuthPage = () => {
                   {statusInfo.description}
                 </p>
 
-                {qrCode && status === "waiting" && (
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-yellow-200">
-                      <QRCode
-                        value={qrCode}
-                        size={200}
-                        level="H"
-                      />
-                    </div>
+                {status === "waiting" && (
+                  <>
+                    {qrCode ? (
+                      // QR Code sudah tersedia
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-yellow-200">
+                          <QRCode value={qrCode} size={200} level="H" />
+                        </div>
 
-                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                      <div className="flex items-start gap-3">
-                        <Smartphone className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                        <div className="space-y-1">
-                          <p className="font-medium text-yellow-700 text-sm">
-                            Cara memindai QR Code:
-                          </p>
-                          <ol className="text-yellow-600 text-xs space-y-1">
-                            <li>1. Buka WhatsApp di ponsel Anda</li>
-                            <li>2. Ketuk Menu (⋮) → Perangkat Tertaut</li>
-                            <li>3. Ketuk &quot;Tautkan Perangkat Baru&quot;</li>
-                            <li>4. Arahkan kamera ke QR Code ini</li>
-                          </ol>
+                        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                          <div className="flex items-start gap-3">
+                            <Smartphone className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div className="space-y-1">
+                              <p className="font-medium text-yellow-700 text-sm">
+                                Cara memindai QR Code:
+                              </p>
+                              <ol className="text-yellow-600 text-xs space-y-1">
+                                <li>1. Buka WhatsApp di ponsel Anda</li>
+                                <li>2. Ketuk Menu (⋮) → Perangkat Tertaut</li>
+                                <li>3. Ketuk &quot;Tautkan Perangkat Baru&quot;</li>
+                                <li>4. Arahkan kamera ke QR Code ini</li>
+                              </ol>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    ) : qrLoading ? (
+                      // QR Code belum tersedia, tampilkan skeleton
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-2 mb-4">
+                            <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
+                            <span className="text-sm text-yellow-700 font-medium">
+                              Memuat QR Code...
+                            </span>
+                          </div>
+                        </div>
+                        <QRCodeSkeleton />
+                      </div>
+                    ) : null}
+                  </>
                 )}
 
                 {status === "connecting" && (
