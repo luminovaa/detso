@@ -71,48 +71,49 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     };
 
     try {
-        const existingCustomer = await prisma.detso_Customer.findFirst({
-            where: {
-                nik,
-                deleted_at: null
-            }
-        });
-
-        if (existingCustomer) {
-            throw new ValidationError('NIK sudah terdaftar. Tidak boleh duplikat.');
-        }
-
-        const idPel = await generateUniqueIdPel();
-
-        const packageData = await prisma.detso_Package.findUnique({
-            where: { id: package_id, deleted_at: null }
-        });
-
-        if (!packageData) {
-            throw new NotFoundError('Paket tidak ditemukan');
-        }
-
-        // Gunakan data dari database
-        const finalPackageName = packageData.name;
-        const finalPackageSpeed = packageData.speed;
-        const finalPackagePrice = packageData.price;
 
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Buat customer
-            const customer = await tx.detso_Customer.create({
-                data: {
-                    name,
-                    phone,
-                    email,
-                    birth_date,
-                    birth_place,
-                    address,
+            let customer;
+
+            const existingCustomer = await tx.detso_Customer.findFirst({
+                where: {
                     nik,
-                    created_at: new Date()
+                    deleted_at: null
                 }
             });
 
-            // 2. Buat service connection
+            if (existingCustomer) {
+                customer = existingCustomer;
+            } else {
+                customer = await tx.detso_Customer.create({
+                    data: {
+                        name,
+                        phone,
+                        email,
+                        birth_date,
+                        birth_place,
+                        address,
+                        nik,
+                        created_at: new Date()
+                    }
+                });
+            }
+
+            // 2. Buat service connection (selalu baru)
+            const idPel = await generateUniqueIdPel();
+
+            const packageData = await tx.detso_Package.findUnique({
+                where: { id: package_id, deleted_at: null }
+            });
+
+            if (!packageData) {
+                throw new NotFoundError('Paket tidak ditemukan');
+            }
+
+            const finalPackageName = packageData.name;
+            const finalPackageSpeed = packageData.speed;
+            const finalPackagePrice = packageData.price;
+
             const serviceConnection = await tx.detso_Service_Connection.create({
                 data: {
                     customer_id: customer.id,
@@ -131,7 +132,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 }
             });
 
-            // 3. Upload dokumen customer
+            // 3. Upload dokumen customer (opsional: tambahkan hanya jika belum ada?)
             const createdDocuments = [];
             if (documents && documentFiles) {
                 for (let index = 0; index < documents.length; index++) {
@@ -173,7 +174,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 }
             }
 
-            return { customer, serviceConnection, createdDocuments, createdPhotos };
+            return { customer, serviceConnection, createdDocuments, createdPhotos, idPel };
         });
 
         // 5. Generate PDF Report
@@ -214,9 +215,9 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
 Selamat! Instalasi internet Anda telah berhasil diselesaikan. 
 
 📋 Detail Layanan:
-• ID Pelanggan: ${idPel}
-• Paket: ${finalPackageName}
-• Kecepatan: ${finalPackageSpeed}
+• ID Pelanggan: ${result.idPel}
+• Paket: ${result.serviceConnection.package_name}
+• Kecepatan: ${result.serviceConnection.package_speed}
 • Alamat: ${address}
 
 Terlampir adalah laporan instalasi lengkap sebagai dokumentasi layanan Anda. Simpan dokumen ini dengan baik untuk referensi di masa mendatang.
@@ -229,8 +230,8 @@ Tim Teknis DETSONET`;
                         await whatsappService.sendMessage(phone!, textMessage);
 
                         // Kirim dokumen PDF
-                        const fileName = `Laporan_Instalasi_${idPel}_${name.replace(/\s+/g, '_')}.pdf`;
-                        const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
+                        const fileName = `Laporan_Instalasi_${result.idPel}_${name.replace(/\s+/g, '_')}.pdf`;
+                        const caption = `📄 Laporan Instalasi Internet\n\nID Pelanggan: ${result.idPel}\nNama: ${name}\nTanggal: ${new Date().toLocaleDateString('id-ID')}`;
 
                         whatsappSent = await whatsappService.sendDocument(
                             phone!,
@@ -281,7 +282,7 @@ Tim Teknis DETSONET`;
             pdfGenerated: pdfPath !== null,
             pdfPath: pdfPath,
             whatsappSent: whatsappSent,
-            idPel: idPel
+            idPel: result.idPel
         });
 
     } catch (error) {

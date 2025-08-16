@@ -30,7 +30,7 @@ function CreateCustomer() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [packages, setPackages] = useState<Package[]>([]);
-  const [documents, setDocuments] = useState<DocumentData[]>([]);
+  const [document, setDocument] = useState<DocumentData>({ type: "" }); // Single document instead of array
   const [photos, setPhotos] = useState<PhotoData[]>([]);
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1); // Extended steps
   const { success, warning } = useToast();
@@ -113,17 +113,10 @@ function CreateCustomer() {
         return [];
     }
   };
-  const addDocument = () => setDocuments([...documents, { type: "" }]);
-  const removeDocument = (index: number) =>
-    setDocuments(documents.filter((_, i) => i !== index));
-  const updateDocument = (
-    index: number,
-    field: keyof DocumentData,
-    value: any
-  ) => {
-    const newDocs = [...documents];
-    newDocs[index] = { ...newDocs[index], [field]: value };
-    setDocuments(newDocs);
+
+  // Update single document
+  const updateDocument = (field: keyof DocumentData, value: any) => {
+    setDocument(prev => ({ ...prev, [field]: value }));
   };
 
   const updatePhoto = (index: number, field: keyof PhotoData, value: any) => {
@@ -191,16 +184,13 @@ function CreateCustomer() {
         }
       });
 
-      // Dokumen
-      const validDocs = documents.filter((doc) => doc.type && doc.file);
-      if (validDocs.length > 0) {
+      // Single document
+      if (document.type && document.file) {
         formData.append(
           "documents",
-          JSON.stringify(validDocs.map((doc) => ({ type: doc.type })))
+          JSON.stringify([{ type: document.type }])
         );
-        validDocs.forEach((doc) => {
-          if (doc.file) formData.append("documents", doc.file);
-        });
+        formData.append("documents", document.file);
       }
 
       // Foto
@@ -396,36 +386,21 @@ function CreateCustomer() {
                 {/* Langkah 3: Upload Dokumen & Foto Rumah Depan */}
                 {step === 3 && (
                   <>
-                    {/* Upload Dokumen */}
+                    {/* Upload Dokumen - Moved to top and single document */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold">Dokumen</h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={addDocument}
-                          disabled={isLoading}
-                          className="rounded-3xl"
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Tambah Dokumen
-                        </Button>
-                      </div>
-
-                      {documents.map((doc, index) => (
-                        <div
-                          key={index}
-                          className="flex gap-4 items-start p-4 border rounded-lg"
-                        >
-                          <div className="flex-1">
-                            <label>Jenis Dokumen</label>
+                      <h3 className="text-lg font-semibold">Upload Dokumen</h3>
+                      
+                      <div className="p-4 border rounded-lg space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Document Type Select using FormField - Create a dummy form field */}
+                          <div>
+                            <label className="block text-sm font-medium mb-2">
+                              Jenis Dokumen *
+                            </label>
                             <select
-                              value={doc.type}
-                              onChange={(e) =>
-                                updateDocument(index, "type", e.target.value)
-                              }
-                              className="w-full mt-1 p-2 border rounded-3xl"
+                              value={document.type}
+                              onChange={(e) => updateDocument("type", e.target.value)}
+                              className="w-full p-2 border rounded-3xl"
                               disabled={isLoading}
                             >
                               <option value="">Pilih jenis dokumen</option>
@@ -437,39 +412,28 @@ function CreateCustomer() {
                             </select>
                           </div>
 
-                          <div className="flex-1">
+                          {/* File Upload */}
+                          <div>
                             <FileDropzone
-                              onFileUpload={(file) =>
-                                updateDocument(index, "file", file)
-                              }
+                              onFileUpload={(file) => updateDocument("file", file)}
                               accept={{
                                 "image/*": [".jpg", ".jpeg", ".png", ".gif"],
                                 "application/pdf": [".pdf"],
                               }}
                               fileType="document"
-                              label="Upload Dokumen"
+                              label="Upload Dokumen *"
                               placeholder="Tarik & lepas dokumen (PDF/IMG)"
                               maxSizeMB={5}
                               disabled={isLoading}
                             />
                           </div>
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeDocument(index)}
-                            disabled={isLoading}
-                            className="rounded-full mt-6"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
                         </div>
-                      ))}
+                      </div>
                     </div>
 
                     {/* Foto Rumah Depan */}
                     <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Foto Rumah Depan</h3>
                       {photos
                         .filter((p) => p.type === "rumah_depan")
                         .map((photo, idx) => {

@@ -5,7 +5,7 @@ import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
 import { prisma } from '../../utils/prisma';
 
-export const getAllCustomers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const validationResult = paginationSchema.safeParse(req.query);
 
     if (!validationResult.success) {
@@ -20,64 +20,70 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
 
     if (search) {
         whereClause.OR = [
-            { name: { contains: search, mode: 'insensitive' } },
+            { id_pel: { contains: search, mode: 'insensitive' } },
             { address: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search } },
+            { mac_address: { contains: search } },
+            { package_name: { contains: search, mode: 'insensitive' } },
             {
-                service: {
-                    some: {
-                        id_pel: { contains: search, mode: 'insensitive' }
-                    }
+                customer: {
+                    OR: [
+                        { name: { contains: search, mode: 'insensitive' } },
+                        { phone: { contains: search } },
+                        { email: { contains: search, mode: 'insensitive' } }
+                    ]
                 }
-            },
-            { email: { contains: search, mode: 'insensitive' } }
+            }
         ];
     }
 
-    const totalCustomers = await prisma.detso_Customer.count({
+    const totalServices = await prisma.detso_Service_Connection.count({
         where: whereClause
     });
 
     const { skip, pagination } = getPagination({
         page,
         limit,
-        totalItems: totalCustomers
+        totalItems: totalServices
     });
 
-    const customers = await prisma.detso_Customer.findMany({
+    const services = await prisma.detso_Service_Connection.findMany({
         where: whereClause,
         skip,
         take: limit,
         include: {
-            documents: {
+            customer: {
                 select: {
                     id: true,
-                    document_type: true,
-                    document_url: true,
-                    uploaded_at: true
-                }
-            },
-            service: {
-                where: {
-                    deleted_at: null
-                },
-                include: {
-                    package: {
-                        select: {
-                            name: true,
-                            speed: true,
-                            price: true
-                        }
-                    },
-                    photos: {
+                    name: true,
+                    phone: true,
+                    email: true,
+                    nik: true,
+                    address: true,
+                    created_at: true,
+                    documents: {
                         select: {
                             id: true,
-                            photo_type: true,
-                            photo_url: true,
-                            uploaded_at: true,
-                            notes: true
+                            document_type: true,
+                            document_url: true,
+                            uploaded_at: true
                         }
                     }
+                }
+            },
+            package: {
+                select: {
+                    name: true,
+                    speed: true,
+                    price: true
+                }
+            },
+            photos: {
+                select: {
+                    id: true,
+                    photo_type: true,
+                    photo_url: true,
+                    uploaded_at: true,
+                    notes: true
                 }
             }
         },
@@ -93,37 +99,33 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
         return `${baseUrl}/${path}`;
     };
 
-    const formattedCustomers = customers.map(customer => ({
-        id: customer.id,
-        name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-        nik: customer.nik,
-        address: customer.address,
-        created_at: customer.created_at,
-        documents: customer.documents.map(doc => ({
-            ...doc,
-            document_url: addBaseUrl(doc.document_url)
+    const formattedServices = services.map(service => ({
+        id: service.id,
+        id_pel: service.id_pel,
+        package_name: service.package_name,
+        package_speed: service.package_speed,
+        package_price: service.package_price,
+        address: service.address,
+        ip_address: service.ip_address,
+        mac_address: service.mac_address,
+        status: service.status,
+        created_at: service.created_at,
+        package_details: service.package,
+        photos: service.photos.map(photo => ({
+            ...photo,
+            photo_url: addBaseUrl(photo.photo_url)
         })),
-        services: customer.service.map(service => ({
-            id: service.id,
-            package_name: service.package_name,
-            package_speed: service.package_speed,
-            status: service.status,
-            address: service.address,
-            id_pel: service.id_pel,
-            mac_address: service.mac_address,
-            created_at: service.created_at,
-            package_details: service.package,
-            photos: service.photos.map(photo => ({
-                ...photo,
-                photo_url: addBaseUrl(photo.photo_url)
+        customer: {
+            ...service.customer,
+            documents: service.customer.documents.map(doc => ({
+                ...doc,
+                document_url: addBaseUrl(doc.document_url)
             }))
-        }))
+        }
     }));
 
-    responseData(res, 200, 'Daftar customer berhasil diambil', {
-        customers: formattedCustomers,
+    responseData(res, 200, 'Daftar layanan berhasil diambil', {
+        services: formattedServices,
         pagination
     });
 });
@@ -211,4 +213,29 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
     };
 
     responseData(res, 200, 'Data customer berhasil diambil', formattedCustomer);
+});
+
+
+export const checkCustomerByNik = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { nik } = req.params;
+
+    if (!nik) {
+        throw new NotFoundError('NIK harus disertakan');
+    }
+
+    const customer = await prisma.detso_Customer.findFirst({
+        where: {
+            nik: nik,
+            deleted_at: null
+        },
+        select: {
+            id: true,
+            nik: true
+        }
+    });
+
+    responseData(res, 200, 'Berhasil memeriksa NIK customer', {
+        exists: !!customer,
+        customer: customer || null
+    });
 });

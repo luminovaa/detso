@@ -12,7 +12,7 @@ import {
   PaginationMeta,
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
-import { RoleBadge } from "@/components/admin/role-badge";
+import { RoleBadge } from "@/components/admin/badge/role-badge";
 import { Button } from "@/components/ui/button";
 
 import {

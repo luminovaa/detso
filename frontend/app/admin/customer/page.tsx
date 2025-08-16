@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 import { getCustomers } from "@/api/customer.api";
-import { Customer } from "@/types/customer.types";
+import { Customer, Service_Connection } from "@/types/customer.types";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   Pagination,
@@ -21,8 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StatusCustomerBadge } from "@/components/admin/badge/status-badge";
+import { formatDate } from "@/utils/date-format";
 interface CustomersResponse {
-  customers: Customer[];
+  services: Service_Connection[];
   pagination: PaginationMeta;
 }
 
@@ -37,44 +39,39 @@ function CustomerTable() {
   const [searchInput, setSearchInput] = useState(urlSearch);
   const debouncedSearch = useDebounce(searchInput, 500);
 
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<Service_Connection[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const columns: ColumnDef<Customer>[] = [
+  const columns: ColumnDef<Service_Connection>[] = [
     {
-      header: "Nama",
-      accessorKey: "name",
+      header: "ID Pelanggan",
+      accessorKey: "id_pel",
     },
     {
-      header: "Nomer Telepon",
-      accessorKey: "phone",
+      header: "Nama Pelanggan",
+      cell: (customer) => customer.customer?.name,
     },
     {
       header: "Alamat Rumah",
-      accessorKey: "address",
+      cell: (customer) => customer.customer?.address,
     },
     {
-      accessorKey: "email",
-      header: "Email",
+      header: "No. Telepon",
+      cell: (customer) => customer.customer?.phone,
     },
     {
       header: "Layanan",
-      cell: (customer) => {
-        const services = customer.services || [];
-
-        if (services.length === 0) {
-          return <span className="text-gray-500">Tidak ada layanan</span>;
-        }
-
-        if (services.length === 1) {
-          const packageName = services[0].package_name;
-          return <span>{packageName}</span>;
-        }
-
-        return <span>{services.length} Paket Internet</span>;
-      },
+      accessorKey: "package_name",
     },
+    {
+      header: "Status",
+      cell: (customer) => <StatusCustomerBadge status={customer.status} />,
+    },
+    {
+      header: "Tgl Terdaftar",
+      cell: (customer) => formatDate(customer.created_at!, {includeDay: false, shortMonth: true}),
+    }
   ];
 
   const updateSearchParams = (newParams: Record<string, string | number>) => {
@@ -106,7 +103,7 @@ function CustomerTable() {
         const response = await getCustomers(params);
         const data: CustomersResponse = response.data.data;
 
-        setCustomers(data.customers);
+        setCustomers(data.services);
         setPagination(data.pagination);
       } catch (error) {
         console.error("Error fetching customers:", error);
@@ -122,10 +119,10 @@ function CustomerTable() {
     setSearchInput(urlSearch);
   }, [urlSearch]);
 
-  const handleEditCustomer = async (customer: Customer) => {
+  const handleEditCustomer = async (customer: Service_Connection) => {
     console.log("Edit customer:", customer);
   };
-  const handleDeleteCustomer = async (customer: Customer) => {
+  const handleDeleteCustomer = async (customer: Service_Connection) => {
     try {
     } catch (error) {}
   };

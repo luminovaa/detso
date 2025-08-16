@@ -21,6 +21,8 @@ model Detso_User {
 
     role           Detso_Role            @default(TEKNISI)
     refresh_tokens Detso_Refresh_Token[]
+    ticket         Detso_Ticket[]
+    schedule       Detso_Work_Schedule[]
 
     @@index([deleted_at])
     @@map("detso_users")
@@ -68,7 +70,7 @@ model Detso_Customer {
     phone       String?
     email       String?
     nik         String?
-    address      String?
+    address     String?
     birth_date  DateTime?
     birth_place String?
     created_at  DateTime  @default(now())
@@ -79,6 +81,7 @@ model Detso_Customer {
     service      Detso_Service_Connection[]
     pdf          Detso_Customer_PDF[]
     whatsApp_Log Detso_WhatsApp_Log[]
+    ticket       Detso_Ticket[]
 
     @@index([deleted_at])
     @@index([phone])
@@ -139,6 +142,7 @@ model Detso_Service_Connection {
     package  Detso_Package         @relation(fields: [package_id], references: [id])
     photos   Detso_Service_Photo[]
     pdf      Detso_Customer_PDF[]
+    ticket   Detso_Ticket[]
 
     @@index([deleted_at])
     @@map("detso_service_connections")
@@ -184,6 +188,62 @@ model Detso_Package {
     service Detso_Service_Connection[]
 
     @@map("detso_packages")
+}
+
+model Detso_Ticket {
+    id          String         @id @default(cuid())
+    customer_id String
+    service_id  String?
+    title       String
+    description String
+    priority    TicketPriority @default(MEDIUM)
+    status      TicketStatus   @default(OPEN)
+    assigned_to String? // teknisi user_id
+    created_at  DateTime       @default(now())
+    updated_at  DateTime       @updatedAt
+    resolved_at DateTime?
+
+    customer   Detso_Customer            @relation(fields: [customer_id], references: [id])
+    service    Detso_Service_Connection? @relation(fields: [service_id], references: [id])
+    technician Detso_User?               @relation(fields: [assigned_to], references: [id])
+    schedule   Detso_Work_Schedule?
+
+    @@map("detso_tickets")
+}
+
+model Detso_Work_Schedule {
+    id            String         @id @default(cuid())
+    ticket_id     String?        @unique
+    technician_id String
+    start_time    DateTime
+    end_time      DateTime?
+    status        ScheduleStatus @default(SCHEDULED)
+    notes         String?
+
+    ticket     Detso_Ticket? @relation(fields: [ticket_id], references: [id])
+    technician Detso_User    @relation(fields: [technician_id], references: [id])
+
+    @@map("detso_work_schedules")
+}
+
+enum TicketStatus {
+    OPEN
+    IN_PROGRESS
+    RESOLVED
+    CLOSED
+}
+
+enum TicketPriority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
+}
+
+enum ScheduleStatus {
+    SCHEDULED
+    COMPLETED
+    CANCELLED
 }
 
 enum Detso_Customer_Status {

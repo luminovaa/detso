@@ -1,5 +1,5 @@
+import { Badge } from "@/components/ui/badge";
 import { User } from "@/types/user.types";
-import { Badge } from "../ui/badge";
 
 interface RoleBadgeProps {
     role: User['role'];
