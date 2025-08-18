@@ -34,7 +34,7 @@ export const authService = {
         }
     },
 
-    // Method untuk verify session
+    // Method untuk verify sessionkairm
     verifySession: async () => {
         try {
             const response = await services.get('/auth/verify');
