@@ -22,3 +22,9 @@ export const createTicketSchema = z.object({
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional().default('MEDIUM'),
     assigned_to: z.string().optional()
 });
+
+export const completeTicketSchema = z.object({
+    notes: z.string().optional(),
+    resolution_notes: z.string().min(1, 'Catatan penyelesaian wajib diisi'),
+    image: z.string().optional()
+});

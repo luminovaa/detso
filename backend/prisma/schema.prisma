@@ -191,22 +191,22 @@ model Detso_Package {
 }
 
 model Detso_Ticket {
-    id          String         @id @default(cuid())
+    id          String                    @id @default(cuid())
     customer_id String
     service_id  String?
     title       String
     description String
-    priority    TicketPriority @default(MEDIUM)
-    status      TicketStatus   @default(OPEN)
+    priority    TicketPriority            @default(MEDIUM)
+    status      TicketStatus              @default(OPEN)
     assigned_to String? // teknisi user_id
-    created_at  DateTime       @default(now())
-    updated_at  DateTime       @updatedAt
+    created_at  DateTime                  @default(now())
+    updated_at  DateTime                  @updatedAt
     resolved_at DateTime?
-
-    customer   Detso_Customer            @relation(fields: [customer_id], references: [id])
-    service    Detso_Service_Connection? @relation(fields: [service_id], references: [id])
-    technician Detso_User?               @relation(fields: [assigned_to], references: [id])
-    schedule   Detso_Work_Schedule?
+    image       String?
+    customer    Detso_Customer            @relation(fields: [customer_id], references: [id])
+    service     Detso_Service_Connection? @relation(fields: [service_id], references: [id])
+    technician  Detso_User?               @relation(fields: [assigned_to], references: [id])
+    schedule    Detso_Work_Schedule?
 
     @@map("detso_tickets")
 }
@@ -220,6 +220,8 @@ model Detso_Work_Schedule {
     status        ScheduleStatus @default(SCHEDULED)
     notes         String?
 
+    created_at DateTime      @default(now())
+    updated_at DateTime?
     ticket     Detso_Ticket? @relation(fields: [ticket_id], references: [id])
     technician Detso_User    @relation(fields: [technician_id], references: [id])
 

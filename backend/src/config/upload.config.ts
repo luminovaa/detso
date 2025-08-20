@@ -36,3 +36,10 @@ export const serviceUpload = createUploadMiddleware({
 }).fields([
     { name: 'photos', maxCount: 8 }
 ])
+
+export const ticketUpload = createUploadMiddleware({
+    destination: 'storage/image/tickets',
+    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
+    maxFileSize: 5 * 1024 * 1024,
+    fieldName: 'image'
+})

@@ -3,7 +3,6 @@ import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-
 import { responseData } from '../../utils/response-handler';
 import { createTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
-import { TicketPriority, TicketStatus } from '@prisma/client';
 
 export const createTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const validationResult = createTicketSchema.safeParse(req.body);
