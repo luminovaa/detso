@@ -23,8 +23,13 @@ export const createTicketSchema = z.object({
     assigned_to: z.string().optional()
 });
 
-export const completeTicketSchema = z.object({
-    notes: z.string().optional(),
-    resolution_notes: z.string().min(1, 'Catatan penyelesaian wajib diisi'),
+export const updateTicketSchema = z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+    status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
+    assigned_to: z.string().cuid().nullable().optional(),
+    service_id: z.string().cuid().nullable().optional(),
+    resolved_at: z.string().datetime().optional(),
     image: z.string().optional()
-});
+}).strict();

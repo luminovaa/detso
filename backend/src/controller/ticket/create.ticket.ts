@@ -11,6 +11,8 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         throw new ValidationError('Validasi gagal', validationResult.error.errors);
     }
 
+    const created_by = req.user?.id;
+
     const {
         customer_id,
         service_id,
@@ -18,7 +20,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         description,
         priority = 'MEDIUM',
         assigned_to
-    } = validationResult.data ;
+    } = validationResult.data;
 
     const customer = await prisma.detso_Customer.findUnique({
         where: { id: customer_id, deleted_at: null }
@@ -51,67 +53,92 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             throw new NotFoundError('Teknisi tidak ditemukan');
         }
     }
-
-    const ticket = await prisma.detso_Ticket.create({
-        data: {
-            customer_id,
-            service_id,
-            title,
-            description,
-            priority,
-            assigned_to,
-            status: 'OPEN',
-            created_at: new Date()
-        },
-        include: {
-            customer: {
-                select: {
-                    id: true,
-                    name: true,
-                    phone: true
-                }
+    
+    const result = await prisma.$transaction(async (tx) => {
+        const ticket = await tx.detso_Ticket.create({
+            data: {
+                customer_id,
+                service_id,
+                title,
+                description,
+                priority,
+                assigned_to,
+                status: 'OPEN',
+                created_at: new Date()
             },
-            service: {
-                select: {
-                    id: true,
-                    id_pel: true,
-                    package_name: true
-                }
-            },
-            technician: assigned_to ? {
-                select: {
-                    id: true,
-                    username: true,
-                    profile: {
-                        select: {
-                            full_name: true
+            include: {
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true
+                    }
+                },
+                service: {
+                    select: {
+                        id: true,
+                        id_pel: true,
+                        package_name: true
+                    }
+                },
+                technician: assigned_to ? {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: {
+                            select: {
+                                full_name: true
+                            }
                         }
                     }
-                }
-            } : undefined
-        }
-    });
-
-    let schedule = null;
-    if (assigned_to) {
-        schedule = await prisma.detso_Work_Schedule.create({
-            data: {
-                technician_id: assigned_to,
-                ticket_id: ticket.id,
-                start_time: new Date(),
-                status: 'SCHEDULED'
+                } : undefined
             }
         });
-    }
+
+        const ticketHistory = await tx.detso_Ticket_History.create({
+            data: {
+                ticket_id: ticket.id,
+                action: 'CREATED',
+                description: `Ticket dibuat dengan status: OPEN, priority: ${priority}`,
+                created_by: created_by || null,
+                created_at: new Date()
+            }
+        });
+
+        let schedule = null;
+        if (assigned_to) {
+            schedule = await tx.detso_Work_Schedule.create({
+                data: {
+                    technician_id: assigned_to,
+                    ticket_id: ticket.id,
+                    start_time: new Date(),
+                    status: 'SCHEDULED'
+                }
+            });
+
+            await tx.detso_Ticket_History.create({
+                data: {
+                    ticket_id: ticket.id,
+                    action: 'ASSIGNED',
+                    description: `Ticket ditugaskan kepada teknisi: ${assigned_to}`,
+                    created_by: created_by || null,
+                    created_at: new Date()
+                }
+            });
+        }
+
+        return { ticket, ticketHistory, schedule };
+    });
 
     responseData(res, 201, 'Ticket berhasil dibuat', {
         ticket: {
-            ...ticket,
-            technician: ticket.technician ? {
-                id: ticket.technician.id,
-                username: ticket.technician.username,
+            ...result.ticket,
+            technician: result.ticket.technician ? {
+                id: result.ticket.technician.id,
+                username: result.ticket.technician.username,
             } : null
         },
-        schedule
+        schedule: result.schedule,
+        history: result.ticketHistory
     });
 });

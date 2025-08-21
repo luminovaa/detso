@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
-import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler';
-import { responseData } from '../../utils/response-handler';
-import { getPagination } from '../../utils/pagination';
-import { prisma } from '../../utils/prisma';
-import { paginationSchema } from './validation/validation.ticket';
+import { Request, Response } from "express";
+import { asyncHandler, NotFoundError, ValidationError } from "../../utils/error-handler";
+import { paginationSchema } from "./validation/validation.ticket";
+import { prisma } from "../../utils/prisma";
+import { getPagination } from "../../utils/pagination";
+import { responseData } from "../../utils/response-handler";
 
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const validationResult = paginationSchema.safeParse(req.query);
@@ -14,7 +14,9 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 
     const { page, limit, search } = validationResult.data;
 
-    const whereClause: any = {};
+    const whereClause: any = {
+        deleted_at: null
+    };
 
     if (search) {
         whereClause.OR = [
@@ -87,7 +89,8 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
                     phone: true,
                     profile: {
                         select: {
-                            full_name: true
+                            full_name: true,
+                            avatar: true
                         }
                     }
                 }
@@ -107,6 +110,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         }
     });
 
+    const baseUrl = process.env.BASE_URL;
     const formattedTickets = tickets.map(ticket => ({
         id: ticket.id,
         title: ticket.title,
@@ -123,7 +127,8 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
             username: ticket.technician.username,
             email: ticket.technician.email,
             phone: ticket.technician.phone,
-            full_name: ticket.technician.profile?.full_name
+            full_name: ticket.technician.profile?.full_name,
+            avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
         } : null,
         schedule: ticket.schedule
     }));
@@ -138,7 +143,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
     const ticketId = req.params.id;
 
     const ticket = await prisma.detso_Ticket.findUnique({
-        where: { id: ticketId },
+        where: { id: ticketId, deleted_at: null },
         include: {
             customer: {
                 select: {
@@ -186,7 +191,8 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
                             username: true,
                             profile: {
                                 select: {
-                                    full_name: true
+                                    full_name: true,
+                                    avatar: true
                                 }
                             }
                         }
@@ -200,13 +206,13 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         throw new NotFoundError('Tiket tidak ditemukan');
     }
 
+    const baseUrl = process.env.BASE_URL;
     const formattedTicket = {
         id: ticket.id,
         title: ticket.title,
         description: ticket.description,
         priority: ticket.priority,
         status: ticket.status,
-        image: ticket.image,
         created_at: ticket.created_at,
         updated_at: ticket.updated_at,
         resolved_at: ticket.resolved_at,
@@ -218,7 +224,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
             email: ticket.technician.email,
             phone: ticket.technician.phone,
             full_name: ticket.technician.profile?.full_name,
-            avatar: ticket.technician.profile?.avatar
+            avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
         } : null,
         schedule: ticket.schedule ? {
             id: ticket.schedule.id,
@@ -229,7 +235,8 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
             technician: ticket.schedule.technician ? {
                 id: ticket.schedule.technician.id,
                 username: ticket.schedule.technician.username,
-                full_name: ticket.schedule.technician.profile?.full_name
+                full_name: ticket.schedule.technician.profile?.full_name,
+                avatar: ticket.schedule.technician.profile?.avatar ? `${baseUrl}/${ticket.schedule.technician.profile.avatar}` : null
             } : null
         } : null
     };
@@ -242,9 +249,8 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
 export const getTicketHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const ticketId = req.params.id;
 
-    // Cek apakah tiket ada
     const ticketExists = await prisma.detso_Ticket.findUnique({
-        where: { id: ticketId },
+        where: { id: ticketId, deleted_at: null },
         select: { id: true }
     });
 
@@ -252,16 +258,29 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
         throw new NotFoundError('Tiket tidak ditemukan');
     }
 
-    const statusHistory = await prisma.detso_Ticket.findMany({
-        where: { id: ticketId },
-        select: {
-            status: true,
-            created_at: true,
-            updated_at: true,
-            resolved_at: true
+    // Get ticket history from detso_ticket_history table
+    const ticketHistories = await prisma.detso_Ticket_History.findMany({
+        where: { ticket_id: ticketId },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile: {
+                        select: {
+                            full_name: true,
+                            avatar: true
+                        }
+                    }
+                }
+            }
+        },
+        orderBy: {
+            created_at: 'desc'
         }
     });
 
+    // Get work schedule activities
     const activities = await prisma.detso_Work_Schedule.findMany({
         where: { ticket_id: ticketId },
         select: {
@@ -278,7 +297,8 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
                     username: true,
                     profile: {
                         select: {
-                            full_name: true
+                            full_name: true,
+                            avatar: true
                         }
                     }
                 }
@@ -289,22 +309,69 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
         }
     });
 
+    const baseUrl = process.env.BASE_URL;
+
+    const formattedHistories = ticketHistories.map(history => ({
+        id: history.id,
+        action: history.action,
+        description: history.description,
+        image: history.image ? `${baseUrl}/${history.image}` : null,
+        created_at: history.created_at,
+        created_by: history.user ? {
+            id: history.user.id,
+            username: history.user.username,
+            full_name: history.user.profile?.full_name,
+            avatar: history.user.profile?.avatar ? `${baseUrl}/${history.user.profile.avatar}` : null
+        } : null
+    }));
+
+    const formattedActivities = activities.map(activity => ({
+        id: activity.id,
+        type: 'SCHEDULE_UPDATE',
+        start_time: activity.start_time,
+        end_time: activity.end_time,
+        status: activity.status,
+        notes: activity.notes,
+        created_at: activity.created_at,
+        updated_at: activity.updated_at,
+        technician: activity.technician ? {
+            id: activity.technician.id,
+            username: activity.technician.username,
+            full_name: activity.technician.profile?.full_name,
+            avatar: activity.technician.profile?.avatar ? `${baseUrl}/${activity.technician.profile.avatar}` : null
+        } : null
+    }));
+
     responseData(res, 200, 'History tiket berhasil diambil', {
-        status_history: statusHistory,
-        activities: activities.map(activity => ({
-            id: activity.id,
-            type: 'SCHEDULE_UPDATE',
-            start_time: activity.start_time,
-            end_time: activity.end_time,
-            status: activity.status,
-            notes: activity.notes,
-            created_at: activity.created_at,
-            updated_at: activity.updated_at,
-            technician: activity.technician ? {
-                id: activity.technician.id,
-                username: activity.technician.username,
-                full_name: activity.technician.profile?.full_name
-            } : null
-        }))
+        histories: formattedHistories,
+        activities: formattedActivities
+    });
+});
+
+export const getTicketImageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { historyId } = req.params;
+
+    const history = await prisma.detso_Ticket_History.findUnique({
+        where: { id: historyId },
+        select: {
+            image: true,
+            ticket: {
+                select: {
+                    id: true,
+                    deleted_at: true
+                }
+            }
+        }
+    });
+
+    if (!history || history.ticket.deleted_at || !history.image) {
+        throw new NotFoundError('Gambar tiket tidak ditemukan atau telah dihapus');
+    }
+
+    const baseUrl = process.env.BASE_URL;
+    const imageUrl = `${baseUrl}/${history.image}`;
+
+    responseData(res, 200, 'Gambar tiket berhasil diambil', {
+        image: imageUrl
     });
 });
