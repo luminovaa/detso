@@ -11,7 +11,7 @@ import { User as UserType } from "@/types/user.types";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 import { getUserById } from "@/api/user.api";
 import Loading from "./loading";
-import { RoleBadge } from "@/components/admin/role-badge";
+import { RoleBadge } from "@/components/admin/badge/role-badge";
 import { authService } from "@/api/auth.api";
 import { ChangePasswordDialog } from "./_components/change-password";
 import { getInitials } from "@/utils/get-initial";

@@ -230,6 +230,7 @@ model Detso_Ticket_History {
 
 model Detso_Work_Schedule {
     id            String         @id @default(cuid())
+    title         String?
     ticket_id     String?        @unique
     technician_id String
     start_time    DateTime

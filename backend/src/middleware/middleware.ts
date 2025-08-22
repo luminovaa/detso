@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-import { responseData } from "../utils/response-handler";
 import { AuthenticationError, AuthorizationError, DatabaseError } from "../utils/error-handler";
 
 // Inisialisasi Prisma
