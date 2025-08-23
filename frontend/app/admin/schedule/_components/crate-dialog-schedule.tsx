@@ -91,22 +91,25 @@ export default function CreateScheduleDialog({
       fetchTechnicians();
     }
   }, [isOpen]);
+
   const onSubmit = async (data: CreateWorkSchedule) => {
     try {
       setIsLoading(true);
 
-      const startDateTime = `${data.start_date}T${data.start_time}:00.000Z`;
+      const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
+      const utcStartTime = startDateTime.toISOString();
 
-      let endDateTime: string | null = null;
+      let utcEndTime: string | null = null;
       if (data.end_date && data.end_time) {
-        endDateTime = `${data.end_date}T${data.end_time}:00.000Z`;
+        const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
+        utcEndTime = endDateTime.toISOString();
       }
 
       const scheduleData: CreateWorkSchedule = {
         technician_id: data.technician_id,
-        start_time: startDateTime,
+        start_time: utcStartTime,
         title: data.title,
-        end_time: endDateTime || "",
+        end_time: utcEndTime || "",
         status: data.status,
         notes: data.notes || "",
       };
@@ -122,7 +125,7 @@ export default function CreateScheduleDialog({
       }
     } catch (error: any) {
       console.error("Error creating schedule:", error);
-      error(error.response?.data?.message || "Gagal membuat jadwal kerja");
+      showApiError(error);
     } finally {
       setIsLoading(false);
     }
@@ -205,7 +208,7 @@ export default function CreateScheduleDialog({
                   form={form}
                   name="start_time"
                   label="Waktu Mulai"
-                  //   type="time"
+                  type="time"
                   placeholder="HH:MM"
                   description="Waktu mulai dalam format 24 jam"
                 />
@@ -224,7 +227,7 @@ export default function CreateScheduleDialog({
                   form={form}
                   name="end_time"
                   label="Waktu Selesai"
-                  //   type="time"
+                  type="time"
                   placeholder="HH:MM"
                   description="Waktu selesai (opsional)"
                 />

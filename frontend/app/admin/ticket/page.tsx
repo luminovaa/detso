@@ -1,0 +1,385 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import AdminPanelLayout from "@/components/admin/admin-layout";
+import { Ticket } from "@/types/ticket.types";
+import { useDebounce } from "@/hooks/use-debounce";
+import {
+  Pagination,
+  PaginationMeta,
+} from "@/components/admin/table/reusable-pagination";
+import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatDate } from "@/utils/date-format";
+import { Badge } from "@/components/ui/badge";
+import { getTicket } from "@/api/ticket";
+
+interface TicketsResponse {
+  tickets: Ticket[];
+  pagination: PaginationMeta;
+}
+
+// Status Badge Component for Tickets
+const TicketStatusBadge = ({ status }: { status?: string }) => {
+  const getStatusColor = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case 'open':
+      case 'baru':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'in_progress':
+      case 'dalam_proses':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'resolved':
+      case 'selesai':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'closed':
+      case 'ditutup':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  return (
+    <Badge 
+      variant="outline" 
+      className={`${getStatusColor(status)} font-medium`}
+    >
+      {status || 'Unknown'}
+    </Badge>
+  );
+};
+
+// Priority Badge Component
+const PriorityBadge = ({ priority }: { priority?: string }) => {
+  const getPriorityColor = (priority?: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+      case 'tinggi':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+      case 'sedang':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'low':
+      case 'rendah':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  return (
+    <Badge 
+      variant="outline" 
+      className={`${getPriorityColor(priority)} font-medium`}
+    >
+      {priority || 'Normal'}
+    </Badge>
+  );
+};
+
+function TicketTable() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const selectedStatus = searchParams.get("status");
+  const selectedPriority = searchParams.get("priority");
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const urlSearch = searchParams.get("search") || "";
+
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const debouncedSearch = useDebounce(searchInput, 500);
+
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const columns: ColumnDef<Ticket>[] = [
+    {
+      header: "ID Ticket",
+      cell: (ticket) => (
+        <span className="font-mono text-sm">
+          #{ticket.id?.slice(-8).toUpperCase()}
+        </span>
+      ),
+    },
+    {
+      header: "Judul",
+      accessorKey: "title",
+      cell: (ticket) => (
+        <div className="max-w-[200px]">
+          <p className="font-medium truncate">{ticket.title}</p>
+          <p className="text-sm text-gray-500 truncate">{ticket.description}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Pelanggan",
+      cell: (ticket) => (
+        <div>
+          <p className="font-medium">{ticket.customer?.name}</p>
+          <p className="text-sm text-gray-500">{ticket.service?.id_pel}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Layanan",
+      cell: (ticket) => (
+        <div>
+          <p className="font-medium">{ticket.service?.package_name}</p>
+          <p className="text-sm text-gray-500 truncate max-w-[150px]">
+            {ticket.service?.address}
+          </p>
+        </div>
+      ),
+    },
+    {
+      header: "Teknisi",
+      cell: (ticket) => (
+        <div>
+          {ticket.technician ? (
+            <>
+              <p className="font-medium">
+                {ticket.technician.profile?.full_name || ticket.technician.username}
+              </p>
+              <p className="text-sm text-gray-500">{ticket.technician.phone}</p>
+            </>
+          ) : (
+            <span className="text-gray-400 italic">Belum ditugaskan</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Prioritas",
+      cell: (ticket) => <PriorityBadge priority={ticket.priority} />,
+    },
+    {
+      header: "Status",
+      cell: (ticket) => <TicketStatusBadge status={ticket.status} />,
+    },
+    {
+      header: "Dibuat",
+      cell: (ticket) => formatDate(ticket.created_at!, {includeDay: false, shortMonth: true}),
+    },
+    {
+      header: "Diselesaikan",
+      cell: (ticket) => ticket.resolved_at 
+        ? formatDate(ticket.resolved_at, {includeDay: false, shortMonth: true})
+        : <span className="text-gray-400">-</span>,
+    }
+  ];
+
+  const updateSearchParams = (newParams: Record<string, string | number>) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) {
+        current.set(key, value.toString());
+      } else {
+        current.delete(key);
+      }
+    });
+
+    const search = current.toString();
+    const query = search ? `?${search}` : "";
+    router.push(`${window.location.pathname}${query}`);
+  };
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setLoading(true);
+        const params = {
+          page: currentPage,
+          limit,
+          ...(urlSearch && { search: urlSearch }),
+        };
+
+        const response = await getTicket(params);
+        const data: TicketsResponse = response.data.data;
+
+        setTickets(data.tickets);
+        setPagination(data.pagination);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [currentPage, limit, urlSearch, selectedStatus, selectedPriority]);
+
+  useEffect(() => {
+    setSearchInput(urlSearch);
+  }, [urlSearch]);
+
+  const handleEditTicket = async (ticket: Ticket) => {
+    console.log("Edit ticket:", ticket);
+    // Implement edit logic
+  };
+
+  const handleDeleteTicket = async (ticket: Ticket) => {
+    try {
+      // Implement delete logic
+      console.log("Delete ticket:", ticket);
+    } catch (error) {
+      console.error("Error deleting ticket:", error);
+    }
+  };
+
+  const handleAssignTicket = async (ticket: Ticket) => {
+    // Implement assign technician logic
+    console.log("Assign ticket:", ticket);
+  };
+
+  useEffect(() => {
+    if (debouncedSearch !== urlSearch) {
+      updateSearchParams({
+        page: 1,
+        limit,
+        search: debouncedSearch,
+      });
+    }
+  }, [debouncedSearch, urlSearch, limit]);
+
+  const handlePageChange = (page: number) => {
+    updateSearchParams({
+      page,
+      limit,
+    });
+  };
+
+  const handleStatusFilter = (status: string) => {
+    updateSearchParams({
+      page: 1,
+      limit,
+      status: status === "all" ? "" : status,
+    });
+  };
+
+  const handlePriorityFilter = (priority: string) => {
+    updateSearchParams({
+      page: 1,
+      limit,
+      priority: priority === "all" ? "" : priority,
+    });
+  };
+
+  if (loading && !tickets.length) {
+    return (
+      <AdminPanelLayout
+        title="Daftar Tiket"
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        searchPlaceholder="Cari tiket, pelanggan, atau teknisi..."
+      >
+        <DataTable
+          columns={columns}
+          data={[]}
+          loading={true}
+          showIndex={true}
+          indexStartFrom={(currentPage - 1) * limit + 1}
+        />
+      </AdminPanelLayout>
+    );
+  }
+
+  return (
+    <AdminPanelLayout
+      title="Daftar Tiket"
+      searchValue={searchInput}
+      onSearchChange={setSearchInput}
+      searchPlaceholder="Cari tiket, pelanggan, atau teknisi..."
+    >
+      <div className="space-y-4">
+        {/* Filters and Actions */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3">
+          <div className="flex gap-3">
+            <Select
+              value={selectedStatus || "all"}
+              onValueChange={handleStatusFilter}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="open">Baru</SelectItem>
+                <SelectItem value="in_progress">Dalam Proses</SelectItem>
+                <SelectItem value="resolved">Selesai</SelectItem>
+                <SelectItem value="closed">Ditutup</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={selectedPriority || "all"}
+              onValueChange={handlePriorityFilter}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Prioritas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Prioritas</SelectItem>
+                <SelectItem value="high">Tinggi</SelectItem>
+                <SelectItem value="medium">Sedang</SelectItem>
+                <SelectItem value="low">Rendah</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            className="rounded-3xl"
+            onClick={() => router.push("/admin/ticket/create-ticket")}
+          >
+            Buat Tiket Baru
+          </Button>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={tickets}
+          loading={loading}
+          emptyMessage="Tidak ada tiket"
+          emptySearchMessage="Tidak ada tiket yang ditemukan"
+          hasSearch={!!urlSearch}
+          showIndex={true}
+          indexStartFrom={(currentPage - 1) * limit + 1}
+          actions={{
+            onDelete: handleDeleteTicket,
+            onEdit: handleEditTicket,
+          }}
+          clickableRow={true}
+          onRowClick={(ticket) =>
+            router.push(`/admin/ticket/${ticket.id}`)
+          }
+        />
+
+        {pagination && (
+          <Pagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            showDataCount={true}
+            dataCountText={{
+              showing: "Menampilkan",
+              of: "dari",
+              data: "tiket",
+            }}
+          />
+        )}
+      </div>
+    </AdminPanelLayout>
+  );
+}
+
+export default TicketTable;

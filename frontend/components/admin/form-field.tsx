@@ -42,7 +42,8 @@ type FormFieldProps<
     | "textarea"
     | "select"
     | "date"
-    | "currency";
+    | "currency"
+    | "time"; // Menambahkan tipe time
   selectOptions?: { value: string; label: string }[];
   children?: ReactNode;
 };
@@ -119,12 +120,19 @@ export function FormField<
                   field.onChange(parsedValue);
                 }}
                 onBlur={() => {
-                  // Format ulang saat kehilangan fokus
                   if (field.value !== undefined && field.value !== null) {
                     field.onChange(Number(field.value));
                   }
                 }}
                 inputMode="numeric"
+              />
+            ) : type === "time" ? ( // Menambahkan case untuk tipe time
+              <Input
+                className="rounded-3xl"
+                type="time"
+                placeholder={placeholder}
+                disabled={disabled}
+                {...field}
               />
             ) : children ? (
               children

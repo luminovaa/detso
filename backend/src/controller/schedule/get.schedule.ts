@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler, ValidationError } from "../../utils/error-handler";
+import { asyncHandler, NotFoundError, ValidationError } from "../../utils/error-handler";
 import { scheduleFilterSchema } from "./validation/validation.schedule";
 import { prisma } from "../../utils/prisma";
 import { formatWIB } from "../../utils/time-fromat";
@@ -96,7 +96,7 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
     // Format response untuk kalender
     const formattedSchedules = schedules.map(schedule => ({
         id: schedule.id,
-        title: schedule.ticket ? schedule.ticket.title : schedule.notes,
+        title: schedule.ticket ? schedule.ticket.title : schedule.title || schedule.notes,
         start: formatWIB(schedule.start_time),
         end: schedule.end_time ? formatWIB(schedule.end_time) : null,
         status: schedule.status,
@@ -152,4 +152,83 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
             end: formatWIB(endDate)
         }
     });
+});
+
+export const getScheduleById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new NotFoundError("ID jadwal tidak diberikan");
+  }
+
+  // Cari jadwal di database
+  const schedule = await prisma.detso_Work_Schedule.findUnique({
+    where: {
+      id: id,
+    //   deleted_at: null, 
+    },
+    include: {
+      technician: {
+        select: {
+          id: true,
+          username: true,
+          profile: {
+            select: {
+              full_name: true,
+            },
+          },
+        },
+      },
+      ticket: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          priority: true,
+          status: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              address: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!schedule) {
+    throw new NotFoundError("Jadwal kerja tidak ditemukan");
+  }
+
+  const formattedSchedule = {
+    id: schedule.id,
+    title: schedule.ticket ? schedule.ticket.title : schedule.title || schedule.notes,
+    start: formatWIB(schedule.start_time),
+    end: schedule.end_time ? formatWIB(schedule.end_time) : null,
+    status: schedule.status,
+    notes: schedule.notes || null,
+    technician: {
+      id: schedule.technician.id,
+      username: schedule.technician.username,
+      full_name: schedule.technician.profile?.full_name || "N/A",
+    },
+    ticket: schedule.ticket
+      ? {
+          id: schedule.ticket.id,
+          title: schedule.ticket.title,
+          description: schedule.ticket.description,
+          priority: schedule.ticket.priority,
+          status: schedule.ticket.status,
+          customer: schedule.ticket.customer,
+        }
+      : null,
+    allDay: !schedule.end_time,
+    created_at: formatWIB(schedule.created_at),
+    updated_at: schedule.updated_at ? formatWIB(schedule.updated_at) : null,
+  };
+
+  responseData(res, 200, "Detail jadwal berhasil diambil", formattedSchedule);
 });

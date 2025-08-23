@@ -24,6 +24,13 @@ export function createSchedule(data: CreateWorkSchedule) {
     });
 }
 
+export function getScheduleById(id: string) {
+  return services({
+    url: `/schedule/${id}`,
+    method: 'get',
+  });
+}
+
 // export function updateSchedule(id: string, data: CreateScheduleFormData) {
 //   return services({
 //     url: `/package/${id}`,

@@ -9,7 +9,8 @@ import {
   Wifi,
   PhoneForwardedIcon,
   UserCircle2,
-  Calendar
+  Calendar,
+  Ticket
 } from "lucide-react";
 
 type Submenu = {
@@ -67,6 +68,11 @@ export function getMenuList(pathname: string): Group[] {
         //   label: "Categories",
         //   icon: Bookmark
         // },
+        {
+          href: "/admin/ticket",
+          label: "Ticket",
+          icon: Ticket
+        },
         {
           href: "/admin/schedule",
           label: "Kalender Kerja",

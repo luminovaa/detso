@@ -127,8 +127,10 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
             username: ticket.technician.username,
             email: ticket.technician.email,
             phone: ticket.technician.phone,
-            full_name: ticket.technician.profile?.full_name,
-            avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
+            profile: {
+                full_name: ticket.technician.profile?.full_name,
+                avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
+            }
         } : null,
         schedule: ticket.schedule
     }));

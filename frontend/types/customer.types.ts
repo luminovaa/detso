@@ -42,6 +42,7 @@ export type Service_Connection = {
     id_pel: string;
     package_id: string;
     package_name: string;
+    address: string;
     package_speed: string;
     package_price: string;
     ip_address?: string;

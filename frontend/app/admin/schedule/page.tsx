@@ -7,6 +7,8 @@ import AdminPanelLayout from "@/components/admin/admin-layout";
 import CreateScheduleDialog from "./_components/crate-dialog-schedule";
 import { getSchedules } from "@/api/schedule";
 import { Button } from "@/components/ui/button";
+import { formatDate, formatIndonesiaTime } from "@/utils/date-format";
+import ScheduleDetailDialog from "./_components/detail-schedule";
 
 interface Holiday {
   holiday_date: string; // format: YYYY-MM-DD
@@ -35,6 +37,10 @@ const IndonesianCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
+    null
+  );
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState<boolean>(false);
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
@@ -102,9 +108,25 @@ const IndonesianCalendar: React.FC = () => {
       setSchedules([]);
     }
   };
+  const handleScheduleClick = (
+    scheduleId: string,
+    isExpanded: boolean,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
+    // Only allow detail view when date is expanded
+    if (isExpanded) {
+      setSelectedScheduleId(scheduleId);
+      setIsDetailDialogOpen(true);
+    }
+  };
+  const handleCloseDetailDialog = () => {
+    setIsDetailDialogOpen(false);
+    setSelectedScheduleId(null);
+  };
 
   useEffect(() => {
-    // Set initial date from URL parameters if available
     const initialDate = new Date();
     if (monthParam && yearParam) {
       initialDate.setMonth(parseInt(monthParam) - 1);
@@ -132,7 +154,6 @@ const IndonesianCalendar: React.FC = () => {
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  // Format date to YYYY-MM-DD in local timezone for comparison
   const formatDateLocal = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -140,7 +161,6 @@ const IndonesianCalendar: React.FC = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Check if date is a holiday
   const isHoliday = (date: Date): Holiday | undefined => {
     const dateStr = formatDateLocal(date);
     return holidays.find((holiday) => {
@@ -150,19 +170,23 @@ const IndonesianCalendar: React.FC = () => {
     });
   };
 
-  // Check if date is weekend (Saturday or Sunday)
   const isWeekend = (date: Date): boolean => {
     const day = date.getDay();
     return day === 0 || day === 6;
   };
 
-  // Get schedules for a specific date
   const getSchedulesForDate = (date: Date): Schedule[] => {
     const dateStr = formatDateLocal(date);
-    return schedules.filter((schedule) => {
+    const filteredSchedules = schedules.filter((schedule) => {
       const scheduleDate = new Date(schedule.start);
       const scheduleDateStr = formatDateLocal(scheduleDate);
       return scheduleDateStr === dateStr;
+    });
+
+    return filteredSchedules.sort((a, b) => {
+      const timeA = new Date(a.start).getTime();
+      const timeB = new Date(b.start).getTime();
+      return timeA - timeB;
     });
   };
 
@@ -190,7 +214,6 @@ const IndonesianCalendar: React.FC = () => {
     return days;
   };
 
-  // Navigate to specific month
   const goToMonth = (monthIndex: number) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(monthIndex);
@@ -199,7 +222,6 @@ const IndonesianCalendar: React.FC = () => {
     updateUrlParams(newDate);
   };
 
-  // Navigate to previous/next year
   const goToYear = (yearOffset: number) => {
     const newDate = new Date(currentDate);
     newDate.setFullYear(newDate.getFullYear() + yearOffset);
@@ -208,20 +230,19 @@ const IndonesianCalendar: React.FC = () => {
     updateUrlParams(newDate);
   };
 
-  // Handle date click
-
-  // Handle schedule creation
-  const handleScheduleCreated = () => {
-    fetchSchedules(); // Refresh schedules after creation
-  };
-
-  const handleDateClick = (date: Date, event: React.MouseEvent) => {
-    // Cek apakah klik berasal dari tombol plus
-    if ((event.target as HTMLElement).closest('[title="Tambah jadwal"]')) {
-      return; // Abaikan klik jika berasal dari tombol plus
+  // Handle date click - Modified to prevent when clicking on dialog content
+  const handleDateClick = (date: Date, e: React.MouseEvent) => {
+    // Prevent expansion/collapse if clicking on dialog trigger or its children
+    if ((e.target as HTMLElement).closest("[data-dialog-trigger]")) {
+      return;
     }
+
     const dateStr = formatDateLocal(date);
     setExpandedDate(expandedDate === dateStr ? null : dateStr);
+  };
+
+  const handleScheduleCreated = () => {
+    fetchSchedules();
   };
 
   const days = getDaysInMonth();
@@ -297,9 +318,7 @@ const IndonesianCalendar: React.FC = () => {
           </div>
         </div>
 
-        {/* Calendar Grid */}
         <div className="p-6">
-          {/* Day Names */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {dayNames.map((day) => (
               <div
@@ -311,7 +330,6 @@ const IndonesianCalendar: React.FC = () => {
             ))}
           </div>
 
-          {/* Calendar Days */}
           <div className="grid grid-cols-7 gap-2">
             {days.map((date, index) => {
               const holiday = isHoliday(date);
@@ -350,30 +368,33 @@ const IndonesianCalendar: React.FC = () => {
                       {date.getDate()}
                     </div>
 
-                    {/* Add Button - Only show when expanded and in current month */}
                     {isExpanded && isCurrentMonth && (
-                      <CreateScheduleDialog
-                        selectedDate={dateStr}
-                        onScheduleCreated={handleScheduleCreated}
-                        trigger={
-                          <button
-                            className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/80 transition-colors shadow-md"
-                            title="Tambah jadwal"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
+                      <div
+                        data-dialog-trigger
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <CreateScheduleDialog
+                          selectedDate={dateStr}
+                          onScheduleCreated={handleScheduleCreated}
+                          trigger={
+                            <button
+                              className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/80 transition-colors shadow-md"
+                              title="Tambah jadwal"
                             >
-                              <path d="M12 5v14M5 12h14" />
-                            </svg>
-                          </button>
-                        }
-                      />
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M12 5v14M5 12h14" />
+                              </svg>
+                            </button>
+                          }
+                        />
+                      </div>
                     )}
                   </div>
 
@@ -405,29 +426,42 @@ const IndonesianCalendar: React.FC = () => {
                         .map((schedule) => (
                           <div
                             key={schedule.id}
-                            className="text-xs p-1 rounded-xl bg-accent/15 text-accent-foreground"
+                            onClick={
+                              isExpanded
+                                ? (e) =>
+                                    handleScheduleClick(
+                                      schedule.id,
+                                      isExpanded,
+                                      e
+                                    )
+                                : undefined
+                            }
+                            className={`text-xs p-2 rounded-xl bg-accent/15 text-accent-foreground transition-colors ${
+                              isExpanded
+                                ? "cursor-pointer hover:bg-accent/25"
+                                : "cursor-default"
+                            }`}
+                            title={
+                              isExpanded
+                                ? "Klik untuk melihat detail"
+                                : "Expand tanggal untuk melihat detail"
+                            }
                           >
-                            <div className="font-medium truncate">
+                            <div className="capitalize font-medium truncate">
                               {schedule.title}
                             </div>
                             {isExpanded && (
-                              <div className="text-[10px] opacity-75">
-                                {new Date(schedule.start).toLocaleTimeString(
-                                  "id-ID",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                                {schedule.end &&
-                                  `-${new Date(schedule.end).toLocaleTimeString(
-                                    "id-ID",
-                                    {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )}`}
-                              </div>
+                              <>
+                                <div className="text-[10px] opacity-75">
+                                  {formatIndonesiaTime(schedule.start)}
+                                  {" - "}
+                                  {schedule.end &&
+                                    formatIndonesiaTime(schedule.end)}
+                                </div>
+                                <p className="capitalize text-xs">
+                                  {schedule.technician.full_name}
+                                </p>
+                              </>
                             )}
                           </div>
                         ))}
@@ -439,16 +473,10 @@ const IndonesianCalendar: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Expanded Content */}
                   {isExpanded && (
                     <div className="mt-2 space-y-1">
                       <div className="text-xs text-muted-foreground">
-                        {date.toLocaleDateString("id-ID", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                        {formatDate(date)}
                       </div>
                       {dateSchedules.length === 0 && (
                         <div className="text-xs text-muted-foreground opacity-60">
@@ -463,7 +491,6 @@ const IndonesianCalendar: React.FC = () => {
           </div>
         </div>
 
-        {/* Legend */}
         <div className="border-t border-border p-4 bg-muted/20 rounded-b-xl">
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
@@ -479,16 +506,8 @@ const IndonesianCalendar: React.FC = () => {
               <span className="text-red-500">Akhir Pekan</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded shadow-sm"></div>
-              <span className="text-blue-800">Jadwal Dijadwalkan</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-100 border border-green-300 rounded shadow-sm"></div>
-              <span className="text-green-800">Jadwal Selesai</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-100 border border-red-300 rounded shadow-sm"></div>
-              <span className="text-red-800">Jadwal Dibatalkan</span>
+              <div className="w-4 h-4 bg-accent/10 border border-accent rounded shadow-sm"></div>
+              <span className="text-accent">Jadwal Dijadwalkan</span>
             </div>
           </div>
         </div>
@@ -552,6 +571,11 @@ const IndonesianCalendar: React.FC = () => {
             </div>
           </div>
         )}
+        <ScheduleDetailDialog
+          scheduleId={selectedScheduleId}
+          isOpen={isDetailDialogOpen}
+          onClose={handleCloseDetailDialog}
+        />
       </div>
     </AdminPanelLayout>
   );
