@@ -12,7 +12,7 @@ import {
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
 import { Button } from "@/components/ui/button";
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
@@ -22,70 +22,14 @@ import {
 import { formatDate } from "@/utils/date-format";
 import { Badge } from "@/components/ui/badge";
 import { getTicket } from "@/api/ticket";
+import { PriorityBadge, TicketStatusBadge } from "@/components/admin/badge/ticket-badge";
+import { TicketFilters } from "./_components/ticket-filter";
 
 interface TicketsResponse {
   tickets: Ticket[];
   pagination: PaginationMeta;
 }
 
-// Status Badge Component for Tickets
-const TicketStatusBadge = ({ status }: { status?: string }) => {
-  const getStatusColor = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case 'open':
-      case 'baru':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'in_progress':
-      case 'dalam_proses':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'resolved':
-      case 'selesai':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'closed':
-      case 'ditutup':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-600 border-gray-200';
-    }
-  };
-
-  return (
-    <Badge 
-      variant="outline" 
-      className={`${getStatusColor(status)} font-medium`}
-    >
-      {status || 'Unknown'}
-    </Badge>
-  );
-};
-
-// Priority Badge Component
-const PriorityBadge = ({ priority }: { priority?: string }) => {
-  const getPriorityColor = (priority?: string) => {
-    switch (priority?.toLowerCase()) {
-      case 'high':
-      case 'tinggi':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-      case 'sedang':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'low':
-      case 'rendah':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-gray-100 text-gray-600 border-gray-200';
-    }
-  };
-
-  return (
-    <Badge 
-      variant="outline" 
-      className={`${getPriorityColor(priority)} font-medium`}
-    >
-      {priority || 'Normal'}
-    </Badge>
-  );
-};
 
 function TicketTable() {
   const router = useRouter();
@@ -203,6 +147,8 @@ function TicketTable() {
           page: currentPage,
           limit,
           ...(urlSearch && { search: urlSearch }),
+          ...(selectedStatus && { status: selectedStatus }),
+          ...(selectedPriority && { priority: selectedPriority }),
         };
 
         const response = await getTicket(params);
@@ -238,6 +184,10 @@ function TicketTable() {
     }
   };
 
+  const handleCreateTicket = () => {
+    router.push("/admin/ticket/create-ticket");
+  };
+  
   const handleAssignTicket = async (ticket: Ticket) => {
     // Implement assign technician logic
     console.log("Assign ticket:", ticket);
@@ -304,47 +254,14 @@ function TicketTable() {
     >
       <div className="space-y-4">
         {/* Filters and Actions */}
-        <div className="flex flex-col sm:flex-row justify-between gap-3">
-          <div className="flex gap-3">
-            <Select
-              value={selectedStatus || "all"}
-              onValueChange={handleStatusFilter}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value="open">Baru</SelectItem>
-                <SelectItem value="in_progress">Dalam Proses</SelectItem>
-                <SelectItem value="resolved">Selesai</SelectItem>
-                <SelectItem value="closed">Ditutup</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedPriority || "all"}
-              onValueChange={handlePriorityFilter}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Prioritas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Prioritas</SelectItem>
-                <SelectItem value="high">Tinggi</SelectItem>
-                <SelectItem value="medium">Sedang</SelectItem>
-                <SelectItem value="low">Rendah</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button
-            className="rounded-3xl"
-            onClick={() => router.push("/admin/ticket/create-ticket")}
-          >
-            Buat Tiket Baru
-          </Button>
-        </div>
+        <TicketFilters
+          selectedStatus={selectedStatus || "all"}
+          selectedPriority={selectedPriority || "all"}
+          onStatusChange={handleStatusFilter}
+          onPriorityChange={handlePriorityFilter}
+          onCreateTicket={handleCreateTicket}
+          disabled={loading}
+        />
 
         <DataTable
           columns={columns}

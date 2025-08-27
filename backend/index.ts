@@ -1,4 +1,3 @@
-import { Server } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -73,8 +72,12 @@ io.on('connection', (socket) => {
   socket.on('get-whatsapp-status', async () => {
     try {
       const isReady = await whatsappService.isClientReady();
+      const lastQR = whatsappService.getLastQR();
       socket.emit('whatsapp-status', { isReady });
-      console.log('WhatsApp status sent:', { isReady });
+      if (!isReady && lastQR) {
+        console.log('Sending stored QR to client on status request');
+        socket.emit('whatsapp-qr', lastQR);
+      }
     } catch (error) {
       console.error('Error getting WhatsApp status:', error);
       socket.emit('whatsapp-status', { isReady: false });

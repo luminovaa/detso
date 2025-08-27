@@ -12,7 +12,9 @@ export const paginationSchema = z.object({
     .transform((val) => parseInt(val))
     .refine((val) => val > 0, { message: 'Batas harus lebih besar dari 0' }),
   search: z.string().trim().optional(),
-})
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(), 
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(), 
+});
 
 export const createTicketSchema = z.object({
     customer_id: z.string().min(1, 'Customer ID harus diisi'),

@@ -12,11 +12,19 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         throw new ValidationError('Validasi gagal', validationResult.error.errors);
     }
 
-    const { page, limit, search } = validationResult.data;
+    const { page, limit, search, priority, status } = validationResult.data;
 
     const whereClause: any = {
         deleted_at: null
     };
+
+    if (priority) {
+        whereClause.priority = priority;
+    }
+
+    if (status) {
+        whereClause.status = status;
+    }
 
     if (search) {
         whereClause.OR = [

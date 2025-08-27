@@ -9,6 +9,7 @@ export class WhatsAppService {
     private isReady: boolean = false;
     private static instance: WhatsAppService;
     private io?: Server;
+    private lastQR: string | null = null; 
 
     public setSocketIO(io: Server): void {
         this.io = io;
@@ -58,9 +59,14 @@ export class WhatsAppService {
         }
     }
 
+     public getLastQR(): string | null {
+        return this.lastQR;
+    }
+
     private initializeClient(): void {
         this.client.on('qr', (qr) => {
             console.log('QR Code received, scan please!');
+            this.lastQR = qr;
             if (this.io) {
                 this.io.emit('whatsapp-qr', qr);
             }
