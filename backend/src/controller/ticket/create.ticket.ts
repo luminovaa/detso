@@ -12,36 +12,24 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     const created_by = req.user?.id;
+    const { service_id, title, description, priority, assigned_to } = validationResult.data;
 
-    const {
-        customer_id,
-        service_id,
-        title,
-        description,
-        priority = 'MEDIUM',
-        assigned_to
-    } = validationResult.data;
+    let customer_id: string;
 
-    const customer = await prisma.detso_Customer.findUnique({
-        where: { id: customer_id, deleted_at: null }
-    });
-
-    if (!customer) {
-        throw new NotFoundError('Customer tidak ditemukan');
-    }
-
+    // Jika service_id diberikan, ambil customer_id-nya
     if (service_id) {
         const service = await prisma.detso_Service_Connection.findUnique({
-            where: { id: service_id, deleted_at: null }
+            where: { id: service_id, deleted_at: null },
+            select: { id: true, customer_id: true, customer: true }
         });
 
         if (!service) {
             throw new NotFoundError('Layanan tidak ditemukan');
         }
 
-        if (service.customer_id !== customer_id) {
-            throw new ValidationError('Layanan tidak dimiliki oleh customer ini');
-        }
+        customer_id = service.customer_id;
+    } else {
+        throw new ValidationError('Layanan (service_id) harus diisi untuk menentukan customer');
     }
 
     if (assigned_to) {
@@ -53,32 +41,34 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             throw new NotFoundError('Teknisi tidak ditemukan');
         }
     }
-    
+
+    // Buat ticket dalam transaksi
     const result = await prisma.$transaction(async (tx) => {
         const ticket = await tx.detso_Ticket.create({
             data: {
                 customer_id,
-                service_id,
+                service_id: service_id || null,
                 title,
-                description,
+                description: description || '',
                 priority,
-                assigned_to,
+                assigned_to: assigned_to || null,
                 status: 'OPEN',
-                created_at: new Date()
+                created_at: new Date(),
+                updated_at: new Date(),
             },
             include: {
                 customer: {
                     select: {
                         id: true,
                         name: true,
-                        phone: true
+                        phone: true,
                     }
                 },
                 service: {
                     select: {
                         id: true,
                         id_pel: true,
-                        package_name: true
+                        package_name: true,
                     }
                 },
                 technician: assigned_to ? {
@@ -87,7 +77,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                         username: true,
                         profile: {
                             select: {
-                                full_name: true
+                                full_name: true,
                             }
                         }
                     }
@@ -101,7 +91,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                 action: 'CREATED',
                 description: `Ticket dibuat dengan status: OPEN, priority: ${priority}`,
                 created_by: created_by || null,
-                created_at: new Date()
+                created_at: new Date(),
             }
         });
 
@@ -112,7 +102,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                     technician_id: assigned_to,
                     ticket_id: ticket.id,
                     start_time: new Date(),
-                    status: 'SCHEDULED'
+                    status: 'SCHEDULED',
                 }
             });
 
@@ -122,7 +112,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                     action: 'ASSIGNED',
                     description: `Ticket ditugaskan kepada teknisi: ${assigned_to}`,
                     created_by: created_by || null,
-                    created_at: new Date()
+                    created_at: new Date(),
                 }
             });
         }
@@ -142,3 +132,4 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         history: result.ticketHistory
     });
 });
+

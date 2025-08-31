@@ -1,9 +1,5 @@
 import {
-  Tag,
   Users,
-  Settings,
-  Bookmark,
-  SquarePen,
   LayoutGrid,
   LucideIcon,
   Wifi,
@@ -17,6 +13,7 @@ type Submenu = {
   href: string;
   label: string;
   active?: boolean;
+  roles?: string[];
 };
 
 type Menu = {
@@ -25,15 +22,22 @@ type Menu = {
   active?: boolean;
   icon: LucideIcon;
   submenus?: Submenu[];
+  roles?: string[]; 
 };
 
 type Group = {
   groupLabel: string;
   menus: Menu[];
+  roles?: string[]; 
 };
 
-export function getMenuList(pathname: string): Group[] {
-  return [
+function hasAccess(userRole: string, allowedRoles?: string[]): boolean {
+  if (!allowedRoles || allowedRoles.length === 0) return true;
+  return allowedRoles.includes(userRole);
+}
+
+export function getMenuList(pathname: string, userRole?: string): Group[] {
+  const fullMenuList: Group[] = [
     {
       groupLabel: "",
       menus: [
@@ -41,47 +45,29 @@ export function getMenuList(pathname: string): Group[] {
           href: "/admin/dashboard",
           label: "Dashboard",
           icon: LayoutGrid,
-          submenus: []
+          submenus: [],
         }
       ]
     },
     {
       groupLabel: "Main",
       menus: [
-        // {
-        //   href: "",
-        //   label: "Posts",
-        //   icon: SquarePen,
-        //   submenus: [
-        //     {
-        //       href: "/admin/posts",
-        //       label: "All Posts"
-        //     },
-        //     {
-        //       href: "/posts/new",
-        //       label: "New Post"
-        //     }
-        //   ]
-        // },
-        // {
-        //   href: "/categories",
-        //   label: "Categories",
-        //   icon: Bookmark
-        // },
         {
           href: "/admin/ticket",
           label: "Ticket",
-          icon: Ticket
+          icon: Ticket,
+          roles: ["SUPER_ADMIN", "ADMIN"] 
         },
         {
           href: "/admin/schedule",
           label: "Kalender Kerja",
-          icon: Calendar
+          icon: Calendar,
         },
         {
           href: "/admin/customer",
           label: "Pelanggan",
-          icon: UserCircle2
+          icon: UserCircle2,
+          roles: ["SUPER_ADMIN", "ADMIN"] 
         }
       ]
     },
@@ -90,20 +76,42 @@ export function getMenuList(pathname: string): Group[] {
       menus: [
         {
           href: "/admin/whatsapp",
-          label: "Whastapp",
-          icon: PhoneForwardedIcon
+          label: "Whatsapp",
+          icon: PhoneForwardedIcon,
+          roles: ["SUPER_ADMIN", "ADMIN"] 
         },
         {
           href: "/admin/package",
           label: "Paket Internet",
-          icon: Wifi
+          icon: Wifi,
+          roles: ["SUPER_ADMIN"] 
         },
         {
           href: "/admin/user",
           label: "Pengguna",
-          icon: Users
+          icon: Users,
+          roles: ["SUPER_ADMIN"] 
         },
-      ]
+      ],
     }
   ];
+
+  if (!userRole) {
+    return fullMenuList;
+  }
+
+  return fullMenuList
+    .filter(group => hasAccess(userRole, group.roles))
+    .map(group => ({
+      ...group,
+      menus: group.menus
+        .filter(menu => hasAccess(userRole, menu.roles))
+        .map(menu => ({
+          ...menu,
+          submenus: menu.submenus?.filter(submenu => 
+            hasAccess(userRole, submenu.roles)
+          )
+        }))
+    }))
+    .filter(group => group.menus.length > 0); 
 }

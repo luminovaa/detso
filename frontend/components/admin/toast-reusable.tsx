@@ -282,24 +282,28 @@ interface FormErrorToastProps {
 export const FormErrorToast: React.FC<FormErrorToastProps> = ({
   errors,
   isVisible,
-  customMessage,
   onDismiss,
 }) => {
-  const { showValidationError } = useErrorToast();
+  if (!isVisible || !errors || Object.keys(errors).length === 0) return null;
 
-  React.useEffect(() => {
-    if (isVisible && errors && Object.keys(errors).length > 0) {
-      showValidationError(errors, "Data Tidak Valid");
-
-      if (onDismiss) {
-        setTimeout(() => {
-          onDismiss();
-        }, 5000);
-      }
-    }
-  }, [errors, isVisible, customMessage, showValidationError, onDismiss]);
-
-  return null; 
+  return (
+    <div className="p-4 mb-4 text-sm bg-red-50 text-red-800 rounded-lg border border-red-200">
+      <strong>Form Tidak Valid:</strong>
+      <ul className="mt-1 list-disc list-inside">
+        {Object.entries(errors).map(([field, error]) => (
+          <li key={field}>
+            {field}: {error?.message?.toString()}
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={onDismiss}
+        className="text-xs underline mt-2"
+      >
+        Tutup
+      </button>
+    </div>
+  );
 };
 
 export interface ApiError {

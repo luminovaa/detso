@@ -1,4 +1,5 @@
 import services from "@/services/services";
+import { CreateTicketForm } from "@/types/ticket.types";
 
 interface GetTicketParams {
   page?: number;
@@ -11,5 +12,13 @@ export function getTicket(params?: GetTicketParams) {
     url: '/ticket',
     method: 'get',
     params,
+  });
+}
+
+export function createTicket(data: CreateTicketForm) {
+  return services({
+    url: '/ticket',
+    method: 'post',
+    data,
   });
 }

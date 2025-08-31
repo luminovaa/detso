@@ -38,7 +38,9 @@ interface MenuProps {
 export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth(); 
-  const menuList = getMenuList(pathname);
+  
+  // Pass user role to getMenuList
+  const menuList = getMenuList(pathname, user?.role);
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
@@ -141,7 +143,7 @@ export function Menu({ isOpen }: MenuProps) {
             </li>
           ))}
 
-          {/* User Dropdown */}
+          {/* User Dropdown dengan role indicator */}
           <li className="w-full grow flex items-end mb-4">
             {user ? (
               <DropdownMenu>
@@ -176,9 +178,23 @@ export function Menu({ isOpen }: MenuProps) {
                             <span className="text-sm font-medium truncate">
                               {user.profile?.full_name || user.username || user.email}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate">
-                              {user.email}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </span>
+                              {user.role && (
+                                <span className={cn(
+                                  "text-xs px-2 py-0.5 rounded-full",
+                                  user.role === "admin" 
+                                    ? "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                                    : user.role === "operator"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                                    : "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400"
+                                )}>
+                                  {user.role}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <ChevronRight
                             className={cn(
@@ -192,7 +208,10 @@ export function Menu({ isOpen }: MenuProps) {
                     </TooltipTrigger>
                     {isOpen === false && (
                       <TooltipContent side="right" className="bg-foreground text-background">
-                        {user.profile?.full_name || user.username}
+                        <div className="text-center">
+                          <div>{user.profile?.full_name || user.username}</div>
+                          <div className="text-xs opacity-75">({user.role})</div>
+                        </div>
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -204,7 +223,14 @@ export function Menu({ isOpen }: MenuProps) {
                   sideOffset={5}
                   className="w-56 rounded-3xl"
                 >
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    <div>
+                      <div>My Account</div>
+                      <div className="text-xs font-normal text-muted-foreground">
+                        Role: {user.role}
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="rounded-3xl">
                     <Link href="/admin/profile">

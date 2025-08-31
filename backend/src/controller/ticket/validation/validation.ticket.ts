@@ -17,10 +17,9 @@ export const paginationSchema = z.object({
 });
 
 export const createTicketSchema = z.object({
-    customer_id: z.string().min(1, 'Customer ID harus diisi'),
     service_id: z.string().optional(),
     title: z.string().min(5, 'Judul ticket minimal 5 karakter'),
-    description: z.string().min(10, 'Deskripsi ticket minimal 10 karakter'),
+    description: z.string().optional(),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional().default('MEDIUM'),
     assigned_to: z.string().optional()
 });
