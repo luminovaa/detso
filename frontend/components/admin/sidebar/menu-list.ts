@@ -56,7 +56,7 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           href: "/admin/ticket",
           label: "Ticket",
           icon: Ticket,
-          roles: ["SUPER_ADMIN", "ADMIN"] 
+          roles: ["SUPER_ADMIN", "ADMIN", "TEKNISI"] 
         },
         {
           href: "/admin/schedule",

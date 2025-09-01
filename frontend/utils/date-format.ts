@@ -33,8 +33,18 @@ export const formatDate = (
     return 'Tanggal tidak valid';
   }
 
-  // Konversi ke waktu Indonesia berdasarkan zona waktu
-  const indonesiaTime = convertToIndonesiaTime(dateObj, timeZone);
+  // ✅ PERBAIKAN: Gunakan toLocaleString dengan timezone yang benar
+  const indonesiaTimeZones = {
+    'WIB': 'Asia/Jakarta',
+    'WITA': 'Asia/Makassar', 
+    'WIT': 'Asia/Jayapura'
+  };
+  
+  const locale = 'id-ID';
+  const timeZoneStr = indonesiaTimeZones[timeZone];
+  
+  // Dapatkan tanggal dalam timezone Indonesia
+  const indonesiaDate = new Date(dateObj.toLocaleString('en-US', { timeZone: timeZoneStr }));
   
   // Nama hari dalam bahasa Indonesia
   const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -50,10 +60,10 @@ export const formatDate = (
     'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
   ];
 
-  const dayName = days[indonesiaTime.getDay()];
-  const dateNum = indonesiaTime.getDate();
-  const month = shortMonth ? shortMonths[indonesiaTime.getMonth()] : months[indonesiaTime.getMonth()];
-  const year = indonesiaTime.getFullYear();
+  const dayName = days[indonesiaDate.getDay()];
+  const dateNum = indonesiaDate.getDate();
+  const month = shortMonth ? shortMonths[indonesiaDate.getMonth()] : months[indonesiaDate.getMonth()];
+  const year = indonesiaDate.getFullYear();
 
   // Format dasar
   let formattedDate = '';
@@ -65,8 +75,8 @@ export const formatDate = (
 
   // Tambahkan waktu jika diperlukan
   if (includeTime) {
-    const hours = indonesiaTime.getHours().toString().padStart(2, '0');
-    const minutes = indonesiaTime.getMinutes().toString().padStart(2, '0');
+    const hours = indonesiaDate.getHours().toString().padStart(2, '0');
+    const minutes = indonesiaDate.getMinutes().toString().padStart(2, '0');
     formattedDate += ` ${hours}:${minutes} ${timeZone}`;
   }
 
@@ -104,7 +114,7 @@ export const timeAgo = (date: Date | string): string => {
 };
 
 /**
- * Konversi waktu ke zona waktu Indonesia
+ * ✅ PERBAIKAN: Konversi waktu ke zona waktu Indonesia yang benar
  * @param date - Tanggal yang akan dikonversi
  * @param timeZone - Zona waktu Indonesia (WIB, WITA, WIT)
  * @returns Date object dengan waktu Indonesia
@@ -115,15 +125,17 @@ export const convertToIndonesiaTime = (
 ): Date => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  // Offset waktu Indonesia dari UTC (dalam milidetik)
-  const timeZoneOffsets = {
-    'WIB': 7 * 60 * 60 * 1000, // UTC+7
-    'WITA': 8 * 60 * 60 * 1000, // UTC+8
-    'WIT': 9 * 60 * 60 * 1000  // UTC+9
+  const indonesiaTimeZones = {
+    'WIB': 'Asia/Jakarta',
+    'WITA': 'Asia/Makassar', 
+    'WIT': 'Asia/Jayapura'
   };
   
-  const offset = timeZoneOffsets[timeZone];
-  return new Date(dateObj.getTime() + offset);
+  const timeZoneStr = indonesiaTimeZones[timeZone];
+  
+  // Gunakan toLocaleString untuk konversi timezone yang benar
+  const localTimeStr = dateObj.toLocaleString('en-US', { timeZone: timeZoneStr });
+  return new Date(localTimeStr);
 };
 
 /**
@@ -147,7 +159,7 @@ export const formatIndonesiaTime = (
   date: Date | string, 
   timeZone: 'WIB' | 'WITA' | 'WIT' = 'WIB'
 ): string => {
-  const indonesiaTime = new Date(date);
+  const indonesiaTime = convertToIndonesiaTime(date, timeZone);
   const hours = indonesiaTime.getHours().toString().padStart(2, '0');
   const minutes = indonesiaTime.getMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes} ${timeZone}`;
@@ -171,10 +183,23 @@ export const isWorkingHours = (
   return day !== 0 && hours >= 8 && hours < 17;
 };
 
-// Contoh penggunaan:
-// console.log(formatDate(new Date())); // "Senin, 12 Maret 2023"
-// console.log(formatDate('2023-03-12T14:30:00', { includeTime: true, timeZone: 'WITA' })); // "Senin, 12 Maret 2023 14:30 WITA"
-// console.log(timeAgo(new Date(Date.now() - 3600000))); // "1 jam yang lalu"
-// console.log(getCurrentIndonesiaTime('WIT')); // Date object dengan waktu WIT saat ini
-// console.log(formatIndonesiaTime(new Date(), 'WIB')); // "14:30 WIB"
-// console.log(isWorkingHours(new Date())); // true/false
+// ✅ FUNGSI TAMBAHAN: Untuk debugging timezone issues
+export const debugTimezone = (date: Date | string, timeZone: 'WIB' | 'WITA' | 'WIT' = 'WIB') => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  console.log('=== DEBUG TIMEZONE ===');
+  console.log('Input date:', dateObj.toISOString());
+  console.log('Input timezone:', timeZone);
+  console.log('Local time:', dateObj.toString());
+  console.log('Indonesia time:', convertToIndonesiaTime(dateObj, timeZone).toString());
+  console.log('Formatted:', formatDate(dateObj, { includeTime: true, timeZone }));
+  console.log('====================');
+};
+
+// Contoh penggunaan yang benar:
+// const testDate = new Date('2024-08-31T14:00:00Z'); // UTC time
+// console.log(formatDate(testDate, { includeTime: true, timeZone: 'WIB' })); 
+// // Hasil: "Sabtu, 31 Agustus 2024 21:00 WIB" (UTC+7)
+
+// Debug untuk melihat masalah:
+// debugTimezone('2024-08-31T17:00:00Z', 'WIB');

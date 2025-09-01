@@ -9,9 +9,10 @@ import { getSchedules } from "@/api/schedule";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatIndonesiaTime } from "@/utils/date-format";
 import ScheduleDetailDialog from "./_components/detail-schedule";
+import { useAuth } from "@/components/admin/context/auth-provider";
 
 interface Holiday {
-  holiday_date: string; // format: YYYY-MM-DD
+  holiday_date: string;
   holiday_name: string;
   is_national_holiday: boolean;
 }
@@ -43,6 +44,7 @@ const IndonesianCalendar: React.FC = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState<boolean>(false);
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const { user } = useAuth();
 
   const months = [
     "Januari",
@@ -296,7 +298,9 @@ const IndonesianCalendar: React.FC = () => {
             <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-1 rounded-lg">
               {months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </div>
-            <CreateScheduleDialog onScheduleCreated={handleScheduleCreated} />
+            {user?.role !== "TEKNISI" && (
+              <CreateScheduleDialog onScheduleCreated={handleScheduleCreated} />
+            )}
           </div>
         </div>
 
@@ -368,7 +372,7 @@ const IndonesianCalendar: React.FC = () => {
                       {date.getDate()}
                     </div>
 
-                    {isExpanded && isCurrentMonth && (
+                    {isExpanded && isCurrentMonth && user?.role !== "TEKNISI" && (
                       <div
                         data-dialog-trigger
                         onClick={(e) => e.stopPropagation()}

@@ -1,4 +1,3 @@
-// components/admin/ticket/TicketFilters.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ interface TicketFiltersProps {
   onPriorityChange: (value: string) => void;
   onCreateTicket: () => void;
   disabled?: boolean;
+  showCreateButton?: boolean; 
 }
 
 export function TicketFilters({
@@ -26,43 +26,46 @@ export function TicketFilters({
   onPriorityChange,
   onCreateTicket,
   disabled = false,
+  showCreateButton = true,
 }: TicketFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between gap-3">
       <div className="flex flex-wrap gap-3">
         <Select value={selectedStatus} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[160px]" disabled={disabled}>
+          <SelectTrigger className="w-[160px] rounded-3xl" disabled={disabled}>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Status</SelectItem>
-            <SelectItem value="OPEN">Baru</SelectItem>
-            <SelectItem value="IN_PROGRESS">Dalam Proses</SelectItem>
-            <SelectItem value="RESOLVED">Selesai</SelectItem>
-            <SelectItem value="CLOSED">Ditutup</SelectItem>
+          <SelectContent className="rounded-3xl">
+            <SelectItem className="rounded-3xl" value="all">Semua Status</SelectItem>
+            <SelectItem className="rounded-3xl" value="OPEN">Baru</SelectItem>
+            <SelectItem className="rounded-3xl" value="IN_PROGRESS">Dalam Proses</SelectItem>
+            <SelectItem className="rounded-3xl" value="RESOLVED">Selesai</SelectItem>
+            <SelectItem className="rounded-3xl" value="CLOSED">Ditutup</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={selectedPriority} onValueChange={onPriorityChange}>
-          <SelectTrigger className="w-[160px]" disabled={disabled}>
+          <SelectTrigger className="w-[160px] rounded-3xl" disabled={disabled}>
             <SelectValue placeholder="Prioritas" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Prioritas</SelectItem>
-            <SelectItem value="HIGH">Tinggi</SelectItem>
-            <SelectItem value="MEDIUM">Sedang</SelectItem>
-            <SelectItem value="LOW">Rendah</SelectItem>
+          <SelectContent className="rounded-3xl">
+            <SelectItem className="rounded-3xl" value="all">Semua Prioritas</SelectItem>
+            <SelectItem className="rounded-3xl" value="HIGH">Tinggi</SelectItem>
+            <SelectItem className="rounded-3xl" value="MEDIUM">Sedang</SelectItem>
+            <SelectItem className="rounded-3xl" value="LOW">Rendah</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <Button
-        className="rounded-3xl"
-        onClick={onCreateTicket}
-        disabled={disabled}
-      >
-        Buat Tiket Baru
-      </Button>
+      {showCreateButton && (
+        <Button
+          className="rounded-3xl"
+          onClick={onCreateTicket}
+          disabled={disabled}
+        >
+          Buat Tiket Baru
+        </Button>
+      )}
     </div>
   );
 }

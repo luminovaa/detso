@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 import { Ticket } from "@/types/ticket.types";
@@ -11,25 +11,19 @@ import {
   PaginationMeta,
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
-import { Button } from "@/components/ui/button";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatDate } from "@/utils/date-format";
-import { Badge } from "@/components/ui/badge";
+import { formatDate, formatIndonesiaTime } from "@/utils/date-format";
 import { getTicket } from "@/api/ticket";
-import { PriorityBadge, TicketStatusBadge } from "@/components/admin/badge/ticket-badge";
+import {
+  PriorityBadge,
+  TicketStatusBadge,
+} from "@/components/admin/badge/ticket-badge";
 import { TicketFilters } from "./_components/ticket-filter";
+import { useAuth } from "@/components/admin/context/auth-provider";
 
 interface TicketsResponse {
   tickets: Ticket[];
   pagination: PaginationMeta;
 }
-
 
 function TicketTable() {
   const router = useRouter();
@@ -39,6 +33,7 @@ function TicketTable() {
   const selectedPriority = searchParams.get("priority");
   const limit = parseInt(searchParams.get("limit") || "10");
   const urlSearch = searchParams.get("search") || "";
+  const { user } = useAuth();
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const debouncedSearch = useDebounce(searchInput, 500);
@@ -59,12 +54,7 @@ function TicketTable() {
     {
       header: "Judul",
       accessorKey: "title",
-      cell: (ticket) => (
-        <div className="max-w-[200px]">
-          <p className="font-medium truncate">{ticket.title}</p>
-          <p className="text-sm text-gray-500 truncate">{ticket.description}</p>
-        </div>
-      ),
+      className: "capitalize",
     },
     {
       header: "Pelanggan",
@@ -93,7 +83,8 @@ function TicketTable() {
           {ticket.technician ? (
             <>
               <p className="font-medium">
-                {ticket.technician.profile?.full_name || ticket.technician.username}
+                {ticket.technician.profile?.full_name ||
+                  ticket.technician.username}
               </p>
               <p className="text-sm text-gray-500">{ticket.technician.phone}</p>
             </>
@@ -113,14 +104,21 @@ function TicketTable() {
     },
     {
       header: "Dibuat",
-      cell: (ticket) => formatDate(ticket.created_at!, {includeDay: false, shortMonth: true}),
+      cell: (ticket) =>
+        formatDate(ticket.created_at!, { includeDay: false, shortMonth: true }),
     },
     {
       header: "Diselesaikan",
-      cell: (ticket) => ticket.resolved_at 
-        ? formatDate(ticket.resolved_at, {includeDay: false, shortMonth: true})
-        : <span className="text-gray-400">-</span>,
-    }
+      cell: (ticket) =>
+        ticket.resolved_at ? (
+          formatDate(ticket.resolved_at, {
+            includeDay: false,
+            shortMonth: true,
+          })
+        ) : (
+          <span className="text-gray-400">-</span>
+        ),
+    },
   ];
 
   const updateSearchParams = (newParams: Record<string, string | number>) => {
@@ -172,7 +170,6 @@ function TicketTable() {
 
   const handleEditTicket = async (ticket: Ticket) => {
     console.log("Edit ticket:", ticket);
-    // Implement edit logic
   };
 
   const handleDeleteTicket = async (ticket: Ticket) => {
@@ -184,12 +181,16 @@ function TicketTable() {
     }
   };
 
+  const canCreateTicket = useMemo(() => {
+    if (!user) return false;
+
+    return user.role !== "TEKNISI";
+  }, [user]);
   const handleCreateTicket = () => {
     router.push("/admin/ticket/create-ticket");
   };
-  
+
   const handleAssignTicket = async (ticket: Ticket) => {
-    // Implement assign technician logic
     console.log("Assign ticket:", ticket);
   };
 
@@ -261,6 +262,7 @@ function TicketTable() {
           onPriorityChange={handlePriorityFilter}
           onCreateTicket={handleCreateTicket}
           disabled={loading}
+          showCreateButton={canCreateTicket}
         />
 
         <DataTable
@@ -277,9 +279,7 @@ function TicketTable() {
             onEdit: handleEditTicket,
           }}
           clickableRow={true}
-          onRowClick={(ticket) =>
-            router.push(`/admin/ticket/${ticket.id}`)
-          }
+          onRowClick={(ticket) => router.push(`/admin/ticket/${ticket.id}`)}
         />
 
         {pagination && (

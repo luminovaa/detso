@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler, NotFoundError, ValidationError } from "../../utils/error-handler";
+import { asyncHandler, AuthenticationError, NotFoundError, ValidationError } from "../../utils/error-handler";
 import { scheduleFilterSchema } from "./validation/validation.schedule";
 import { prisma } from "../../utils/prisma";
 import { formatWIB } from "../../utils/time-fromat";
@@ -20,16 +20,13 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
 
     const { month, year, technician_id, status } = validationResult.data;
 
-    // Default ke bulan dan tahun sekarang jika tidak disediakan
     const currentDate = new Date();
     const targetMonth = month || currentDate.getMonth() + 1;
     const targetYear = year || currentDate.getFullYear();
 
-    // Hitung tanggal awal dan akhir bulan
     const startDate = new Date(targetYear, targetMonth - 1, 1);
     const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
 
-    // Build where clause
     const whereClause: any = {
         AND: [
             {
@@ -41,18 +38,26 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
         ]
     };
 
-    // Filter by technician jika ada
     if (technician_id) {
         whereClause.AND.push({
             technician_id: technician_id
         });
     }
 
-    // Filter by status jika ada
     if (status) {
         whereClause.AND.push({
             status: status
         });
+    }
+
+    if (req.user) {
+        if (req.user.role === 'TEKNISI') {
+            whereClause.AND.push({
+                technician_id: req.user.id
+            });
+        }
+    } else {
+        throw new AuthenticationError('Autentikasi diperlukan untuk mengakses jadwal');
     }
 
     // Ambil data schedules
@@ -113,9 +118,10 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
             status: schedule.ticket.status,
             customer: schedule.ticket.customer
         } : null,
-        allDay: !schedule.end_time // Jika tidak ada end_time, anggap all day
+        allDay: !schedule.end_time
     }));
 
+    // Hitung statistik (tetap gunakan whereClause yang sama)
     const scheduledCount = await prisma.detso_Work_Schedule.count({
         where: {
             ...whereClause,

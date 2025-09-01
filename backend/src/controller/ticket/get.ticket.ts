@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler, NotFoundError, ValidationError } from "../../utils/error-handler";
+import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } from "../../utils/error-handler";
 import { paginationSchema } from "./validation/validation.ticket";
 import { prisma } from "../../utils/prisma";
 import { getPagination } from "../../utils/pagination";
@@ -56,6 +56,14 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
                 }
             }
         ];
+    }
+
+    if (!req.user) {
+        throw new AuthenticationError('Autentikasi diperlukan');
+    }
+
+    if (req.user.role === 'TEKNISI') {
+        whereClause.assigned_to = req.user.id;
     }
 
     const totalTickets = await prisma.detso_Ticket.count({
@@ -118,7 +126,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         }
     });
 
-    const baseUrl = process.env.BASE_URL;
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
     const formattedTickets = tickets.map(ticket => ({
         id: ticket.id,
         title: ticket.title,
@@ -136,8 +144,10 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
             email: ticket.technician.email,
             phone: ticket.technician.phone,
             profile: {
-                full_name: ticket.technician.profile?.full_name,
-                avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
+                full_name: ticket.technician.profile?.full_name || null,
+                avatar: ticket.technician.profile?.avatar 
+                    ? `${baseUrl}/${ticket.technician.profile.avatar}` 
+                    : null
             }
         } : null,
         schedule: ticket.schedule
