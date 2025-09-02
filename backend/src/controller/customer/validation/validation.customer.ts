@@ -101,4 +101,6 @@ export const paginationSchema = z.object({
     .transform((val) => parseInt(val))
     .refine((val) => val > 0, { message: 'Batas harus lebih besar dari 0' }),
   search: z.string().trim().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+  package_name: z.string().trim().optional()
 })

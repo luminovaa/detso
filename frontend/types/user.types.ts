@@ -50,7 +50,6 @@ export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
 export const updateUserSchema = z.object({
   email: z
-    .string()
     .email('Email tidak valid')
     .optional()
     .or(z.literal('')),

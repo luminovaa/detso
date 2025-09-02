@@ -62,30 +62,29 @@ function PackageTable() {
     router.push(`${window.location.pathname}${query}`);
   };
 
+const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        limit,
+      };
+
+      const response = await getPackages(params);
+      const data: PackagesResponse = response.data.data;
+
+      setPackages(data.packages);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.error("Error fetching packages:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        setLoading(true);
-        const params = {
-          page: currentPage,
-          limit,
-        };
-
-        const response = await getPackages(params);
-        const data: PackagesResponse = response.data.data;
-
-        setPackages(data.packages);
-        setPagination(data.pagination);
-      } catch (error) {
-        console.error("Error fetching packages:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPackages();
   }, [currentPage, limit]);
-
   const handleEditPackage = async (pkg: Package) => {
     router.push(`/admin/package/edit/${pkg.id}`);
   };
@@ -94,12 +93,7 @@ function PackageTable() {
     try {
       await deletePackage(pkg.id!);
 
-      // Refresh data setelah hapus
-      const response = await getPackages({ page: currentPage, limit });
-      const data: PackagesResponse = response.data.data;
-      setPackages(data.packages);
-      setPagination(data.pagination);
-
+      fetchPackages();
       success(`Paket ${pkg.name} berhasil dihapus!`, {
         title: "Berhasil Menghapus Paket",
       });

@@ -34,7 +34,6 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
     throw new NotFoundError('Service connection tidak ditemukan atau sudah dihapus');
   }
 
-  // Kumpulkan semua file foto yang perlu dihapus
   const filesToDelete = serviceConnection.photos
     .filter(photo => photo.photo_url)
     .map(photo => photo.photo_url);

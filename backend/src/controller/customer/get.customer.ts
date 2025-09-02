@@ -12,11 +12,22 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
         throw new ValidationError('Validasi gagal', validationResult.error.errors);
     }
 
-    const { page, limit, search } = validationResult.data;
+    const { page, limit, search, status, package_name } = validationResult.data;
 
     const whereClause: any = {
         deleted_at: null
     };
+
+    if (status) {
+      whereClause.status = status; 
+    }
+
+    if (package_name) {
+      whereClause.package_name = {
+        contains: package_name,
+        mode: 'insensitive',
+      };
+    }
 
     if (search) {
         whereClause.OR = [

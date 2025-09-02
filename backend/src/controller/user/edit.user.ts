@@ -19,7 +19,6 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
         }
     };
 
-    // Cek apakah user exists
     const userExists = await prisma.detso_User.findUnique({
         where: { id: userId },
         select: {

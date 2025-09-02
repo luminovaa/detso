@@ -31,7 +31,14 @@ export function createUser(user: CreateUserFormData) {
     })
 }
 
-export function editUser(formData: FormData, id: string) {
+export function editUser(user: UpdateUserFormData, id: string) {
+    return service({
+        url: `/user/${id}`,
+        method: 'put',
+        data: user
+    })
+}
+export function editUserWithImage(formData: FormData, id: string) {
   return service({
     url: `/user/${id}`,
     method: 'put',
@@ -40,4 +47,11 @@ export function editUser(formData: FormData, id: string) {
       'Content-Type': 'multipart/form-data',
     },
   });
+}
+
+export function deleteUser(id: string){
+  return service({
+    url: `/user/${id}`,
+    method: 'delete'
+  })
 }

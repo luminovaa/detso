@@ -5,6 +5,8 @@ interface GetCustomersParams {
   page?: number;
   limit?: number;
   search?: string;
+  status?: string;
+  package_name?: string;
 }
 
 export function getCustomers(params?: GetCustomersParams) {

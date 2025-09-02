@@ -29,7 +29,7 @@ export function TicketFilters({
   showCreateButton = true,
 }: TicketFiltersProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between gap-3">
+    <div className="flex flex-col sm:flex-row justify-end gap-3">
       <div className="flex flex-wrap gap-3">
         <Select value={selectedStatus} onValueChange={onStatusChange}>
           <SelectTrigger className="w-[160px] rounded-3xl" disabled={disabled}>

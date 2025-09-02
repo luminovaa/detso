@@ -20,6 +20,7 @@ import { getCustomers } from "@/api/customer.api";
 import { getUsers } from "@/api/user.api";
 import { createTicket } from "@/api/ticket";
 import { Service_Connection } from "@/types/customer.types";
+import CreateTickerSkeleton from "./loading";
 
 interface Technician {
   id: string;
@@ -142,18 +143,7 @@ function CreateTicket() {
 
   if (isLoadingData) {
     return (
-      <AdminPanelLayout title="Tambah Ticket Baru" showSearch={false}>
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="flex items-center justify-center py-10">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Memuat data...</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </AdminPanelLayout>
+      <CreateTickerSkeleton/>
     );
   }
 

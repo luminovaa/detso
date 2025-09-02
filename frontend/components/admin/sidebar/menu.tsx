@@ -39,7 +39,6 @@ export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth(); 
   
-  // Pass user role to getMenuList
   const menuList = getMenuList(pathname, user?.role);
 
   return (

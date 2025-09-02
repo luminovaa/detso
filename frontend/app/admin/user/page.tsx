@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
-import { getUsers } from "@/api/user.api";
+import { deleteUser, getUsers } from "@/api/user.api";
 import { User } from "@/types/user.types";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
+import { useErrorToast } from "@/components/admin/toast-reusable";
 interface UsersResponse {
   users: User[];
   pagination: PaginationMeta;
@@ -38,6 +40,9 @@ function UserTable() {
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const debouncedSearch = useDebounce(searchInput, 500);
+  
+  const { success } = useToast();
+  const { showApiError } = useErrorToast();
 
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
@@ -93,8 +98,7 @@ function UserTable() {
     router.push(`${window.location.pathname}${query}`);
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
+  const fetchUsers = async () => {
       try {
         setLoading(true);
         const params = {
@@ -116,19 +120,27 @@ function UserTable() {
       }
     };
 
-    fetchUsers();
-  }, [currentPage, limit, urlSearch, selectedRole]);
-
   useEffect(() => {
+    fetchUsers();
     setSearchInput(urlSearch);
-  }, [urlSearch]);
+  }, [urlSearch, currentPage, limit, urlSearch, selectedRole]);
 
   const handleEditUser = async (user: User) => {
-    console.log("Edit user:", user);
+    router.push(`/admin/user/edit-user/${user.id}`);
   };
   const handleDeleteUser = async (user: User) => {
-    console.log("Delete user:", user);
+    try {
+      await deleteUser(user.id!);
+
+      fetchUsers();
+      success(`Pengguna ${user.profile?.full_name} berhasil dihapus!`, {
+        title: "Berhasil Menghapus Pengguna!",
+      })
+    } catch (error) {
+      showApiError(error);
+    }
   };
+
   useEffect(() => {
     if (debouncedSearch !== urlSearch) {
       updateSearchParams({

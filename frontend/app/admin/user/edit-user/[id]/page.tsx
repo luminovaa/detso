@@ -1,57 +1,87 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter as useNextRouter } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createUser } from "@/api/user.api";
 import { Loader2 } from "lucide-react";
-import { CreateUserFormData, createUserSchema, role } from "@/types/user.types";
-import { FormField } from "@/components/admin/form-field";
 import { useToast } from "@/hooks/use-toast";
-import {
-  FormErrorToast,
-  useErrorToast,
-} from "@/components/admin/toast-reusable";
-import  CreateUserSkeleton  from "./loading";
+import { FormErrorToast, useErrorToast } from "@/components/admin/toast-reusable";
+import { FormField } from "@/components/admin/form-field";
 
+import { role, updateUserSchema, UpdateUserFormData } from "@/types/user.types";
+import { getUserById, editUser } from "@/api/user.api"; 
+import { User } from "@/types/user.types";
+import EditUserSkeleton from "./loading";
+ 
 const roleOptions = [
   { value: "TEKNISI", label: "Teknisi" },
   { value: "ADMIN", label: "Admin" },
   { value: "SUPER_ADMIN", label: "Super Admin" },
 ];
 
-function CreateUser() {
-  const router = useRouter();
+function EditUser() {
+  const router = useNextRouter();
+    const params = useParams();
+  const userId = params.id as string; 
   const [isLoading, setIsLoading] = useState(false);
-  const { success, warning, info } = useToast();
+  const [formErrors, setFormErrors] = useState(false);
+  const { success, warning } = useToast();
   const { showApiError, showValidationError } = useErrorToast();
-  const [showFormErrors, setShowFormErrors] = useState(false);
 
-  const form = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
+  const form = useForm({
+    resolver: zodResolver(updateUserSchema),
     defaultValues: {
       email: "",
       username: "",
-      password: "",
       phone: "",
-      role: "TEKNISI",
+      role: role.TEKNISI,
       full_name: "",
     },
+    mode: "onChange",
   });
 
-  const onSubmit = async (data: CreateUserFormData) => {
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getUserById(userId);
+        const userData: User = response.data.data;
+
+        form.reset({
+          email: userData.email,
+          username: userData.username,
+          phone: userData.phone,
+          role: userData.role,
+          full_name: userData.profile?.full_name || "",
+        });
+      } catch (err) {
+        showApiError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const onSubmit = async (data: UpdateUserFormData) => {
+    if (!userId) return;
+
     try {
       setIsLoading(true);
 
-       await createUser(data);
+      await editUser(data, userId);
 
-      success(`Pengguna ${data.full_name} berhasil dibuat!`, {
-        title: "Berhasil Membuat Pengguna",
+      success(`Pengguna ${data.full_name} berhasil diperbarui!`, {
+        title: "Berhasil Memperbarui Pengguna",
       });
 
       setTimeout(() => {
@@ -66,34 +96,37 @@ function CreateUser() {
 
   const handleCancel = () => {
     if (form.formState.isDirty) {
-      warning("Data yang sudah diisi akan hilang jika dibatalkan.", {
-        title: "Konfirmasi Pembatalan",
-      });
-      return;
+      const confirm = window.confirm(
+        "Data yang sudah diisi akan hilang jika dibatalkan."
+      );
+      if (confirm) {
+        router.push("/admin/user");
+      }
+    } else {
+      router.push("/admin/user");
     }
-    router.push("/admin/user");
   };
 
   const handleFormError = () => {
     const errors = form.formState.errors;
     if (Object.keys(errors).length > 0) {
       showValidationError(errors, "Form Tidak Valid");
-      setShowFormErrors(true);
+      setFormErrors(true);
     }
   };
 
   if (isLoading) {
     return (
-      <CreateUserSkeleton />
+      <EditUserSkeleton/>
     );
   }
-  
+
   return (
-    <AdminPanelLayout title="Tambah Pengguna Baru" showSearch={false}>
+    <AdminPanelLayout title="Edit Pengguna" showSearch={false}>
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>Tambah Pengguna</CardTitle>
+            <CardTitle>Edit Pengguna</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -117,6 +150,7 @@ function CreateUser() {
                   placeholder="Masukkan email"
                   disabled={isLoading}
                 />
+
                 <FormField
                   form={form}
                   name="username"
@@ -143,16 +177,6 @@ function CreateUser() {
                   selectOptions={roleOptions}
                 />
 
-                {/* Password */}
-                <FormField
-                  form={form}
-                  name="password"
-                  type="password"
-                  label="Password *"
-                  placeholder="Masukkan password"
-                  disabled={isLoading}
-                />
-
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-4 pt-4">
                   <Button
@@ -177,10 +201,12 @@ function CreateUser() {
                 </div>
               </form>
             </Form>
+
+            {/* Error Toast */}
             <FormErrorToast
               errors={form.formState.errors}
-              isVisible={showFormErrors}
-              onDismiss={() => setShowFormErrors(false)}
+              isVisible={formErrors}
+              onDismiss={() => setFormErrors(false)}
             />
           </CardContent>
         </Card>
@@ -189,4 +215,4 @@ function CreateUser() {
   );
 }
 
-export default CreateUser;
+export default EditUser;

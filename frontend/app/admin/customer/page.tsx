@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { StatusCustomerBadge } from "@/components/admin/badge/status-badge";
 import { formatDate } from "@/utils/date-format";
+import { CustomerFilters } from "./_components/customer_filter";
 interface CustomersResponse {
   services: Service_Connection[];
   pagination: PaginationMeta;
@@ -35,6 +36,9 @@ function CustomerTable() {
   const selectedRole = searchParams.get("role");
   const limit = parseInt(searchParams.get("limit") || "10");
   const urlSearch = searchParams.get("search") || "";
+  
+  const selectedStatus = searchParams.get("status") || "all";
+  const selectedPackage = searchParams.get("package") || "all";
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const debouncedSearch = useDebounce(searchInput, 500);
@@ -74,11 +78,11 @@ function CustomerTable() {
     }
   ];
 
-  const updateSearchParams = (newParams: Record<string, string | number>) => {
+   const updateSearchParams = (newParams: Record<string, string | number>) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
 
     Object.entries(newParams).forEach(([key, value]) => {
-      if (value) {
+      if (value && value !== "all") { 
         current.set(key, value.toString());
       } else {
         current.delete(key);
@@ -90,38 +94,55 @@ function CustomerTable() {
     router.push(`${window.location.pathname}${query}`);
   };
 
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        limit,
+        ...(urlSearch && { search: urlSearch }),
+        ...(selectedStatus !== "all" && { status: selectedStatus }),
+        ...(selectedPackage !== "all" && { package_id: selectedPackage }), 
+      };
+
+      const response = await getCustomers(params);
+      const data: CustomersResponse = response.data.data;
+
+      setCustomers(data.services);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleStatusChange = (value: string) => {
+    updateSearchParams({
+      page: 1,
+      status: value,
+    });
+  };
+
+  const handlePackageChange = (value: string) => {
+    updateSearchParams({
+      page: 1,
+      package: value,
+    });
+  };
+
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        setLoading(true);
-        const params = {
-          page: currentPage,
-          limit,
-          ...(urlSearch && { search: urlSearch }),
-        };
-
-        const response = await getCustomers(params);
-        const data: CustomersResponse = response.data.data;
-
-        setCustomers(data.services);
-        setPagination(data.pagination);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCustomers();
-  }, [currentPage, limit, urlSearch, selectedRole]);
-
-  useEffect(() => {
     setSearchInput(urlSearch);
-  }, [urlSearch]);
+  }, [currentPage, limit, urlSearch, selectedStatus, selectedPackage, urlSearch]);
 
   const handleEditCustomer = async (customer: Service_Connection) => {
     console.log("Edit customer:", customer);
   };
+
+  const handleCreateCustomer = async () => {
+    router.push("/admin/customer/create-customer");
+  }
   const handleDeleteCustomer = async (customer: Service_Connection) => {
     try {
     } catch (error) {}
@@ -170,14 +191,13 @@ function CustomerTable() {
       searchPlaceholder="Cari pengguna..."
     >
       <div className="space-y-4">
-        <div className="flex justify-end gap-3">
-          <Button
-            className="rounded-3xl"
-            onClick={() => router.push("/admin/customer/create-customer")}
-          >
-            Tambah Pengguna
-          </Button>
-        </div>
+        <CustomerFilters
+          selectedStatus={selectedStatus}
+          selectedPackage={selectedPackage}
+          onStatusChange={handleStatusChange}
+          onPackageChange={handlePackageChange}
+          onCreateCustomer={handleCreateCustomer}
+        />
         <DataTable
           columns={columns}
           data={customers}

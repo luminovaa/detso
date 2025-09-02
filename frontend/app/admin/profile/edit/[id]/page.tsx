@@ -8,7 +8,7 @@ import AdminPanelLayout from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserById, editUser } from "@/api/user.api";
+import { getUserById, editUser, editUserWithImage } from "@/api/user.api";
 import { Loader2, Upload, X, User as UserIcon } from "lucide-react";
 import { UpdateUserFormData, updateUserSchema, User } from "@/types/user.types";
 import { FormField } from "@/components/admin/form-field";
@@ -173,7 +173,7 @@ function EditUser() {
         formData.append("avatar", selectedFile);
       }
 
-      await editUser(formData, userId);
+      await editUserWithImage(formData, userId);
 
       success(`Data pengguna berhasil diperbarui!`, {
         title: "Berhasil Memperbarui Pengguna",
