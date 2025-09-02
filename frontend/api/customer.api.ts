@@ -1,5 +1,4 @@
 import services from "@/services/services";
-import { CreateCustomerFormData } from "@/types/customer.types";
 
 interface GetCustomersParams {
   page?: number;
@@ -32,5 +31,12 @@ export function createCustomer(data: FormData) {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+  });
+}
+
+export function deleteService(id: string) {
+  return services({
+    url: `/service-connection/${id}`,
+    method: 'delete',
   });
 }

@@ -12,11 +12,10 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     const created_by = req.user?.id;
-    const { service_id, title, description, priority, assigned_to } = validationResult.data;
+    const { service_id, title, description, priority, assigned_to, type } = validationResult.data;
 
     let customer_id: string;
 
-    // Jika service_id diberikan, ambil customer_id-nya
     if (service_id) {
         const service = await prisma.detso_Service_Connection.findUnique({
             where: { id: service_id, deleted_at: null },
@@ -53,6 +52,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                 priority,
                 assigned_to: assigned_to || null,
                 status: 'OPEN',
+                type,
                 created_at: new Date(),
                 updated_at: new Date(),
             },
@@ -89,7 +89,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             data: {
                 ticket_id: ticket.id,
                 action: 'CREATED',
-                description: `Ticket dibuat dengan status: OPEN, priority: ${priority}`,
+                description: `Ticket dibuat dengan status: OPEN, priority: ${priority}, type: ${type}`,
                 created_by: created_by || null,
                 created_at: new Date(),
             }

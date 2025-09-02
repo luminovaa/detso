@@ -30,7 +30,7 @@ function CreateCustomer() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [packages, setPackages] = useState<Package[]>([]);
-  const [document, setDocument] = useState<DocumentData>({ type: "" }); // Single document instead of array
+  const [document, setDocument] = useState<DocumentData>({ type: "ktp" }); // Single document instead of array
   const [photos, setPhotos] = useState<PhotoData[]>([]);
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1); // Extended steps
   const { success, warning } = useToast();
@@ -77,15 +77,6 @@ function CreateCustomer() {
       value: pkg.id ?? "",
       label: `${pkg.name} - Rp ${pkg.price.toLocaleString("id-ID")}`,
     }));
-
-  const documentTypeOptions = [
-    { value: "ktp", label: "KTP" },
-    { value: "kk", label: "Kartu Keluarga" },
-    { value: "npwp", label: "NPWP" },
-    { value: "sim", label: "SIM" },
-    { value: "paspor", label: "Paspor" },
-    { value: "other", label: "Lainnya" },
-  ];
 
   useEffect(() => {
     if (sameAsDomicile) {
@@ -185,10 +176,10 @@ function CreateCustomer() {
       });
 
       // Single document
-      if (document.type && document.file) {
+      if (document.file) {
         formData.append(
           "documents",
-          JSON.stringify([{ type: document.type }])
+          JSON.stringify([{ type: "ktp" }])
         );
         formData.append("documents", document.file);
       }
@@ -263,6 +254,27 @@ function CreateCustomer() {
                 {step === 1 && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Data Pribadi</h3>
+
+                    <div className="flex items-center gap-2 mb-4">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold">Upload KTP</h3>
+                        <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                          Kartu Tanda Penduduk
+                        </span>
+                      </div>
+                      
+                      <FileDropzone
+                        onFileUpload={(file) => updateDocument("file", file)}
+                        accept={{
+                          "image/*": [".jpg", ".jpeg", ".png", ".gif"],
+                          "application/pdf": [".pdf"],
+                        }}
+                        fileType="document"
+                        label="Upload KTP *"
+                        placeholder="Tarik & lepas file KTP (PDF/IMG, max 5MB)"
+                        maxSizeMB={5}
+                        disabled={isLoading}
+                      />
                     <FormField
                       form={form}
                       name="name"
@@ -383,54 +395,9 @@ function CreateCustomer() {
                   </div>
                 )}
 
-                {/* Langkah 3: Upload Dokumen & Foto Rumah Depan */}
                 {step === 3 && (
-                  <>
-                    {/* Upload Dokumen - Moved to top and single document */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Upload Dokumen</h3>
-                      
-                      <div className="p-4 border rounded-lg space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Document Type Select using FormField - Create a dummy form field */}
-                          <div>
-                            <label className="block text-sm font-medium mb-2">
-                              Jenis Dokumen *
-                            </label>
-                            <select
-                              value={document.type}
-                              onChange={(e) => updateDocument("type", e.target.value)}
-                              className="w-full p-2 border rounded-3xl"
-                              disabled={isLoading}
-                            >
-                              <option value="">Pilih jenis dokumen</option>
-                              {documentTypeOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* File Upload */}
-                          <div>
-                            <FileDropzone
-                              onFileUpload={(file) => updateDocument("file", file)}
-                              accept={{
-                                "image/*": [".jpg", ".jpeg", ".png", ".gif"],
-                                "application/pdf": [".pdf"],
-                              }}
-                              fileType="document"
-                              label="Upload Dokumen *"
-                              placeholder="Tarik & lepas dokumen (PDF/IMG)"
-                              maxSizeMB={5}
-                              disabled={isLoading}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
+                  <> 
+                    
                     {/* Foto Rumah Depan */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Foto Rumah Depan</h3>

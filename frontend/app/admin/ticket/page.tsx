@@ -16,6 +16,7 @@ import { getTicket } from "@/api/ticket";
 import {
   PriorityBadge,
   TicketStatusBadge,
+  TypeBadge,
 } from "@/components/admin/badge/ticket-badge";
 import { TicketFilters } from "./_components/ticket-filter";
 import { useAuth } from "@/components/admin/context/auth-provider";
@@ -101,6 +102,10 @@ function TicketTable() {
     {
       header: "Status",
       cell: (ticket) => <TicketStatusBadge status={ticket.status} />,
+    },
+    {
+      header: "Tipe",
+      cell: (ticket) => <TypeBadge type={ticket.type} />,
     },
     {
       header: "Dibuat",

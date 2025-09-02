@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
-import { getCustomers } from "@/api/customer.api";
+import { deleteService, getCustomers } from "@/api/customer.api";
 import { Customer, Service_Connection } from "@/types/customer.types";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -24,6 +24,8 @@ import {
 import { StatusCustomerBadge } from "@/components/admin/badge/status-badge";
 import { formatDate } from "@/utils/date-format";
 import { CustomerFilters } from "./_components/customer_filter";
+import { useToast } from "@/hooks/use-toast";
+import { useErrorToast } from "@/components/admin/toast-reusable";
 interface CustomersResponse {
   services: Service_Connection[];
   pagination: PaginationMeta;
@@ -33,12 +35,14 @@ function CustomerTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1");
-  const selectedRole = searchParams.get("role");
   const limit = parseInt(searchParams.get("limit") || "10");
   const urlSearch = searchParams.get("search") || "";
   
   const selectedStatus = searchParams.get("status") || "all";
   const selectedPackage = searchParams.get("package") || "all";
+  
+  const { success } = useToast();
+  const { showApiError } = useErrorToast();
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const debouncedSearch = useDebounce(searchInput, 500);
@@ -145,7 +149,15 @@ function CustomerTable() {
   }
   const handleDeleteCustomer = async (customer: Service_Connection) => {
     try {
-    } catch (error) {}
+      await deleteService(customer.id!);
+
+      fetchCustomers();
+      success(`Pelanggan ${customer.customer?.name} berhasil dihapus!`, {
+        title: "Berhasil Menghapus Pelanggan!",
+      })
+    } catch (error) {
+      showApiError(error);
+    }
   };
   useEffect(() => {
     if (debouncedSearch !== urlSearch) {

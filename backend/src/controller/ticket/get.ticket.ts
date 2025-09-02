@@ -134,6 +134,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         priority: ticket.priority,
         status: ticket.status,
         created_at: ticket.created_at,
+        type: ticket.type,
         updated_at: ticket.updated_at,
         resolved_at: ticket.resolved_at,
         customer: ticket.customer,

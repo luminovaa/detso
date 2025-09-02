@@ -57,3 +57,28 @@ export const PriorityBadge = ({ priority }: { priority?: string }) => {
     </Badge>
   );
 };
+
+
+export const TypeBadge = ({ type }: { type?: string }) => {
+  const getTypeColor = (type?: string) => {
+    switch (type?.toLowerCase()) {
+      case 'downgrade':
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+      case 'upgrade':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'problem':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  return (
+    <Badge 
+      variant="outline" 
+      className={`${getTypeColor(type)} font-medium`}
+    >
+      {type || 'Unknown'}
+    </Badge>
+  );
+};

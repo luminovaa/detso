@@ -50,63 +50,83 @@ export function CustomerFilters({
     fetchPackages();
   }, []);
 
+  const handleStatusChange = (value: string) => {
+    onStatusChange(value);
+  };
+
+  const handlePackageChange = (value: string) => {
+    onPackageChange(value);
+  };
+
+  const handleCreateClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCreateCustomer();
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row justify-end gap-3">
+    <div 
+      className="flex flex-col sm:flex-row justify-end gap-3"
+      onClick={(e) => e.stopPropagation()} // Tambahkan ini untuk mencegah bubbling dari container
+    >
       <div className="flex flex-wrap gap-3">
         {/* Filter Status */}
-        <Select value={selectedStatus} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[160px] rounded-3xl" disabled={disabled}>
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="rounded-3xl">
-            <SelectItem className="rounded-3xl" value="all">
-              Semua Status
-            </SelectItem>
-            <SelectItem className="rounded-3xl" value="ACTIVE">
-              Aktif
-            </SelectItem>
-            <SelectItem className="rounded-3xl" value="INACTIVE">
-              Tidak Aktif
-            </SelectItem>
-        <SelectItem className="rounded-3xl" value="SUSPENDED">
-              Suspend
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <div onClick={(e) => e.stopPropagation()}> {/* Wrap dengan div dan stop propagation */}
+          <Select value={selectedStatus} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-[160px] rounded-3xl" disabled={disabled}>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl">
+              <SelectItem className="rounded-3xl" value="all">
+                Semua Status
+              </SelectItem>
+              <SelectItem className="rounded-3xl" value="ACTIVE">
+                Aktif
+              </SelectItem>
+              <SelectItem className="rounded-3xl" value="INACTIVE">
+                Tidak Aktif
+              </SelectItem>
+              <SelectItem className="rounded-3xl" value="SUSPENDED">
+                Suspend
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Filter Package */}
-        <Select 
-          value={selectedPackage} 
-          onValueChange={onPackageChange}
-          disabled={disabled || isLoading}
-        >
-          <SelectTrigger className="w-[180px] rounded-3xl">
-            <SelectValue placeholder={isLoading ? "Loading..." : "Semua Package"} />
-          </SelectTrigger>
-          <SelectContent className="rounded-3xl">
-            <SelectItem className="rounded-3xl" value="all">
-              Semua Package
-            </SelectItem>
-            {packages.map((pkg) => (
-              <SelectItem
-                key={pkg.id}
-                className="rounded-3xl"
-                value={pkg.name}
-              >
-                {pkg.name}
+        <div onClick={(e) => e.stopPropagation()}> {/* Wrap dengan div dan stop propagation */}
+          <Select 
+            value={selectedPackage} 
+            onValueChange={handlePackageChange}
+            disabled={disabled || isLoading}
+          >
+            <SelectTrigger className="w-[180px] rounded-3xl">
+              <SelectValue placeholder={isLoading ? "Loading..." : "Semua Package"} />
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl">
+              <SelectItem className="rounded-3xl" value="all">
+                Semua Package
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              {packages.map((pkg) => (
+                <SelectItem
+                  key={pkg.id}
+                  className="rounded-3xl"
+                  value={pkg.name}
+                >
+                  {pkg.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-        <Button
-          className="rounded-3xl"
-          onClick={onCreateCustomer}
-          disabled={disabled}
-        >
-          Buat Tiket Baru
-        </Button>
+      <Button
+        className="rounded-3xl"
+        onClick={handleCreateClick}
+        disabled={disabled}
+      >
+        Pelanggan Baru
+      </Button>
     </div>
   );
 }

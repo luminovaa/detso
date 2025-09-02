@@ -7,31 +7,27 @@ import { deleteFile } from '../../config/upload-file';
 export const deleteServiceConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const serviceId = req.params.id;
 
-  const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPER_ADMIN';
-  const isAssignedTechnician = req.user?.role === 'TEKNISI' && 
-    await prisma.detso_Service_Connection.findFirst({
-      where: { 
-        id: serviceId,
-      }
-    });
-
-  if (!isAdmin && !isAssignedTechnician) {
-    throw new AuthorizationError('Anda tidak memiliki izin untuk menghapus service connection ini');
-  }
-
-  // Cari service connection dengan foto-fotonya
   const serviceConnection = await prisma.detso_Service_Connection.findUnique({
     where: { 
       id: serviceId,
       deleted_at: null 
     },
     include: {
-      photos: true
+      photos: true,
+      customer: true
     }
   });
 
   if (!serviceConnection) {
     throw new NotFoundError('Service connection tidak ditemukan atau sudah dihapus');
+  }
+
+  const customerId = serviceConnection.customer_id;
+
+  const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPER_ADMIN';
+
+  if (!isAdmin) {
+    throw new AuthorizationError('Anda tidak memiliki izin untuk menghapus service connection ini');
   }
 
   const filesToDelete = serviceConnection.photos
@@ -40,31 +36,50 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
 
   console.log('Files to delete:', filesToDelete);
 
-  const [deletedService] = await prisma.$transaction([
+  await prisma.$transaction([
     prisma.detso_Service_Connection.update({
       where: { id: serviceId },
       data: { deleted_at: new Date() }
     }),
-    
     prisma.detso_Service_Photo.deleteMany({
-      where: { service_id: serviceId },
+      where: { service_id: serviceId }
     })
   ]);
 
-  await Promise.all(filesToDelete.map(async filePath => {
-    try {
-      await deleteFile(filePath);
-      console.log(`Berhasil hapus file: ${filePath}`);
-    } catch (err) {
-      console.error(`Gagal hapus file ${filePath}:`, err);
+  const activeServiceCount = await prisma.detso_Service_Connection.count({
+    where: {
+      customer_id: customerId,
+      deleted_at: null
     }
-  }));
+  });
+
+  let customerDeleted = false;
+  if (activeServiceCount === 0) {
+    await prisma.detso_Customer.update({
+      where: { id: customerId },
+      data: { deleted_at: new Date() }
+    });
+    customerDeleted = true;
+  }
+
+  await Promise.all(
+    filesToDelete.map(async (filePath) => {
+      try {
+        await deleteFile(filePath);
+        console.log(`Berhasil hapus file: ${filePath}`);
+      } catch (err) {
+        console.error(`Gagal hapus file ${filePath}:`, err);
+      }
+    })
+  );
 
   responseData(res, 200, 'Service connection berhasil dihapus', {
-    serviceId: deletedService.id,
+    serviceId: serviceId,
     deletedFiles: filesToDelete.length,
+    customerDeleted: customerDeleted,
     details: {
-      photos: serviceConnection.photos.length
+      photos: serviceConnection.photos.length,
+      remainingActiveServices: activeServiceCount
     }
   });
 });

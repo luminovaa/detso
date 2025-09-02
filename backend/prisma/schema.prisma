@@ -197,6 +197,7 @@ model Detso_Ticket {
     service_id     String?
     title          String
     description    String
+    type           TicketType                @default(PROBLEM)
     priority       TicketPriority            @default(MEDIUM)
     status         TicketStatus              @default(OPEN)
     assigned_to    String?
@@ -210,6 +211,10 @@ model Detso_Ticket {
     ticket_history Detso_Ticket_History[]
     deleted_at     DateTime?
 
+    @@index([type])
+    @@index([status])
+    @@index([customer_id])
+    @@index([assigned_to])
     @@map("detso_tickets")
 }
 
@@ -289,4 +294,10 @@ enum Detso_Role {
     TEKNISI
     ADMIN
     SUPER_ADMIN
+}
+
+enum TicketType {
+  UPGRADE
+  DOWNGRADE
+  PROBLEM
 }

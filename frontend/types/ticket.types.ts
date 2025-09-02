@@ -15,6 +15,7 @@ export type Ticket = {
     updated_at?: Date;
     resolved_at?: Date;
     customer?: Customer;
+    type?: string;
     service?: Service_Connection;
     technician?: User;
     ticket_history?: Ticket_History[];
@@ -36,6 +37,7 @@ export const createTicketSchema = z.object({
     service_id: z.string().optional(),
     title: z.string().min(5, 'Judul ticket minimal 5 karakter'),
     description: z.string().optional(),
+    type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional().default('PROBLEM'),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional().default('MEDIUM'),
     assigned_to: z.string().optional()
 });
