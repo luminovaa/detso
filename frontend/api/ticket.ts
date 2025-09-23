@@ -22,3 +22,10 @@ export function createTicket(data: CreateTicketForm) {
     data,
   });
 }
+
+export function getTicketById(id: string) {
+  return services({
+    url: `/ticket/${id}`,
+    method: 'get',
+  });
+}

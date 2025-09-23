@@ -11,6 +11,8 @@ export type User = {
     role?: role;
     phone?: string;
     profile?: Profile;
+    avatar?: string;
+    full_name?: string;
 }
 
 

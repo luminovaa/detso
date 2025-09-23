@@ -166,15 +166,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
     const ticket = await prisma.detso_Ticket.findUnique({
         where: { id: ticketId, deleted_at: null },
         include: {
-            customer: {
-                select: {
-                    id: true,
-                    name: true,
-                    phone: true,
-                    email: true,
-                    address: true
-                }
-            },
+           
             service: {
                 select: {
                     id: true,
@@ -182,21 +174,8 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
                     package_name: true,
                     address: true,
                     mac_address: true,
-                    package_speed: true
-                }
-            },
-            technician: {
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    phone: true,
-                    profile: {
-                        select: {
-                            full_name: true,
-                            avatar: true
-                        }
-                    }
+                    package_speed: true,
+                    customer: true
                 }
             },
             schedule: {
@@ -237,15 +216,15 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         created_at: ticket.created_at,
         updated_at: ticket.updated_at,
         resolved_at: ticket.resolved_at,
-        customer: ticket.customer,
-        service: ticket.service,
-        technician: ticket.technician ? {
-            id: ticket.technician.id,
-            username: ticket.technician.username,
-            email: ticket.technician.email,
-            phone: ticket.technician.phone,
-            full_name: ticket.technician.profile?.full_name,
-            avatar: ticket.technician.profile?.avatar ? `${baseUrl}/${ticket.technician.profile.avatar}` : null
+        
+        service: ticket.service ? {
+            id: ticket.service.id,
+            id_pel: ticket.service.id_pel,
+            package_name: ticket.service.package_name,
+            address: ticket.service.address,
+            mac_address: ticket.service.mac_address,
+            package_speed: ticket.service.package_speed,
+            customer: ticket.service.customer,
         } : null,
         schedule: ticket.schedule ? {
             id: ticket.schedule.id,
@@ -297,7 +276,7 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
             }
         },
         orderBy: {
-            created_at: 'desc'
+            created_at: 'asc'
         }
     });
 

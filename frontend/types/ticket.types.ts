@@ -1,6 +1,7 @@
 import z from "zod";
 import { Customer, Service_Connection } from "./customer.types";
 import { User } from "./user.types";
+import { Schedule } from "./schedule.types";
 
 export type Ticket = {
     id?: string;
@@ -19,6 +20,7 @@ export type Ticket = {
     service?: Service_Connection;
     technician?: User;
     ticket_history?: Ticket_History[];
+    schedule?: Schedule;
 }
 
 export type Ticket_History = {

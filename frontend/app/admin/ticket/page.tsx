@@ -284,7 +284,7 @@ function TicketTable() {
             onEdit: handleEditTicket,
           }}
           clickableRow={true}
-          onRowClick={(ticket) => router.push(`/admin/ticket/${ticket.id}`)}
+          onRowClick={(ticket) => router.push(`ticket/${ticket.id}/detail-ticket`)}
         />
 
         {pagination && (
