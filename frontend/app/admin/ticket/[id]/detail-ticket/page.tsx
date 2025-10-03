@@ -35,27 +35,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-const priorityColors = {
-  LOW: "bg-blue-100 text-blue-800 border-blue-200",
-  MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-200",
-  URGENT: "bg-red-100 text-red-800 border-red-200",
-};
-
-const statusColors = {
-  OPEN: "bg-gray-100 text-gray-800 border-gray-200",
-  IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-200",
-  RESOLVED: "bg-green-100 text-green-800 border-green-200",
-  CLOSED: "bg-gray-100 text-gray-800 border-gray-200",
-};
-
-const scheduleStatusColors = {
-  SCHEDULED: "bg-blue-100 text-blue-800 border-blue-200",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  COMPLETED: "bg-green-100 text-green-800 border-green-200",
-  CANCELLED: "bg-red-100 text-red-800 border-red-200",
-};
+import {
+  PriorityBadge,
+  TicketStatusBadge,
+} from "@/components/admin/badge/ticket-badge";
 
 export default function TicketDetail({
   params,
@@ -116,36 +99,6 @@ export default function TicketDetail({
     }
   };
 
-  const getPriorityVariant = (priority: string) => {
-    switch (priority) {
-      case "LOW":
-        return "secondary";
-      case "MEDIUM":
-        return "default";
-      case "HIGH":
-        return "destructive";
-      case "URGENT":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "OPEN":
-        return "secondary";
-      case "IN_PROGRESS":
-        return "default";
-      case "RESOLVED":
-        return "default";
-      case "CLOSED":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
   if (isLoading) {
     return (
       <AdminPanelLayout showSearch={false}>
@@ -203,21 +156,7 @@ export default function TicketDetail({
   }
 
   if (error || !ticket) {
-    return (
-      <AdminPanelLayout showSearch={false}>
-        <div className="max-w-7xl mx-auto p-6">
-          {/* <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error || "Tiket tidak ditemukan"}
-            </AlertDescription>
-          </Alert>
-          <Button onClick={() => router.back()}>
-            Kembali
-          </Button> */}
-        </div>
-      </AdminPanelLayout>
-    );
+    return;
   }
 
   return (
@@ -228,98 +167,99 @@ export default function TicketDetail({
           <Button
             variant="ghost"
             onClick={() => router.back()}
-            className="mb-4 pl-0"
+            className="mb-4 pl-0 rounded-full"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
 
-            <div className="flex items-center justify-end space-x-2">
-              <Badge variant={getPriorityVariant(ticket.priority!)}>
-                {ticket.priority}
-              </Badge>
-              <Badge
-                variant={getStatusVariant(ticket.status!)}
-                className="flex items-center space-x-1"
-              >
-                {getStatusIcon(ticket.status!)}
-                <span>{ticket.status}</span>
-              </Badge>
-            </div>
+          <div className="flex items-center justify-end space-x-2">
+            <PriorityBadge priority={ticket.priority} />
+            <TicketStatusBadge status={ticket.status} />
+            {getStatusIcon(ticket.status!)}
+            <span>{ticket.status}</span>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-96">
+          <TabsList className="grid w-full grid-cols-3 lg:w-96 rounded-full">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="service">Layanan</TabsTrigger>
             <TabsTrigger value="schedule">Jadwal</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-              {/* Main Content */}
-              <div className="space-y-6">
-                {/* Ticket Information */}
-                <Card>
-                  <CardHeader>
+            {/* Main Content */}
+            <div className="space-y-6">
+              {/* Ticket Information */}
+              <Card>
+                <CardHeader className="flex justify-between flex-row">
+                  <div>
                     <CardTitle>Informasi Tiket</CardTitle>
                     <CardDescription>
                       Detail lengkap mengenai tiket pelanggan
                     </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+                  </div>
+                  <div className="right-0">
+                    <p className="font-mono">
+                    {ticket.id?.slice(-8).toUpperCase()}
+                    </p>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Judul
+                    </label>
+                    <p className="capitalize text-foreground font-medium">
+                      {ticket.title}
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Deskripsi
+                    </label>
+                    <p className="capitalize text-foreground leading-relaxed">
+                      {ticket.description || "Tidak ada deskripsi"}
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Judul
+                      <label className="text-sm font-medium text-muted-foreground block">
+                        Dibuat
                       </label>
-                      <p className="capitalize text-foreground font-medium">
-                        {ticket.title}
+                      <p className="text-foreground text-sm">
+                        {formatDate(ticket.created_at?.toString() || null)}
                       </p>
                     </div>
 
-                    <Separator />
-
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Deskripsi
+                      <label className="text-sm font-medium text-muted-foreground block">
+                        Diperbarui
                       </label>
-                      <p className="text-foreground leading-relaxed">
-                        {ticket.description || "Tidak ada deskripsi"}
+                      <p className="text-foreground text-sm">
+                        {formatDate(ticket.updated_at?.toString() || null)}
                       </p>
                     </div>
 
-                    <Separator />
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Dibuat
-                        </label>
-                        <p className="text-foreground text-sm">
-                          {formatDate(ticket.created_at?.toString() || null)}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Diperbarui
-                        </label>
-                        <p className="text-foreground text-sm">
-                          {formatDate(ticket.updated_at?.toString() || null)}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Diselesaikan
-                        </label>
-                        <p className="text-foreground text-sm">
-                          {formatDate(ticket.resolved_at?.toString() || null)}
-                        </p>
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground block">
+                        Diselesaikan
+                      </label>
+                      <p className="text-foreground text-sm">
+                        {formatDate(ticket.resolved_at?.toString() || null)}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="service" className="space-y-6">
@@ -417,11 +357,7 @@ export default function TicketDetail({
                         <span className="text-sm font-medium text-muted-foreground">
                           Status
                         </span>
-                        <Badge
-                          variant={getStatusVariant(ticket.schedule.status!)}
-                        >
-                          {ticket.schedule.status}
-                        </Badge>
+                        <PriorityBadge priority={ticket.schedule.status} />
                       </div>
 
                       <div className="space-y-2">

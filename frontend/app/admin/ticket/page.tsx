@@ -48,7 +48,7 @@ function TicketTable() {
       header: "ID Ticket",
       cell: (ticket) => (
         <span className="font-mono text-sm">
-          #{ticket.id?.slice(-8).toUpperCase()}
+          {ticket.id?.slice(-8).toUpperCase()}
         </span>
       ),
     },
