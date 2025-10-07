@@ -17,7 +17,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Ticket } from "@/types/ticket.types";
 import Image from "next/image";
-import { getTicketById } from "@/api/ticket";
+import { getTicketById, getTicketHistory } from "@/api/ticket";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 
 // Shadcn/ui components
@@ -29,7 +29,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 // import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -39,6 +38,7 @@ import {
   PriorityBadge,
   TicketStatusBadge,
 } from "@/components/admin/badge/ticket-badge";
+import { formatDate } from "@/utils/date-format";
 
 export default function TicketDetail({
   params,
@@ -50,6 +50,8 @@ export default function TicketDetail({
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [historyTicket, setHistoryTicket] = useState<Ticket | null>(null);
+  const [activities, setActivities] = useState<Ticket | null>(null);
 
   useEffect(() => {
     fetchTicketDetail();
@@ -73,16 +75,24 @@ export default function TicketDetail({
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const fetchHistoryTicket = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getTicketHistory(ticketId.id);
+
+      if (response.data.success) {
+        setHistoryTicket(response.data.data.histories);
+        setActivities(response.data.data.activities);
+      } else {
+        setError("Gagal mengambil riwayat tiket");
+      }
+    } catch (error) {
+      setError("Terjadi kesalahan saat mengambil riwayat tiket");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -186,6 +196,7 @@ export default function TicketDetail({
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="service">Layanan</TabsTrigger>
             <TabsTrigger value="schedule">Jadwal</TabsTrigger>
+            <TabsTrigger value="history">Riwayat</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -235,7 +246,7 @@ export default function TicketDetail({
                         Dibuat
                       </label>
                       <p className="text-foreground text-sm">
-                        {formatDate(ticket.created_at?.toString() || null)}
+                        {formatDate(ticket.created_at!)}
                       </p>
                     </div>
 
@@ -244,7 +255,7 @@ export default function TicketDetail({
                         Diperbarui
                       </label>
                       <p className="text-foreground text-sm">
-                        {formatDate(ticket.updated_at?.toString() || null)}
+                        {formatDate(ticket.updated_at!)}
                       </p>
                     </div>
 
@@ -253,7 +264,7 @@ export default function TicketDetail({
                         Diselesaikan
                       </label>
                       <p className="text-foreground text-sm">
-                        {formatDate(ticket.resolved_at?.toString() || null)}
+                        {formatDate(ticket.resolved_at!)}
                       </p>
                     </div>
                   </div>
@@ -366,7 +377,7 @@ export default function TicketDetail({
                         </label>
                         <p className="text-foreground text-sm">
                           {formatDate(
-                            ticket.schedule.start_time?.toString() || null
+                            ticket.schedule.start_time!
                           )}
                         </p>
                       </div>
@@ -377,7 +388,7 @@ export default function TicketDetail({
                         </label>
                         <p className="text-foreground text-sm">
                           {formatDate(
-                            ticket.schedule.end_time?.toString() || null
+                            ticket.schedule.end_time!
                           )}
                         </p>
                       </div>

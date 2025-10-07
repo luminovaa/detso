@@ -29,3 +29,10 @@ export function getTicketById(id: string) {
     method: 'get',
   });
 }
+
+export function getTicketHistory(id: string) {
+  return services({
+    url: `/ticket/${id}/history`,
+    method: 'get',
+  });
+}

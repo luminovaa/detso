@@ -28,9 +28,9 @@ export const formatDate = (
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
   // Validasi Date object
-  if (isNaN(dateObj.getTime())) {
-    console.error('Invalid date:', date);
-    return 'Tanggal tidak valid';
+  if (!dateObj || isNaN(dateObj.getTime())) {
+    console.log('Invalid date:', date);
+    return '-';
   }
 
   // ✅ PERBAIKAN: Gunakan toLocaleString dengan timezone yang benar

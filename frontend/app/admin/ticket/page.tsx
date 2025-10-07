@@ -11,7 +11,7 @@ import {
   PaginationMeta,
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
-import { formatDate, formatIndonesiaTime } from "@/utils/date-format";
+import { formatDate } from "@/utils/date-format";
 import { getTicket } from "@/api/ticket";
 import {
   PriorityBadge,

@@ -74,6 +74,8 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
     if (!isPasswordValid) {
         throw new AuthenticationError('Username/email atau password salah');
     }
+    console.log(!user)
+    console.log(!isPasswordValid)
 
     const accessToken = generateAccessToken({
         id: user.id,
