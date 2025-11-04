@@ -1,44 +1,27 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  ArrowLeft,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Wifi,
-  Settings,
-} from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle, XCircle, Clock } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Ticket } from "@/types/ticket.types";
-import Image from "next/image";
 import { getTicketById, getTicketHistory } from "@/api/ticket";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 
 // Shadcn/ui components
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   PriorityBadge,
   TicketStatusBadge,
 } from "@/components/admin/badge/ticket-badge";
-import { formatDate } from "@/utils/date-format";
+
+import OverviewTab from "./_components/tabs-overview";
+import ServiceTab from "./_components/tabs-service";
+import ScheduleTab from "./_components/tabs-schedule";
+import HistoryTab from "./_components/tabs-history";
+import ImagesTab from "./_components/tabs-image";
 
 export default function TicketDetail({
   params,
@@ -50,11 +33,13 @@ export default function TicketDetail({
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [historyTicket, setHistoryTicket] = useState<Ticket | null>(null);
-  const [activities, setActivities] = useState<Ticket | null>(null);
+  const [historyTicket, setHistoryTicket] = useState<Ticket[]>([]);
+  const [activities, setActivities] = useState<Ticket[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTicketDetail();
+    fetchHistoryTicket();
   }, [ticketId.id]);
 
   const fetchTicketDetail = async () => {
@@ -92,7 +77,7 @@ export default function TicketDetail({
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -132,10 +117,7 @@ export default function TicketDetail({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-48" />
-                </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-6 space-y-4">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
                   <div className="grid grid-cols-3 gap-4">
@@ -146,19 +128,6 @@ export default function TicketDetail({
                 </CardContent>
               </Card>
             </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </AdminPanelLayout>
@@ -166,7 +135,7 @@ export default function TicketDetail({
   }
 
   if (error || !ticket) {
-    return;
+    return null;
   }
 
   return (
@@ -192,262 +161,63 @@ export default function TicketDetail({
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-96 rounded-full">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[500px] rounded-full">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="service">Layanan</TabsTrigger>
             <TabsTrigger value="schedule">Jadwal</TabsTrigger>
             <TabsTrigger value="history">Riwayat</TabsTrigger>
+            <TabsTrigger value="images">Dokumentasi</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Main Content */}
-            <div className="space-y-6">
-              {/* Ticket Information */}
-              <Card>
-                <CardHeader className="flex justify-between flex-row">
-                  <div>
-                    <CardTitle>Informasi Tiket</CardTitle>
-                    <CardDescription>
-                      Detail lengkap mengenai tiket pelanggan
-                    </CardDescription>
-                  </div>
-                  <div className="right-0">
-                    <p className="font-mono">
-                    {ticket.id?.slice(-8).toUpperCase()}
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Judul
-                    </label>
-                    <p className="capitalize text-foreground font-medium">
-                      {ticket.title}
-                    </p>
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Deskripsi
-                    </label>
-                    <p className="capitalize text-foreground leading-relaxed">
-                      {ticket.description || "Tidak ada deskripsi"}
-                    </p>
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground block">
-                        Dibuat
-                      </label>
-                      <p className="text-foreground text-sm">
-                        {formatDate(ticket.created_at!)}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground block">
-                        Diperbarui
-                      </label>
-                      <p className="text-foreground text-sm">
-                        {formatDate(ticket.updated_at!)}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground block">
-                        Diselesaikan
-                      </label>
-                      <p className="text-foreground text-sm">
-                        {formatDate(ticket.resolved_at!)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <OverviewTab ticket={ticket} />
           </TabsContent>
 
           <TabsContent value="service" className="space-y-6">
-            {ticket.service ? (
-              <Card>
-                <CardHeader className="flex flex-row items-center space-x-2 space-y-0">
-                  <Wifi className="w-5 h-5 text-primary" />
-                  <div>
-                    <CardTitle>Informasi Layanan</CardTitle>
-                    <CardDescription>
-                      Detail layanan internet pelanggan
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          ID Pelanggan
-                        </label>
-                        <p className="text-foreground font-mono font-medium">
-                          {ticket.service.id_pel}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Paket
-                        </label>
-                        <p className="text-foreground">
-                          {ticket.service.package_name}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Kecepatan
-                        </label>
-                        <p className="text-foreground font-medium">
-                          {ticket.service.package_speed}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          MAC Address
-                        </label>
-                        <p className="text-foreground font-mono">
-                          {ticket.service.mac_address || "-"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Alamat Instalasi
-                        </label>
-                        <p className="text-foreground leading-relaxed">
-                          {ticket.service.address}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground">
-                    Tidak ada informasi layanan
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <ServiceTab ticket={ticket} />
           </TabsContent>
 
           <TabsContent value="schedule" className="space-y-6">
-            {ticket.schedule ? (
-              <Card>
-                <CardHeader className="flex flex-row items-center space-x-2 space-y-0">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <div>
-                    <CardTitle>Informasi Jadwal</CardTitle>
-                    <CardDescription>
-                      Detail jadwal penanganan tiket
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Status
-                        </span>
-                        <PriorityBadge priority={ticket.schedule.status} />
-                      </div>
+            <ScheduleTab ticket={ticket} />
+          </TabsContent>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Mulai
-                        </label>
-                        <p className="text-foreground text-sm">
-                          {formatDate(
-                            ticket.schedule.start_time!
-                          )}
-                        </p>
-                      </div>
+          <TabsContent value="history" className="space-y-6">
+            <HistoryTab historyTicket={historyTicket} activities={activities} />
+          </TabsContent>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground block">
-                          Selesai
-                        </label>
-                        <p className="text-foreground text-sm">
-                          {formatDate(
-                            ticket.schedule.end_time!
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      {ticket.schedule.notes && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-muted-foreground block">
-                            Catatan
-                          </label>
-                          <p className="text-foreground text-sm leading-relaxed">
-                            {ticket.schedule.notes}
-                          </p>
-                        </div>
-                      )}
-
-                      {ticket.schedule.technician && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-muted-foreground block">
-                            Teknisi Terjadwal
-                          </label>
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage
-                                src={ticket.schedule.technician.avatar || ""}
-                              />
-                              <AvatarFallback>
-                                <User className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-
-                            <div>
-                              <p className="text-sm font-medium text-foreground">
-                                {ticket.schedule.technician.full_name ||
-                                  ticket.schedule.technician.username}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                @{ticket.schedule.technician.username}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground">
-                    Tidak ada jadwal terkait
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+          <TabsContent value="images" className="space-y-6">
+            <ImagesTab 
+              historyTicket={historyTicket} 
+              onImageClick={setSelectedImage} 
+            />
           </TabsContent>
         </Tabs>
+
+        {/* Modal Zoom Gambar */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-4xl w-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute -top-12 right-0 text-white hover:bg-white/20"
+                onClick={() => setSelectedImage(null)}
+              >
+                <XCircle className="w-6 h-6" />
+              </Button>
+              <Image
+                src={selectedImage}
+                alt="Zoom"
+                width={1200}
+                height={800}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </AdminPanelLayout>
   );

@@ -23,37 +23,56 @@ export const TicketStatusBadge = ({ status }: { status?: string }) => {
   return (
     <Badge 
       variant="outline" 
-      className={`${getStatusColor(status)} font-medium`}
+      className={`${getStatusColor(status)} capitalize font-medium`}
     >
-      {status || 'Unknown'}
+      {status?.toLowerCase() || 'Unknown'}
     </Badge>
   );
 };
 
-// Priority Badge Component
 export const PriorityBadge = ({ priority }: { priority?: string }) => {
   const getPriorityColor = (priority?: string) => {
     switch (priority?.toLowerCase()) {
-      case 'high':
-      case 'tinggi':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-      case 'sedang':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'low':
-      case 'rendah':
-        return 'bg-green-100 text-green-800 border-green-200';
+      case "urgent":
+        return "bg-pink-100 text-pink-800 border-pink-200";
+      case "high":
+      case "tinggi":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "medium":
+      case "sedang":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "low":
+      case "rendah":
+        return "bg-green-100 text-green-800 border-green-200";
       default:
-        return 'bg-gray-100 text-gray-600 border-gray-200';
+        return "bg-gray-100 text-gray-600 border-gray-200";
+    }
+  };
+
+  const getPriorityLabel = (priority?: string) => {
+    switch (priority?.toLowerCase()) {
+      case "urgent":
+        return "Urgent";
+      case "high":
+      case "tinggi":
+        return "Tinggi";
+      case "medium":
+      case "sedang":
+        return "Sedang";
+      case "low":
+      case "rendah":
+        return "Rendah";
+      default:
+        return "Normal";
     }
   };
 
   return (
-    <Badge 
-      variant="outline" 
-      className={`${getPriorityColor(priority)} font-medium`}
+    <Badge
+      variant="outline"
+      className={`${getPriorityColor(priority)} capitalize font-medium`}
     >
-      {priority || 'Normal'}
+      {getPriorityLabel(priority)}
     </Badge>
   );
 };
@@ -76,9 +95,9 @@ export const TypeBadge = ({ type }: { type?: string }) => {
   return (
     <Badge 
       variant="outline" 
-      className={`${getTypeColor(type)} font-medium`}
+      className={`${getTypeColor(type)} capitalize font-medium`}
     >
-      {type || 'Unknown'}
+      {type?.toLowerCase() || 'Unknown'}
     </Badge>
   );
 };

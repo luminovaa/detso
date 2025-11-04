@@ -48,6 +48,7 @@ function CreateTicket() {
       title: "",
       description: "",
       priority: "MEDIUM",
+      type: "PROBLEM",
       assigned_to: "",
     },
   });
@@ -140,6 +141,12 @@ function CreateTicket() {
     { value: "HIGH", label: "Tinggi" },
     { value: "CRITICAL", label: "Kritis" },
   ];
+  
+  const typeOptions = [
+    { value: "PROBLEM", label: "Problem" },
+    { value: "UPGRADE", label: "Upgrade" },
+    { value: "DOWNGRADE", label: "Downgrade" },
+  ];
 
   if (isLoadingData) {
     return (
@@ -184,6 +191,15 @@ function CreateTicket() {
                   label="Deskripsi *"
                   placeholder="Masukkan deskripsi masalah"
                   type="textarea"
+                  disabled={isLoading}
+                />
+
+                <FormField
+                  form={form}
+                  name="type"
+                  label="Tipe *"
+                  type="select"
+                  selectOptions={typeOptions}
                   disabled={isLoading}
                 />
 

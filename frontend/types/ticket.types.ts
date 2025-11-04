@@ -44,4 +44,15 @@ export const createTicketSchema = z.object({
     assigned_to: z.string().optional()
 });
 
+export const editTicketSchema = z.object({
+  title: z.string().min(3, "Judul minimal 3 karakter").optional(),
+  description: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
+  assigned_to: z.string().optional(),
+  service_id: z.string().optional(),
+  image: z.any().optional(),
+});
+
+export type EditTicketForm = z.infer<typeof editTicketSchema>;
 export type CreateTicketForm = z.infer<typeof createTicketSchema>;

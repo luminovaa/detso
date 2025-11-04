@@ -174,7 +174,7 @@ function TicketTable() {
   }, [urlSearch]);
 
   const handleEditTicket = async (ticket: Ticket) => {
-    console.log("Edit ticket:", ticket);
+    router.push(`/admin/ticket/${ticket.id}/edit-ticket`);
   };
 
   const handleDeleteTicket = async (ticket: Ticket) => {
