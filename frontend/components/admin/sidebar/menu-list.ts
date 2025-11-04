@@ -6,7 +6,8 @@ import {
   PhoneForwardedIcon,
   UserCircle2,
   Calendar,
-  Ticket
+  Ticket,
+  DollarSign
 } from "lucide-react";
 
 type Submenu = {
@@ -67,6 +68,18 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           href: "/admin/customer",
           label: "Pelanggan",
           icon: UserCircle2,
+          roles: ["SUPER_ADMIN", "ADMIN"] 
+        },
+        {
+          href: "/admin/customer",
+          label: "Billing",
+          icon: DollarSign,
+          roles: ["SUPER_ADMIN", "ADMIN"] 
+        },
+        {
+          href: "/admin/customer",
+          label: "Billing",
+          icon: DollarSign,
           roles: ["SUPER_ADMIN", "ADMIN"] 
         }
       ]
