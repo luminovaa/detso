@@ -70,18 +70,18 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           icon: UserCircle2,
           roles: ["SUPER_ADMIN", "ADMIN"] 
         },
-        {
-          href: "/admin/customer",
-          label: "Billing",
-          icon: DollarSign,
-          roles: ["SUPER_ADMIN", "ADMIN"] 
-        },
-        {
-          href: "/admin/customer",
-          label: "Billing",
-          icon: DollarSign,
-          roles: ["SUPER_ADMIN", "ADMIN"] 
-        }
+        // {
+        //   href: "/admin/customer",
+        //   label: "Billing",
+        //   icon: DollarSign,
+        //   roles: ["SUPER_ADMIN", "ADMIN"] 
+        // },
+        // {
+        //   href: "/admin/customer",
+        //   label: "Billing",
+        //   icon: DollarSign,
+        //   roles: ["SUPER_ADMIN", "ADMIN"] 
+        // }
       ]
     },
     {
