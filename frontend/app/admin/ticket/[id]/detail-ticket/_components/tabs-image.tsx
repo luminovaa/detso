@@ -40,6 +40,7 @@ export default function ImagesTab({ historyTicket, onImageClick }: ImagesTabProp
                     src={history.image}
                     alt={`History ${history.id}`}
                     width={400}
+                    unoptimized
                     height={300}
                     className="w-full h-48 object-cover transition-transform group-hover:scale-105"
                   />

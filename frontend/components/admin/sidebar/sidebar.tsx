@@ -11,9 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function Sidebar() {
   const sidebar = useStore(useSidebar, (x) => x);
+  
   if (!sidebar) {
     return (
-      <aside className="fixed top-0 left-0 z-20 h-screen w-72 -translate-x-full lg:translate-x-0 transition-[width] ease-in-out duration-300">
+      <aside className="h-full w-full">
         <div className="relative h-full flex flex-col px-3 py-4 overflow-y-auto shadow-md dark:shadow-zinc-800">
           {/* Skeleton dari shadcn */}
           <div className="space-y-4">
@@ -30,14 +31,21 @@ export function Sidebar() {
   }
 
   const { isOpen, toggleOpen, getOpenState, setIsHover } = sidebar;
+  
   return (
     <aside
       className={cn(
-        "fixed top-0 left-0 z-20 h-screen -translate-x-full lg:translate-x-0 transition-[width] ease-in-out duration-300",
+        "fixed top-0 left-0 z-20 h-screen transition-[width] ease-in-out duration-300",
+        // Di mobile (via Sheet), selalu full width
+        "lg:block",
         !getOpenState() ? "w-[90px]" : "w-72"
       )}
     >
-      <SidebarToggle isOpen={isOpen} setIsOpen={toggleOpen} />
+      {/* Toggle hanya muncul di desktop */}
+      <div className="hidden lg:block">
+        <SidebarToggle isOpen={isOpen} setIsOpen={toggleOpen} />
+      </div>
+      
       <div
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
@@ -46,7 +54,7 @@ export function Sidebar() {
         <Button
           className={cn(
             "transition-transform ease-in-out duration-300 mb-1",
-            !getOpenState() ? "translate-x-1" : "translate-x-0"
+            !getOpenState() ? "lg:translate-x-1" : "translate-x-0"
           )}
           variant="link"
           asChild
@@ -60,7 +68,9 @@ export function Sidebar() {
             />
           </Link>
         </Button>
-        <Menu isOpen={getOpenState()} />
+        
+        {/* Di mobile, sidebar selalu terbuka penuh */}
+        <Menu isOpen={true} />
       </div>
     </aside>
   );

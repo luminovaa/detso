@@ -1,6 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, AlertCircle, CheckCircle, XCircle, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Ticket } from "@/types/ticket.types";
@@ -22,6 +28,7 @@ import ServiceTab from "./_components/tabs-service";
 import ScheduleTab from "./_components/tabs-schedule";
 import HistoryTab from "./_components/tabs-history";
 import ImagesTab from "./_components/tabs-image";
+import UpdateStatusTicket from "./_components/update-status";
 
 export default function TicketDetail({
   params,
@@ -77,6 +84,11 @@ export default function TicketDetail({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleStatusUpdated = () => {
+    fetchTicketDetail();
+    fetchHistoryTicket();
   };
 
   const getStatusIcon = (status: string) => {
@@ -156,19 +168,28 @@ export default function TicketDetail({
             <PriorityBadge priority={ticket.priority} />
             <TicketStatusBadge status={ticket.status} />
             {getStatusIcon(ticket.status!)}
-            <span>{ticket.status}</span>
+            <span className="font-medium">{ticket.status}</span>
           </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[500px] rounded-full">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="service">Layanan</TabsTrigger>
-            <TabsTrigger value="schedule">Jadwal</TabsTrigger>
-            <TabsTrigger value="history">Riwayat</TabsTrigger>
-            <TabsTrigger value="images">Dokumentasi</TabsTrigger>
-          </TabsList>
-
+          <div className="flex flex-row justify-between">
+            <TabsList className="grid w-full grid-cols-5 lg:w-[500px] rounded-full">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="service">Layanan</TabsTrigger>
+              <TabsTrigger value="schedule">Jadwal</TabsTrigger>
+              <TabsTrigger value="history">Riwayat</TabsTrigger>
+              <TabsTrigger value="images">Dokumentasi</TabsTrigger>
+            </TabsList>
+            {ticket.status === "CLOSED" ||
+            ticket.status === "RESOLVED" ? null : (
+              <UpdateStatusTicket
+                ticketId={ticket.id!}
+                currentStatus={ticket.status as any}
+                onStatusUpdated={handleStatusUpdated}
+              />
+            )}
+          </div>
           <TabsContent value="overview" className="space-y-6">
             <OverviewTab ticket={ticket} />
           </TabsContent>
@@ -186,9 +207,9 @@ export default function TicketDetail({
           </TabsContent>
 
           <TabsContent value="images" className="space-y-6">
-            <ImagesTab 
-              historyTicket={historyTicket} 
-              onImageClick={setSelectedImage} 
+            <ImagesTab
+              historyTicket={historyTicket}
+              onImageClick={setSelectedImage}
             />
           </TabsContent>
         </Tabs>

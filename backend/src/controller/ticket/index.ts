@@ -16,10 +16,10 @@ ticketRouter.post(
 );
 ticketRouter.get('/', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getAllTickets);
 ticketRouter.get('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getTicketById);
+ticketRouter.put('/status/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), ticketUpload.single('image'), updateTicketStatus);
 ticketRouter.get('/:id/history', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getTicketHistory);
 ticketRouter.get('/history/:historyId/image', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getTicketImageById);
 ticketRouter.put('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), ticketUpload.single('image'), editTicket);
 ticketRouter.delete('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), deleteTicket);
-ticketRouter.put('/:id/status'), authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), ticketUpload.single('image'), updateTicketStatus;
 
 export default ticketRouter;

@@ -63,3 +63,14 @@ export function editTicket(id: string, data: FormData | EditTicketForm) {
     ...config
   });
 }
+
+export function updateTicketStatus(id: string, data: FormData) {
+  return services({
+    url: `/ticket/status/${id}`,
+    method: 'put',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
