@@ -23,13 +23,13 @@ type Menu = {
   active?: boolean;
   icon: LucideIcon;
   submenus?: Submenu[];
-  roles?: string[]; 
+  roles?: string[];
 };
 
 type Group = {
   groupLabel: string;
   menus: Menu[];
-  roles?: string[]; 
+  roles?: string[];
 };
 
 function hasAccess(userRole: string, allowedRoles?: string[]): boolean {
@@ -57,31 +57,20 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           href: "/admin/ticket",
           label: "Ticket",
           icon: Ticket,
-          roles: ["SUPER_ADMIN", "ADMIN", "TEKNISI"] 
+          roles: ["TENANT_OWNER", "TENANT_ADMIN", "TEKNISI"]
         },
         {
           href: "/admin/schedule",
           label: "Kalender Kerja",
           icon: Calendar,
+          roles: ["TENANT_OWNER", "TENANT_ADMIN", "TEKNISI"]
         },
         {
           href: "/admin/customer",
           label: "Pelanggan",
           icon: UserCircle2,
-          roles: ["SUPER_ADMIN", "ADMIN"] 
+          roles: ["TENANT_OWNER", "TENANT_ADMIN", "TEKNISI"]
         },
-        // {
-        //   href: "/admin/customer",
-        //   label: "Billing",
-        //   icon: DollarSign,
-        //   roles: ["SUPER_ADMIN", "ADMIN"] 
-        // },
-        // {
-        //   href: "/admin/customer",
-        //   label: "Billing",
-        //   icon: DollarSign,
-        //   roles: ["SUPER_ADMIN", "ADMIN"] 
-        // }
       ]
     },
     {
@@ -91,19 +80,19 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           href: "/admin/whatsapp",
           label: "Whatsapp",
           icon: PhoneForwardedIcon,
-          roles: ["SUPER_ADMIN", "ADMIN"] 
+          roles: ["TENANT_OWNER", "TENANT_ADMIN"]
         },
         {
           href: "/admin/package",
           label: "Paket Internet",
           icon: Wifi,
-          roles: ["SUPER_ADMIN"] 
+          roles: ["TENANT_OWNER", "TENANT_ADMIN"]
         },
         {
           href: "/admin/user",
           label: "Pengguna",
           icon: Users,
-          roles: ["SUPER_ADMIN"] 
+          roles: ["SAAS_SUPER_ADMIN", "TENANT_OWNER"]
         },
       ],
     }
@@ -121,10 +110,10 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
         .filter(menu => hasAccess(userRole, menu.roles))
         .map(menu => ({
           ...menu,
-          submenus: menu.submenus?.filter(submenu => 
+          submenus: menu.submenus?.filter(submenu =>
             hasAccess(userRole, submenu.roles)
           )
         }))
     }))
-    .filter(group => group.menus.length > 0); 
+    .filter(group => group.menus.length > 0);
 }

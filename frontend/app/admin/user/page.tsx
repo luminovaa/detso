@@ -210,14 +210,14 @@ function UserTable() {
             <SelectContent className="rounded-3xl">
               <SelectItem className="rounded-3xl" value="all">
                 Semua Role
-              </SelectItem>{" "}
-              <SelectItem className="rounded-3xl" value="SUPER_ADMIN">
-                Super Admin
               </SelectItem>
-              <SelectItem className="rounded-3xl" value="ADMIN">
+              <SelectItem className="rounded-3xl" value="TENANT_OWNER">
+                Owner
+              </SelectItem>
+              <SelectItem className="rounded-3xl" value="TENANT_ADMIN">
                 Admin
               </SelectItem>
-              <SelectItem className="rounded-3xl" value="TEKNISI">
+              <SelectItem className="rounded-3xl" value="TENANT_TEKNISI">
                 Teknisi
               </SelectItem>
             </SelectContent>

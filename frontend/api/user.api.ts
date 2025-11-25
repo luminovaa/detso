@@ -1,5 +1,5 @@
 import service from "@/services/services";
-import { CreateUserFormData, UpdateUserFormData, User } from "@/types/user.types";
+import { CreateUserFormData, UpdateUserFormData, User,  CreateUserTenantFormData } from "@/types/user.types";
 
 interface GetUsersParams {
   page?: number;
@@ -26,6 +26,14 @@ export function getUserById(id: string) {
 export function createUser(user: CreateUserFormData) {
     return service({
         url: '/auth/register',
+        method: 'post',
+        data: user
+    })
+}
+
+export function createUserTenant(user: CreateUserTenantFormData) {
+    return service({
+        url: '/auth/register/tenant',
         method: 'post',
         data: user
     })

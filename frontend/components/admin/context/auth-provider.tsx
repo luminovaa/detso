@@ -11,12 +11,19 @@ import React, {
 import { useRouter } from "next/navigation";
 import { authService } from "@/api/auth.api";
 
+export type UserRole = 
+  | 'SAAS_SUPER_ADMIN' 
+  | 'TENANT_OWNER' 
+  | 'TENANT_ADMIN' 
+  | 'TENANT_TEKNISI';
+
 interface User {
   id: string;
   email: string;
   username: string;
-  role: string;
+  role: UserRole;
   exp: number;
+  tenant_id: string | null;
   profile: {
     id: string;
     full_name: string;
@@ -33,6 +40,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   refreshToken: () => Promise<boolean>;
+  isSuperAdmin: boolean;
+  isTenantStaff: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -222,6 +231,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [router, clearRefreshTimeout]);
 
+  const isSuperAdmin = user?.role === 'SAAS_SUPER_ADMIN';
+  const isTenantStaff = !!user?.tenant_id;
+
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo((): AuthContextType => ({
     user,
@@ -230,7 +242,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout: handleLogout,
     isAuthenticated: !!user,
     refreshToken,
-  }), [user, isLoading, handleLogin, handleLogout, refreshToken]);
+    isSuperAdmin,
+    isTenantStaff
+  }), [user, isLoading, handleLogin, handleLogout, refreshToken, isSuperAdmin, isTenantStaff]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
