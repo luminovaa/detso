@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler';
+import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { updateTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
@@ -7,8 +7,15 @@ import { TicketAction } from '@prisma/client';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 
 export const editTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const { id } = req.params;
-    
+
     const cleanupUploadedFile = async () => {
         if (req.file) {
             await deleteFile(req.file.path).catch(err =>
@@ -33,20 +40,18 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     }
 
     const {
-        title,
-        description,
-        priority,
-        status,
-        assigned_to,
-        service_id,
-        resolved_at,
-        image
+        title, description, priority, status, assigned_to, service_id, resolved_at, image
     } = validationResult.data;
 
-    const updated_by = req.user?.id;
+    const updated_by = user.id;
 
-    const existingTicket = await prisma.detso_Ticket.findUnique({
-        where: { id, deleted_at: null },
+    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    const existingTicket = await prisma.detso_Ticket.findFirst({
+        where: {
+            id,
+            tenant_id: tenantId, // <--- Filter Tenant
+            deleted_at: null
+        },
         include: {
             technician: assigned_to ? {
                 select: { id: true, username: true }
@@ -56,12 +61,17 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 
     if (!existingTicket) {
         await cleanupUploadedFile();
-        throw new NotFoundError('Ticket tidak ditemukan');
+        throw new NotFoundError('Ticket tidak ditemukan atau akses ditolak');
     }
 
+    // [NEW] 3. Validasi Service Baru (Wajib milik Tenant ini)
     if (service_id) {
-        const service = await prisma.detso_Service_Connection.findUnique({
-            where: { id: service_id, deleted_at: null }
+        const service = await prisma.detso_Service_Connection.findFirst({
+            where: {
+                id: service_id,
+                tenant_id: tenantId, // <--- Filter Tenant
+                deleted_at: null
+            }
         });
 
         if (!service) {
@@ -69,21 +79,26 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
             throw new NotFoundError('Layanan tidak ditemukan');
         }
 
+        // Validasi tambahan: Layanan harus milik customer yang sama
         if (service.customer_id !== existingTicket.customer_id) {
             await cleanupUploadedFile();
             throw new ValidationError('Layanan tidak dimiliki oleh customer ini');
         }
     }
 
-    // Validate technician if assigned
+    // [NEW] 4. Validasi Teknisi Baru (Wajib Karyawan Tenant ini)
     if (assigned_to) {
-        const technician = await prisma.detso_User.findUnique({
-            where: { id: assigned_to, deleted_at: null }
+        const technician = await prisma.detso_User.findFirst({
+            where: {
+                id: assigned_to,
+                tenant_id: tenantId, // <--- Filter Tenant
+                deleted_at: null
+            }
         });
 
         if (!technician) {
             await cleanupUploadedFile();
-            throw new NotFoundError('Teknisi tidak ditemukan');
+            throw new NotFoundError('Teknisi tidak ditemukan di perusahaan Anda');
         }
     }
 
@@ -94,6 +109,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 updated_at: new Date()
             };
 
+            // --- Logic Deteksi Perubahan (Sama seperti sebelumnya) ---
             if (title !== undefined && title !== existingTicket.title) {
                 updateData.title = title;
                 historyEntries.push({
@@ -126,6 +142,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 });
             }
 
+            // Logic Status Change
             if (status !== undefined && status !== existingTicket.status) {
                 updateData.status = status;
 
@@ -149,7 +166,6 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                     descriptionText = `Ticket dibuka kembali`;
                 }
 
-                // Add image to history entry if status is RESOLVED or CLOSED and image is provided
                 const historyEntry: any = {
                     action,
                     description: descriptionText
@@ -158,12 +174,12 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 if ((status === 'RESOLVED' || status === 'CLOSED') && image) {
                     historyEntry.image = image;
                 }
-
                 historyEntries.push(historyEntry);
 
+                // Auto Complete Schedule
                 if (status === 'RESOLVED' || status === 'CLOSED') {
                     await tx.detso_Work_Schedule.updateMany({
-                        where: { ticket_id: id },
+                        where: { ticket_id: id }, // Aman karena ticket_id sudah divalidasi milik tenant di atas
                         data: {
                             status: 'COMPLETED',
                             end_time: new Date(),
@@ -173,6 +189,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 }
             }
 
+            // Logic Assignment Technician
             if (assigned_to !== undefined && assigned_to !== existingTicket.assigned_to) {
                 updateData.assigned_to = assigned_to;
 
@@ -182,6 +199,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                         description: `Ticket ditugaskan kepada teknisi baru`
                     });
 
+                    // Update or Create Schedule
                     const existingSchedule = await tx.detso_Work_Schedule.findFirst({
                         where: { ticket_id: id }
                     });
@@ -195,8 +213,10 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                             }
                         });
                     } else {
+                        // [NEW] 5. Inject Tenant ID saat buat jadwal baru
                         await tx.detso_Work_Schedule.create({
                             data: {
+                                tenant_id: tenantId, // <--- INJECT (PENTING)
                                 technician_id: assigned_to,
                                 ticket_id: id,
                                 start_time: new Date(),
@@ -205,6 +225,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                         });
                     }
                 } else {
+                    // Unassign
                     historyEntries.push({
                         action: 'UPDATED' as const,
                         description: `Penugasan teknisi dihapus`
@@ -224,46 +245,11 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 where: { id },
                 data: updateData,
                 include: {
-                    customer: {
-                        select: {
-                            id: true,
-                            name: true,
-                            phone: true
-                        }
-                    },
-                    service: {
-                        select: {
-                            id: true,
-                            id_pel: true,
-                            package_name: true
-                        }
-                    },
+                    customer: { select: { id: true, name: true, phone: true } },
+                    service: { select: { id: true, id_pel: true, package_name: true } },
                     technician: assigned_to !== undefined ? {
-                        select: {
-                            id: true,
-                            username: true,
-                            profile: {
-                                select: {
-                                    full_name: true
-                                }
-                            }
-                        }
-                    } : undefined,
-                    schedule: {
-                        include: {
-                            technician: {
-                                select: {
-                                    id: true,
-                                    username: true,
-                                    profile: {
-                                        select: {
-                                            full_name: true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                        select: { id: true, username: true, profile: { select: { full_name: true } } }
+                    } : undefined
                 }
             });
 
@@ -297,9 +283,16 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 });
 
 export const updateTicketStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid');
+    }
+    const tenantId = user.tenant_id;
+
     const { id } = req.params;
     const { status } = req.body;
-    const updated_by = req.user?.id;
+    const updated_by = user.id;
 
     const cleanupUploadedFile = async () => {
         if (req.file) {
@@ -319,8 +312,13 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
         throw new ValidationError('Status tidak valid');
     }
 
-    const existingTicket = await prisma.detso_Ticket.findUnique({
-        where: { id, deleted_at: null }
+    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    const existingTicket = await prisma.detso_Ticket.findFirst({
+        where: {
+            id,
+            tenant_id: tenantId, // <--- Filter Tenant
+            deleted_at: null
+        }
     });
 
     if (!existingTicket) {
@@ -358,12 +356,8 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
                 where: { id },
                 data: updateData,
                 include: {
-                    customer: {
-                        select: { name: true, phone: true }
-                    },
-                    technician: {
-                        select: { username: true }
-                    }
+                    customer: { select: { name: true, phone: true } },
+                    technician: { select: { username: true } }
                 }
             });
 
@@ -405,11 +399,17 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
     }
 });
 
-// Function khusus untuk menambahkan catatan dengan gambar
 export const addTicketNote = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+    
     const { id } = req.params;
     const { notes } = req.body;
-    const created_by = req.user?.id;
+    const created_by = user.id;
 
     const cleanupUploadedFile = async () => {
         if (req.file) {
@@ -419,7 +419,6 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
         }
     };
 
-    // Handle uploaded image
     let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
         uploadedImage = getUploadedFileInfo(req.file, 'storage/image/tickets');
@@ -430,8 +429,13 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
         throw new ValidationError('Catatan atau gambar harus disertakan');
     }
 
-    const existingTicket = await prisma.detso_Ticket.findUnique({
-        where: { id, deleted_at: null }
+    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    const existingTicket = await prisma.detso_Ticket.findFirst({
+        where: {
+            id,
+            tenant_id: tenantId, // <--- Filter Tenant
+            deleted_at: null
+        }
     });
 
     if (!existingTicket) {
@@ -454,7 +458,6 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
         responseData(res, 201, 'Catatan berhasil ditambahkan', { history });
 
     } catch (error) {
-        // If operation fails, cleanup uploaded file
         await cleanupUploadedFile();
         throw error;
     }

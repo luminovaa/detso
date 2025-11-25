@@ -1,5 +1,5 @@
 import express from "express";
-import authMiddleware, { requireRole } from "../../middleware/middleware";
+import authMiddleware, { ADMIN_ONLY, ALL_STAFF, requireRole } from "../../middleware/middleware";
 import { serviceUpload } from "../../config/upload.config";
 import { createServiceConnection } from "./create.service";
 import { editServiceConnection } from "./edit.service";
@@ -11,11 +11,11 @@ serviceRouter.post(
   '/',
   authMiddleware,
     serviceUpload,
-  requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']),
+  requireRole(ALL_STAFF),
   createServiceConnection
 );
-// serviceRouter.get('/', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getAllCustomers);
-// serviceRouter.get('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getCustomerById);
-serviceRouter.put('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), serviceUpload, editServiceConnection);
-serviceRouter.delete('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), deleteServiceConnection);
+// serviceRouter.get('/', authMiddleware, requireRole(ALL_STAFF), getAllCustomers);
+// serviceRouter.get('/:id', authMiddleware, requireRole(ALL_STAFF), getCustomerById);
+serviceRouter.put('/:id', authMiddleware, requireRole(ALL_STAFF), serviceUpload, editServiceConnection);
+serviceRouter.delete('/:id', authMiddleware, requireRole(ADMIN_ONLY), deleteServiceConnection);
 export default serviceRouter;

@@ -8,23 +8,57 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+// [NEW] Model untuk Perusahaan ISP (Tenant)
+model Detso_Tenant {
+    id         String   @id @default(cuid())
+    name       String   @unique // Nama ISP, misal "Berkah Net"
+    slug       String   @unique // Untuk URL, misal "berkah-net"
+    logo       String?
+    address    String?
+    phone      String?
+    is_active  Boolean  @default(true) // Jika mereka telat bayar ke kamu, bisa di-false
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relasi ke semua data milik ISP ini
+    users     Detso_User[]
+    customers Detso_Customer[]
+    services  Detso_Service_Connection[]
+    packages  Detso_Package[]
+    tickets   Detso_Ticket[]
+    schedules Detso_Work_Schedule[]
+
+    @@map("detso_tenants")
+}
+
 model Detso_User {
-    id         String         @id @default(cuid())
-    username   String         @unique
-    email      String         @unique
-    password   String
+    id String @id @default(cuid())
+
+    // [NEW] User ini milik ISP mana? (Opsional khusus untuk SAAS_SUPER_ADMIN)
+    tenant_id String?
+    tenant    Detso_Tenant? @relation(fields: [tenant_id], references: [id])
+
+    username String
+    email    String     @unique
+    password String
+    phone    String?
+    role     Detso_Role @default(TENANT_TEKNISI) // [UPDATED] Enum role baru
+
     created_at DateTime       @default(now())
-    phone      String?        @unique
     updated_at DateTime       @updatedAt
     deleted_at DateTime?
     profile    Detso_Profile?
 
-    role           Detso_Role             @default(TEKNISI)
     refresh_tokens Detso_Refresh_Token[]
-    ticket         Detso_Ticket[]
+    ticket         Detso_Ticket[] // Tiket yang ditugaskan ke user ini
     schedule       Detso_Work_Schedule[]
     ticket_history Detso_Ticket_History[]
 
+    // Validasi unik username hanya di dalam satu tenant (opsional, atau tetap global unique)
+    // @@unique([username, tenant_id]) 
+    // Tapi agar simpel, biarkan username unique global dulu atau handle di logic aplikasi.
+
+    @@index([tenant_id])
     @@index([deleted_at])
     @@map("detso_users")
 }
@@ -48,7 +82,7 @@ model Detso_Refresh_Token {
     id          String    @id @default(cuid())
     user_id     String
     token       String    @unique
-    device_info String? // Info device (Android/Web + browser/app version)
+    device_info String?
     ip_address  String?
     user_agent  String?
     expires_at  DateTime
@@ -61,12 +95,16 @@ model Detso_Refresh_Token {
 
     @@index([user_id])
     @@index([token])
-    @@index([expires_at])
     @@map("detso_refresh_tokens")
 }
 
 model Detso_Customer {
-    id          String    @id @default(cuid())
+    id String @id @default(cuid())
+
+    // [NEW] Customer ini milik ISP mana?
+    tenant_id String
+    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
     name        String
     phone       String?
     email       String?
@@ -84,6 +122,7 @@ model Detso_Customer {
     whatsApp_Log Detso_WhatsApp_Log[]
     ticket       Detso_Ticket[]
 
+    @@index([tenant_id]) // Penting untuk performa query per ISP
     @@index([deleted_at])
     @@index([phone])
     @@index([nik])
@@ -94,14 +133,13 @@ model Detso_WhatsApp_Log {
     id            String   @id @default(cuid())
     customer_id   String?
     phone_number  String
-    message_type  String // 'installation_report', 'payment_reminder', etc.
-    status        String // 'sent', 'failed', 'pending'
-    error_message String? // jika ada error
+    message_type  String
+    status        String
+    error_message String?
     sent_at       DateTime @default(now())
     created_at    DateTime @default(now())
     updated_at    DateTime @updatedAt
 
-    // Relasi ke customer
     customer Detso_Customer? @relation(fields: [customer_id], references: [id])
 
     @@map("detso_whatsapp_logs")
@@ -121,9 +159,14 @@ model Detso_Customer_Document {
 }
 
 model Detso_Service_Connection {
-    id            String                @id @default(cuid())
+    id String @id @default(cuid())
+
+    // [NEW] Service ini milik ISP mana?
+    tenant_id String
+    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
     customer_id   String
-    id_pel        String?               @unique
+    id_pel        String? // ID Pelanggan biasanya unik per tenant, bukan global
     package_id    String
     address       String?
     package_name  String
@@ -145,6 +188,8 @@ model Detso_Service_Connection {
     pdf      Detso_Customer_PDF[]
     ticket   Detso_Ticket[]
 
+    // @@unique([id_pel, tenant_id]) // Saran: ID Pelanggan unik hanya dalam 1 ISP
+    @@index([tenant_id])
     @@index([deleted_at])
     @@map("detso_service_connections")
 }
@@ -152,7 +197,7 @@ model Detso_Service_Connection {
 model Detso_Service_Photo {
     id          String   @id @default(cuid())
     service_id  String
-    photo_type  String // e.g., 'INSTALLATION', 'ROUTER_SETUP', 'LOCATION'
+    photo_type  String
     photo_url   String
     uploaded_at DateTime @default(now())
     notes       String?
@@ -178,7 +223,12 @@ model Detso_Customer_PDF {
 }
 
 model Detso_Package {
-    id         String    @id @default(cuid())
+    id String @id @default(cuid())
+
+    // [NEW] Paket ini milik ISP mana? (ISP A punya paket "Gold", ISP B punya paket "Super")
+    tenant_id String
+    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
     name       String
     speed      String
     price      Int
@@ -188,22 +238,29 @@ model Detso_Package {
 
     service Detso_Service_Connection[]
 
+    @@index([tenant_id])
     @@map("detso_packages")
 }
 
 model Detso_Ticket {
-    id             String                    @id @default(cuid())
-    customer_id    String
-    service_id     String?
-    title          String
-    description    String
-    type           TicketType                @default(PROBLEM)
-    priority       TicketPriority            @default(MEDIUM)
-    status         TicketStatus              @default(OPEN)
-    assigned_to    String?
-    created_at     DateTime                  @default(now())
-    updated_at     DateTime                  @updatedAt
-    resolved_at    DateTime?
+    id String @id @default(cuid())
+
+    // [NEW] Tiket ini milik ISP mana?
+    tenant_id String
+    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
+    customer_id String
+    service_id  String?
+    title       String
+    description String
+    type        TicketType     @default(PROBLEM)
+    priority    TicketPriority @default(MEDIUM)
+    status      TicketStatus   @default(OPEN)
+    assigned_to String?
+    created_at  DateTime       @default(now())
+    updated_at  DateTime       @updatedAt
+    resolved_at DateTime?
+
     customer       Detso_Customer            @relation(fields: [customer_id], references: [id])
     service        Detso_Service_Connection? @relation(fields: [service_id], references: [id])
     technician     Detso_User?               @relation(fields: [assigned_to], references: [id])
@@ -211,6 +268,7 @@ model Detso_Ticket {
     ticket_history Detso_Ticket_History[]
     deleted_at     DateTime?
 
+    @@index([tenant_id])
     @@index([type])
     @@index([status])
     @@index([customer_id])
@@ -234,7 +292,12 @@ model Detso_Ticket_History {
 }
 
 model Detso_Work_Schedule {
-    id            String         @id @default(cuid())
+    id String @id @default(cuid())
+
+    // [NEW] Jadwal ini milik ISP mana?
+    tenant_id String
+    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
     title         String?
     ticket_id     String?        @unique
     technician_id String
@@ -248,8 +311,11 @@ model Detso_Work_Schedule {
     ticket     Detso_Ticket? @relation(fields: [ticket_id], references: [id])
     technician Detso_User    @relation(fields: [technician_id], references: [id])
 
+    @@index([tenant_id])
     @@map("detso_work_schedules")
 }
+
+// --- ENUMS ---
 
 enum TicketAction {
     CREATED
@@ -290,14 +356,19 @@ enum Detso_Customer_Status {
     SUSPENDED
 }
 
+// [NEW] Role Hierarchy
 enum Detso_Role {
-    TEKNISI
-    ADMIN
-    SUPER_ADMIN
+    // Level Platform (Milik Kamu)
+    SAAS_SUPER_ADMIN // Pemilik aplikasi, bisa create Tenant baru
+
+    // Level Tenant (Milik Klien ISP)
+    TENANT_OWNER // Pemilik ISP (Super Adminnya ISP)
+    TENANT_ADMIN // Admin kantor ISP
+    TENANT_TEKNISI // Teknisi lapangan ISP
 }
 
 enum TicketType {
-  UPGRADE
-  DOWNGRADE
-  PROBLEM
+    UPGRADE
+    DOWNGRADE
+    PROBLEM
 }

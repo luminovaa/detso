@@ -3,10 +3,11 @@ import { asyncHandler, AuthorizationError, NotFoundError } from '../../utils/err
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
+
 export const deleteCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const customerId = req.params.id;
 
-  const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPER_ADMIN';
+  const isAdmin = req.user?.role === 'TENANT_ADMIN' || req.user?.role === 'TENANT_OWNER' || req.user?.role === 'SAAS_SUPER_ADMIN';
   if (!isAdmin) {
     throw new AuthorizationError('Hanya admin yang dapat menghapus customer');
   }

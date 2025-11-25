@@ -1,11 +1,18 @@
 import { Request, Response } from 'express';
 import { paginationSchema } from './validation/validation.customer';
-import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler';
+import { asyncHandler, AuthenticationError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
 import { prisma } from '../../utils/prisma';
 
 export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id dari session user
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const validationResult = paginationSchema.safeParse(req.query);
 
     if (!validationResult.success) {
@@ -14,7 +21,10 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
 
     const { page, limit, search, status, package_name } = validationResult.data;
 
+    // [NEW] 2. Masukkan tenant_id ke Base Query
+    // Ini memastikan SEMUA filter di bawahnya hanya berjalan di dalam lingkup tenant ini
     const whereClause: any = {
+        tenant_id: tenantId, // <--- KUNCI KEAMANAN SAAS
         deleted_at: null
     };
 
@@ -37,6 +47,9 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
             { package_name: { contains: search, mode: 'insensitive' } },
             {
                 customer: {
+                    // Karena relasi customer -> tenant juga ada,
+                    // filter di root `detso_Service_Connection` sudah cukup.
+                    // Tapi pencarian di tabel customer tetap aman.
                     OR: [
                         { name: { contains: search, mode: 'insensitive' } },
                         { phone: { contains: search } },
@@ -228,20 +241,30 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
 
 
 export const checkCustomerByNik = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id dari user yang sedang login
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const { nik } = req.params;
 
     if (!nik) {
         throw new NotFoundError('NIK harus disertakan');
     }
 
+    // [NEW] 2. Cek NIK hanya di dalam lingkup Tenant ini
     const customer = await prisma.detso_Customer.findFirst({
         where: {
             nik: nik,
+            tenant_id: tenantId, // <--- Filter wajib!
             deleted_at: null
         },
         select: {
             id: true,
-            nik: true
+            nik: true,
+            name: true // Opsional: kembalikan nama untuk konfirmasi operator
         }
     });
 

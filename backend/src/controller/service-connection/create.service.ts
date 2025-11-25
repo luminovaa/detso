@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { asyncHandler, NotFoundError, ValidationError } from '../../utils/error-handler';
+import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } from '../../utils/error-handler'; // Tambah AuthenticationError
 import { responseData } from '../../utils/response-handler';
 import { createServiceConnectionSchema } from './validation/validation.service';
 import { prisma } from '../../utils/prisma';
@@ -11,6 +11,13 @@ interface ServiceConnectionUploadedFiles {
 }
 
 export const createServiceConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const files = req.files as ServiceConnectionUploadedFiles;
     
     const requestData = {
@@ -28,8 +35,8 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
         customer_id,
         package_id,
         address,
-        package_name,
-        package_speed,
+        // package_name, // Kita ignore input dari frontend, ambil dari DB biar aman
+        // package_speed, // Kita ignore input dari frontend
         ip_address,
         mac_address,
         notes,
@@ -38,12 +45,10 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
 
     const servicePhotoFiles = files.photos;
 
-    // Validate photo count matches
     if (photos && servicePhotoFiles?.length !== photos.length) {
         throw new ValidationError('Jumlah foto tidak sesuai dengan file yang diupload');
     }
 
-    // Setup cleanup for uploaded files if error occurs
     const cleanupFiles = async () => {
         if (servicePhotoFiles) {
             await Promise.all(servicePhotoFiles.map(file =>
@@ -53,41 +58,50 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
     };
 
     try {
-        // Verify customer exists and is not deleted
+        // [NEW] 2. Validasi Customer (Wajib milik Tenant ini)
         const customer = await prisma.detso_Customer.findFirst({
             where: {
                 id: customer_id,
+                tenant_id: tenantId, // <--- Filter Tenant
                 deleted_at: null
             }
         });
 
         if (!customer) {
-            throw new NotFoundError('Customer tidak ditemukan atau telah dihapus');
+            throw new NotFoundError('Customer tidak ditemukan atau tidak terdaftar di ISP ini');
         }
 
-        // Verify package exists
+        // [NEW] 3. Validasi Package (Wajib milik Tenant ini)
         const packageExists = await prisma.detso_Package.findFirst({
             where: {
                 id: package_id,
+                tenant_id: tenantId, // <--- Filter Tenant
                 deleted_at: null
             }
         });
 
         if (!packageExists) {
-            throw new NotFoundError('Paket tidak ditemukan atau telah dihapus');
+            throw new NotFoundError('Paket tidak ditemukan atau tidak tersedia untuk ISP ini');
         }
+
         const idPel = await generateUniqueIdPel();
+
         // Create service connection in transaction
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Create service connection
+            // 4. Create Service dengan Data Terpercaya & Tenant ID
             const serviceConnection = await tx.detso_Service_Connection.create({
                 data: {
+                    tenant_id: tenantId, // <--- Inject Tenant ID
                     customer_id,
                     package_id,
                     id_pel: idPel,
                     address,
-                    package_name,
-                    package_speed,
+                    // [SECURITY] Ambil detail dari database paket, bukan dari input user
+                    // Ini mencegah user mengedit harga/kecepatan via inspect element
+                    package_name: packageExists.name,
+                    package_speed: packageExists.speed,
+                    package_price: packageExists.price, // Pastikan schema DB ada field ini
+                    
                     ip_address,
                     mac_address,
                     notes,
@@ -112,21 +126,23 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
                 }
             });
 
-            // 2. Upload service photos if any
+            // 5. Upload Photos (Sama seperti sebelumnya)
             if (photos && servicePhotoFiles) {
                 await Promise.all(photos.map(async (photo, index) => {
                     const file = servicePhotoFiles[index];
-                    const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
-                    
-                    await tx.detso_Service_Photo.create({
-                        data: {
-                            service_id: serviceConnection.id,
-                            photo_type: photo.type,
-                            photo_url: fileInfo.path,
-                            uploaded_at: new Date(),
-                            notes: photo.notes || null
-                        }
-                    });
+                    if (file) { // Safety check
+                        const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
+                        
+                        await tx.detso_Service_Photo.create({
+                            data: {
+                                service_id: serviceConnection.id,
+                                photo_type: photo.type,
+                                photo_url: fileInfo.path,
+                                uploaded_at: new Date(),
+                                notes: photo.notes || null
+                            }
+                        });
+                    }
                 }));
             }
 

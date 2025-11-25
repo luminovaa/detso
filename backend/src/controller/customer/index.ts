@@ -1,5 +1,6 @@
 import express from "express";
-import authMiddleware, { requireRole } from "../../middleware/middleware";
+import { Detso_Role } from "@prisma/client"; // [NEW] Import Enum Role
+import authMiddleware, { ADMIN_ONLY, ALL_STAFF, requireRole } from "../../middleware/middleware";
 import { createCustomer } from "./create.customer";
 import { uploadCustomerFiles } from "../../config/upload.config";
 import { checkCustomerByNik, getAllServices, getCustomerById } from "./get.customer";
@@ -9,19 +10,70 @@ import { downloadInstallationReport, viewInstallationReport } from "./pdf.custom
 
 const customerRouter = express.Router();
 
+
+// Create Customer: Semua staff boleh
 customerRouter.post(
   '/',
   authMiddleware,
   uploadCustomerFiles,
-  requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']),
+  requireRole(ALL_STAFF), 
   createCustomer
 );
-customerRouter.get('/', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getAllServices);
-customerRouter.get('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), getCustomerById);
-customerRouter.put('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), uploadCustomerFiles, editCustomer);
-customerRouter.delete('/:id', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), deleteCustomer);
-customerRouter.get('/pdf/:id/download', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), downloadInstallationReport);
-customerRouter.get('/pdf/:id/view', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'TEKNISI']), viewInstallationReport);
-customerRouter.get('/check-nik/:nik', authMiddleware, checkCustomerByNik)
+
+// Get All / Search: Semua staff boleh
+customerRouter.get(
+  '/', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), 
+  getAllServices
+);
+
+// Get Detail: Semua staff boleh
+customerRouter.get(
+  '/:id', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), 
+  getCustomerById
+);
+
+// Edit Customer: Semua staff boleh (Teknisi mungkin perlu update foto/dokumen)
+customerRouter.put(
+  '/:id', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), 
+  uploadCustomerFiles, 
+  editCustomer
+);
+
+// Delete Customer: HANYA Owner dan Admin (Teknisi DILARANG)
+customerRouter.delete(
+  '/:id', 
+  authMiddleware, 
+  requireRole(ADMIN_ONLY), 
+  deleteCustomer
+);
+
+// Reports: Semua staff boleh lihat/download
+customerRouter.get(
+  '/pdf/:id/download', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), 
+  downloadInstallationReport
+);
+
+customerRouter.get(
+  '/pdf/:id/view', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), 
+  viewInstallationReport
+);
+
+// Check NIK: Semua staff boleh cek
+customerRouter.get(
+  '/check-nik/:nik', 
+  authMiddleware, 
+  requireRole(ALL_STAFF), // Sebaiknya diproteksi role juga agar publik tidak bisa scraping NIK
+  checkCustomerByNik
+);
 
 export default customerRouter;

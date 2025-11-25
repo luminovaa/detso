@@ -1,19 +1,33 @@
 import { Request, Response } from 'express';
-import { asyncHandler, AuthorizationError, NotFoundError, ValidationError } from '../../utils/error-handler';
+import { asyncHandler, AuthorizationError, NotFoundError, AuthenticationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
+import { Detso_Role } from '@prisma/client';
 
 export const deleteTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const ticketId = req.params.id;
 
-    const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'SUPER_ADMIN';
-    if (!isAdmin) {
-        throw new AuthorizationError('Hanya admin yang dapat menghapus tiket');
+    // [NEW] 2. Cek Role (Hanya Owner & Admin)
+    if (user.role !== Detso_Role.TENANT_OWNER && user.role !== Detso_Role.TENANT_ADMIN) {
+        throw new AuthorizationError('Hanya Owner atau Admin yang dapat menghapus tiket');
     }
 
-    const ticket = await prisma.detso_Ticket.findUnique({
-        where: { id: ticketId, deleted_at: null },
+    // [NEW] 3. Cari Tiket dengan Filter Tenant
+    // Gunakan findFirst agar bisa memasukkan tenant_id
+    const ticket = await prisma.detso_Ticket.findFirst({
+        where: { 
+            id: ticketId, 
+            tenant_id: tenantId, // <--- Filter WAJIB
+            deleted_at: null 
+        },
         include: {
             ticket_history: {
                 select: {
@@ -30,9 +44,10 @@ export const deleteTicket = asyncHandler(async (req: Request, res: Response): Pr
     });
 
     if (!ticket) {
-        throw new NotFoundError('Tiket tidak ditemukan');
+        throw new NotFoundError('Tiket tidak ditemukan atau akses ditolak');
     }
 
+    // Kumpulkan file yang akan dihapus
     const filesToDelete: string[] = [];
 
     ticket.ticket_history.forEach(history => {
@@ -41,19 +56,23 @@ export const deleteTicket = asyncHandler(async (req: Request, res: Response): Pr
         }
     });
 
-    console.log('Ticket history images:', ticket.ticket_history.filter(h => h.image));
-    console.log('Files to delete:', filesToDelete);
-
+    // Transaction: Soft Delete Ticket & Hard Delete Children
     const result = await prisma.$transaction(async (tx) => {
+        // Soft delete ticket
+        // Aman pakai update by ID karena sudah divalidasi kepemilikannya di step 3
         const deletedTicket = await tx.detso_Ticket.update({
             where: { id: ticketId },
             data: { deleted_at: new Date() }
         });
 
+        // Hard delete histories
+        // Aman karena history terikat pada ticket_id yang sudah valid
         const deletedHistories = await tx.detso_Ticket_History.deleteMany({
             where: { ticket_id: ticketId }
         });
 
+        // Hard delete schedule (jika ada)
+        // Aman karena schedule ID diambil dari object ticket yang sudah divalidasi tenant-nya
         const deletedSchedule = ticket.schedule ? await tx.detso_Work_Schedule.delete({
             where: { id: ticket.schedule.id }
         }) : null;
@@ -65,6 +84,7 @@ export const deleteTicket = asyncHandler(async (req: Request, res: Response): Pr
         };
     });
 
+    // Hapus file fisik secara async (Non-blocking)
     let successfulDeletes = 0;
     let failedDeletes = 0;
 

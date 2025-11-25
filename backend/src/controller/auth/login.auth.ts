@@ -11,6 +11,7 @@ interface TokenPayload {
     id: string;
     email: string;
     role: string;
+    tenantId: string | null; // null jika dia SAAS_SUPER_ADMIN
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {
@@ -60,6 +61,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
             username: true,
             password: true,
             role: true,
+            tenant_id: true, // [UPDATED] Penting! Ambil tenant_id
             profile: {
                 select: { id: true, full_name: true }
             }
@@ -74,13 +76,13 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
     if (!isPasswordValid) {
         throw new AuthenticationError('Username/email atau password salah');
     }
-    console.log(!user)
-    console.log(!isPasswordValid)
 
+    // [UPDATED] Masukkan tenantId ke payload
     const accessToken = generateAccessToken({
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        tenantId: user.tenant_id
     })
     
     const refreshToken = generateRefreshToken()
@@ -93,22 +95,21 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
             device_info: deviceInfo.device_info,
             user_agent: deviceInfo.user_agent,
             ip_address: deviceInfo.ip_address,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 hari
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         }
     })
 
+    // Set Cookies (Tetap sama)
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        // secure: true,
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000, // 15 menit
+        maxAge: 15 * 60 * 1000, 
     });
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        // secure: true,
         sameSite: "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 hari
+        maxAge: 30 * 24 * 60 * 60 * 1000, 
     });
 
     const result = {
@@ -116,6 +117,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
         email: user.email,
         username: user.username,
         role: user.role,
+        tenantId: user.tenant_id, // [UPDATED] Kembalikan info tenant ke client
         profile: user.profile,
         accessToken, 
         refreshToken,

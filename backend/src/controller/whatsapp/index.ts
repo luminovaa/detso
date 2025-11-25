@@ -9,4 +9,4 @@ whatsappRouter.post('/message',authMiddleware, requireRole(['ADMIN', 'SUPER_ADMI
 whatsappRouter.get('/logs', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), whatsappLogs);
 whatsappRouter.post('/disconnect', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), logoutWhatsapp);
 
-export default whatsappRouter;
+export default whatsappRouter; 

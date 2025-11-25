@@ -4,8 +4,16 @@ import { paginationSchema } from "./validation/validation.ticket";
 import { prisma } from "../../utils/prisma";
 import { getPagination } from "../../utils/pagination";
 import { responseData } from "../../utils/response-handler";
+import { Detso_Role } from "@prisma/client";
 
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+    const tenantId = user.tenant_id;
+
     const validationResult = paginationSchema.safeParse(req.query);
 
     if (!validationResult.success) {
@@ -14,7 +22,9 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 
     const { page, limit, search, priority, status } = validationResult.data;
 
+    // [NEW] 2. Base Where Clause dengan tenant_id
     const whereClause: any = {
+        tenant_id: tenantId, // <--- KUNCI UTAMA FILTER
         deleted_at: null
     };
 
@@ -26,7 +36,13 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         whereClause.status = status;
     }
 
+    // Role Restriction: Teknisi hanya lihat tiket yang ditugaskan ke dia
+    if (user.role === Detso_Role.TENANT_TEKNISI) {
+        whereClause.assigned_to = user.id;
+    }
+
     if (search) {
+        // Logika pencarian tetap sama, tapi sudah terbungkus di dalam tenant_id (implisit AND)
         whereClause.OR = [
             { title: { contains: search, mode: 'insensitive' } },
             { description: { contains: search, mode: 'insensitive' } },
@@ -56,14 +72,6 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
                 }
             }
         ];
-    }
-
-    if (!req.user) {
-        throw new AuthenticationError('Autentikasi diperlukan');
-    }
-
-    if (req.user.role === 'TEKNISI') {
-        whereClause.assigned_to = req.user.id;
     }
 
     const totalTickets = await prisma.detso_Ticket.count({
@@ -127,6 +135,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
     });
 
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    
     const formattedTickets = tickets.map(ticket => ({
         id: ticket.id,
         title: ticket.title,
@@ -161,12 +170,23 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 });
 
 export const getTicketById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid');
+    }
+    const tenantId = user.tenant_id;
+
     const ticketId = req.params.id;
 
-    const ticket = await prisma.detso_Ticket.findUnique({
-        where: { id: ticketId, deleted_at: null },
+    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    const ticket = await prisma.detso_Ticket.findFirst({
+        where: { 
+            id: ticketId, 
+            tenant_id: tenantId, // <--- Filter Tenant
+            deleted_at: null 
+        },
         include: {
-           
             service: {
                 select: {
                     id: true,
@@ -245,12 +265,23 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         ticket: formattedTicket
     });
 });
-
 export const getTicketHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid');
+    }
+    const tenantId = user.tenant_id;
+
     const ticketId = req.params.id;
 
-    const ticketExists = await prisma.detso_Ticket.findUnique({
-        where: { id: ticketId, deleted_at: null },
+    // [NEW] 2. Pastikan Tiket Milik Tenant Ini sebelum ambil history
+    const ticketExists = await prisma.detso_Ticket.findFirst({
+        where: { 
+            id: ticketId, 
+            tenant_id: tenantId, // <--- Filter Tenant
+            deleted_at: null 
+        },
         select: { id: true }
     });
 
@@ -258,7 +289,7 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
         throw new NotFoundError('Tiket tidak ditemukan');
     }
 
-    // Get ticket history from detso_ticket_history table
+    // Get ticket history (Aman karena parent ticket sudah divalidasi)
     const ticketHistories = await prisma.detso_Ticket_History.findMany({
         where: { ticket_id: ticketId },
         include: {
@@ -349,23 +380,39 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getTicketImageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    // [NEW] 1. Ambil tenant_id
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid');
+    }
+    const tenantId = user.tenant_id;
+
     const { historyId } = req.params;
 
-    const history = await prisma.detso_Ticket_History.findUnique({
-        where: { id: historyId },
+    // [NEW] 2. Validasi Relasi sampai ke Ticket Parent
+    const history = await prisma.detso_Ticket_History.findFirst({
+        where: { 
+            id: historyId 
+        },
         select: {
             image: true,
             ticket: {
                 select: {
                     id: true,
-                    deleted_at: true
+                    deleted_at: true,
+                    tenant_id: true // <--- Select Tenant ID Tiket Induk
                 }
             }
         }
     });
 
+    // [NEW] 3. Cek apakah tiket induk milik tenant ini
     if (!history || history.ticket.deleted_at || !history.image) {
-        throw new NotFoundError('Gambar tiket tidak ditemukan atau telah dihapus');
+        throw new NotFoundError('Gambar tiket tidak ditemukan');
+    }
+
+    if (history.ticket.tenant_id !== tenantId) {
+        throw new NotFoundError('Gambar tiket tidak ditemukan'); // Jangan kasih tau "Akses Ditolak" biar attacker bingung
     }
 
     const baseUrl = process.env.BASE_URL;

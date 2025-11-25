@@ -27,6 +27,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
                     email: true,
                     role: true,
                     username: true,
+                    tenant_id: true,
                     profile: {
                         select: { id: true, full_name: true }
                     }
@@ -42,7 +43,8 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
     const newAccessToken = generateAccessToken({
         id: tokenRecord.user.id,
         email: tokenRecord.user.email,
-        role: tokenRecord.user.role
+        role: tokenRecord.user.role,
+        tenantId: tokenRecord.user.tenant_id
     });
 
     const decoded = jwt.verify(newAccessToken, process.env.JWT_SECRET_TOKEN as string) as any;
@@ -69,7 +71,8 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
             username: tokenRecord.user.username,
             role: tokenRecord.user.role,
             profile: tokenRecord.user.profile,
-            exp // ✅ Tambahkan exp ke user
+            tenantId: tokenRecord.user.tenant_id,
+            exp: (jwt.decode(newAccessToken) as any).exp
         }
     };
 
@@ -96,6 +99,7 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
                 email: true,
                 username: true,
                 role: true,
+                tenant_id: true,
                 profile: {
                     select: { id: true, full_name: true }
                 }
@@ -106,7 +110,11 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
             throw new AuthenticationError('User tidak ditemukan');
         }
 
-        req.user = user;
+        // Normalize tenant_id: convert null to undefined to satisfy expected type
+        req.user = {
+            ...user,
+            tenant_id: user.tenant_id! ?? undefined
+        };
         next();
     } catch (error) {
         throw new AuthenticationError('Token tidak valid');
@@ -149,7 +157,7 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
     let isValid = false;
     let user = null;
 
-    // Cek access token dulu
+    // 1. Cek access token dulu
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET_TOKEN as string) as any;
@@ -163,8 +171,9 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
                     email: true,
                     username: true,
                     role: true,
+                    tenant_id: true, // [NEW] WAJIB: Ambil tenant_id
                     profile: {
-                        select: { id: true, full_name: true }
+                        select: { id: true, full_name: true, avatar: true } // Tambahkan avatar jika perlu
                     }
                 }
             });
@@ -173,11 +182,11 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
                 isValid = true;
             }
         } catch (error) {
-            // Access token invalid atau expired
+            // Access token invalid atau expired, lanjut ke refresh token
         }
     }
 
-    // Jika access token invalid, cek refresh token
+    // 2. Jika access token invalid, cek refresh token
     if (!isValid && refreshToken) {
         const tokenRecord = await prisma.detso_Refresh_Token.findFirst({
             where: {
@@ -195,8 +204,9 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
                         email: true,
                         username: true,
                         role: true,
+                        tenant_id: true, // [NEW] WAJIB: Ambil tenant_id
                         profile: {
-                            select: { id: true, full_name: true }
+                            select: { id: true, full_name: true, avatar: true }
                         }
                     }
                 }

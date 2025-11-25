@@ -71,9 +71,9 @@ export class WhatsAppService {
                 this.io.emit('whatsapp-qr', qr);
             }
 
-            qrcode.generate(qr, { small: true }, (code) => {
-                console.log(code);
-            });
+            // qrcode.generate(qr, { small: true }, (code) => {
+            //     console.log(code);
+            // });
         });
 
         this.client.on('ready', () => {
