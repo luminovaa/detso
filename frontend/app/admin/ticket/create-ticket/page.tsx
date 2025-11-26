@@ -58,7 +58,7 @@ function CreateTicket() {
         setIsLoadingData(true);
         const [servicesData, techniciansData] = await Promise.all([
           getCustomers(),
-          getUsers({ role: "TEKNISI" }),
+          getUsers({ role: "TENANT_TEKNISI" }),
         ]);
 
         setServices(servicesData.data.data.services);

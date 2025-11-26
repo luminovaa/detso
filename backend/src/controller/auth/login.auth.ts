@@ -28,9 +28,9 @@ const generateRefreshToken = (): string => {
 
 const getDeviceInfo = (req: Request) => {
     const userAgent = req.headers['user-agent'] || ''
-    const platform = req.headers['x-platform'] || 'web' 
+    const platform = req.headers['x-platform'] || 'web'
     const appVersion = req.headers['x-app-version'] || ''
-    
+
     return {
         device_info: `${platform} ${appVersion}`.trim(),
         user_agent: userAgent,
@@ -84,7 +84,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
         role: user.role,
         tenantId: user.tenant_id
     })
-    
+
     const refreshToken = generateRefreshToken()
     const deviceInfo = getDeviceInfo(req)
 
@@ -103,14 +103,17 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000, 
+        maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000, 
+        maxAge: 30 * 24 * 60 * 60 * 1000,
     });
+
+    const decoded = jwt.decode(accessToken) as { exp: number } | null;
+    const exp = decoded?.exp || null;
 
     const result = {
         id: user.id,
@@ -119,9 +122,10 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
         role: user.role,
         tenantId: user.tenant_id, // [UPDATED] Kembalikan info tenant ke client
         profile: user.profile,
-        accessToken, 
+        accessToken,
         refreshToken,
-        expiresIn: '15m'
+        expiresIn: '15m',
+        exp: exp
     }
 
     responseData(res, 200, 'Login berhasil', result)

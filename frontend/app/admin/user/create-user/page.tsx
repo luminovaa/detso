@@ -28,7 +28,7 @@ import { useAuth } from "@/components/admin/context/auth-provider";
 // Opsi Role untuk Internal Tenant (Karyawan)
 const employeeRoleOptions = [
   { value: "TENANT_TEKNISI", label: "Teknisi" },
-  { value: "TENANT_ADMIN", label: "Admin Kantor" },
+  { value: "TENANT_ADMIN", label: "Admin" },
 ];
 
 function CreateUser() {

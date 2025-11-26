@@ -101,22 +101,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Stable refresh token function
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
-      console.log("Attempting to refresh token...");
-      await authService.refreshToken();
-      const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        console.log("Token refreshed successfully");
+      // console.log("Attempting to refresh token...");
+      
+      // [UPDATED] Ambil result langsung dari refresh token
+      // Backend kamu mengembalikan object: { accessToken, user, expiresIn }
+      const result = await authService.refreshToken();
+      
+      if (result && result.user) {
+        // Langsung update state user dengan data dari response refresh
+        // Tidak perlu request network tambahan ke /me
+        setUser(result.user as User); 
+        // console.log("Token refreshed successfully");
         return true;
       } else {
-        throw new Error("Failed to get user after refresh");
+        throw new Error("Refresh token response missing user data");
       }
     } catch (error) {
       console.error("Token refresh failed:", error);
       await handleLogout();
       return false;
     }
-  }, [handleLogout]);
+}, [handleLogout]);
 
   // Stable login function
   const handleLogin = useCallback(async (credentials: {

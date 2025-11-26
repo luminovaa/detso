@@ -22,7 +22,7 @@ export const authService = {
 
     refreshToken: async () => {
         const response = await services.post('/auth/refresh');
-        return response.data;
+        return response.data.data;
     },
 
     getCurrentUser: async () => {

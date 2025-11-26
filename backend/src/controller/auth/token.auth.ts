@@ -57,8 +57,8 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
 
     res.cookie("accessToken", newAccessToken, {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        // secure: true,
+        sameSite: "lax",
         maxAge: 15 * 60 * 1000,
     });
 

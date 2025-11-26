@@ -298,7 +298,7 @@ const IndonesianCalendar: React.FC = () => {
             <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-1 rounded-lg">
               {months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </div>
-            {user?.role !== "TEKNISI" && (
+            {user?.role !== "TENANT_TEKNISI" && (
               <CreateScheduleDialog onScheduleCreated={handleScheduleCreated} />
             )}
           </div>
@@ -372,7 +372,7 @@ const IndonesianCalendar: React.FC = () => {
                       {date.getDate()}
                     </div>
 
-                    {isExpanded && isCurrentMonth && user?.role !== "TEKNISI" && (
+                    {isExpanded && isCurrentMonth && user?.role !== "TENANT_TEKNISI" && (
                       <div
                         data-dialog-trigger
                         onClick={(e) => e.stopPropagation()}

@@ -25,9 +25,10 @@ import { authService } from "@/api/auth.api";
 import { getInitials } from "@/utils/get-initial";
 
 const roleOptions = [
-  { value: "TEKNISI", label: "Teknisi" },
-  { value: "ADMIN", label: "Admin" },
-  { value: "SUPER_ADMIN", label: "Super Admin" },
+  { value: "TENANT_TEKNISI", label: "Teknisi" },
+  { value: "TENANT_ADMIN", label: "Admin" },
+  { value: "SAAS_SUPER_ADMIN", label: "Super Admin" },
+  { value: "TENANT_OWNER", label: "Owner" },
 ];
 
 function EditUser() {
@@ -53,7 +54,7 @@ function EditUser() {
       email: "",
       username: "",
       phone: "",
-      role: "TEKNISI",
+      role: "TENANT_TEKNISI",
       full_name: "",
     },
   });
@@ -274,7 +275,15 @@ function EditUser() {
                       accept="image/*"
                       onChange={handleFileChange}
                       disabled={isLoading}
-                      className="file:mr-2 file:rounded-md rounded-3xl file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className="
+                        file:mr-2 
+                        file:rounded-md 
+                        rounded-3xl 
+                        file:border-0 
+                        file:bg-primary/10 
+                        file:text-primary 
+                        hover:file:bg-primary/20
+                      "
                     />
                   </div>
 
@@ -292,7 +301,7 @@ function EditUser() {
                     </Button>
                   )}
 
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Format: JPG, PNG, GIF. Maksimal 5MB.
                   </p>
                 </div>

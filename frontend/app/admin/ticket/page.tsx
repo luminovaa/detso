@@ -189,7 +189,7 @@ function TicketTable() {
   const canCreateTicket = useMemo(() => {
     if (!user) return false;
 
-    return user.role !== "TEKNISI";
+    return user.role !== "TENANT_TEKNISI";
   }, [user]);
   const handleCreateTicket = () => {
     router.push("/admin/ticket/create-ticket");
