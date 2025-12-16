@@ -2,29 +2,43 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import express, { NextFunction, Request, Response } from 'express';
-import routes from './src/router/routes';
-import { handleError } from './src/utils/error-handler';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import { whatsappService } from './src/services/whatsapp.service';
+import path from 'path';
 
-const PORT: number = parseInt(process.env.PORT || '0');
+import routes from './src/router/routes';
+import { handleError } from './src/utils/error-handler';
+import { whatsappManager } from './src/services/whatsapp-manager';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const PORT = Number(process.env.PORT) || 6589;
 
 const app = express();
-app.use(cookieParser());
 
+// Middleware
+app.use(express.json()); // Penting untuk parsing body JSON
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(helmet());
+
+// [CONFIG] Static Files (Storage)
+// Mengizinkan akses gambar profil/logo dengan header CORS yang benar
 app.use('/storage', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
-}, express.static('storage'))
+}, express.static(path.join(__dirname, 'storage')));
 
+// [CONFIG] CORS
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || [];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -39,15 +53,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Something went wrong!',
-  });
+// Routes
+routes(app);
 
-});
-
+// Global Error Handler
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {
     return next(error);
@@ -55,52 +64,80 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   handleError(error, res);
 });
 
-routes(app);
-
+// --- SOCKET.IO SETUP ---
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
   cors: {
     origin: process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || '*',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
-whatsappService.setSocketIO(io);
+
+// 1. Hubungkan IO ke Manager agar bisa emit event ke frontend
+whatsappManager.setSocketIO(io);
 
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  console.log(`Client connected: ${socket.id}`);
 
-  socket.on('get-whatsapp-status', async () => {
-    try {
-      const isReady = await whatsappService.isClientReady();
-      const lastQR = whatsappService.getLastQR();
-      socket.emit('whatsapp-status', { isReady });
-      if (!isReady && lastQR) {
-        console.log('Sending stored QR to client on status request');
-        socket.emit('whatsapp-qr', lastQR);
-      }
-    } catch (error) {
-      console.error('Error getting WhatsApp status:', error);
-      socket.emit('whatsapp-status', { isReady: false });
+  // [NEW] Logic Multi-Tenant
+  // Client (Frontend) harus mengirim tenantId saat connect/mount page
+  socket.on('join-tenant', (tenantId: string) => {
+    if (!tenantId) return;
+
+    // Masukkan socket ini ke room khusus tenant tersebut
+    socket.join(`tenant:${tenantId}`);
+    console.log(`Socket ${socket.id} joined room tenant:${tenantId}`);
+
+    // [UX] Kirim status terkini langsung ke user yang baru join
+    // Agar user tidak melihat loading terus menerus jika bot sudah ready
+    const statusData = whatsappManager.getStatus(tenantId);
+    
+    // Kirim status
+    if (statusData.status === 'READY') {
+       socket.emit('whatsapp-ready');
+    } else if (statusData.status === 'WAITING_QR' && statusData.qr) {
+       socket.emit('whatsapp-qr', statusData.qr);
+       socket.emit('whatsapp-status', { status: 'waiting' });
+    } else if (statusData.status === 'CONNECTING') {
+       socket.emit('whatsapp-status', { status: 'connecting' });
+    } else {
+       socket.emit('whatsapp-disconnected');
     }
   });
 
-  socket.on('reconnect-whatsapp', async () => {
+  // [NEW] Client meminta inisialisasi/start bot
+  socket.on('start-whatsapp', async (tenantId: string) => {
+    if (!tenantId) return;
     try {
-      const isReady = await whatsappService.isClientReady();
-      socket.emit('whatsapp-status', { isReady });
+      await whatsappManager.initializeSession(tenantId);
     } catch (error) {
-      console.error('Error reconnecting WhatsApp:', error);
-      socket.emit('whatsapp-status', { isReady: false });
+      console.error('Error starting WhatsApp via socket:', error);
+    }
+  });
+
+  // [NEW] Client meminta logout
+  socket.on('logout-whatsapp', async (tenantId: string) => {
+    if (!tenantId) return;
+    try {
+      await whatsappManager.logout(tenantId);
+    } catch (error) {
+      console.error('Error logout WhatsApp via socket:', error);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    console.log(`Client disconnected: ${socket.id}`);
   });
 });
+
+setTimeout(async () => {
+  await whatsappManager.autoStartStoredSessions();
+}, 3000);
+
+// Start Server
 const server = httpServer.listen(PORT, () => {
   const address = server.address();
-
   if (address) {
     if (typeof address === 'string') {
       console.log(`Server is running on socket: ${address}`);

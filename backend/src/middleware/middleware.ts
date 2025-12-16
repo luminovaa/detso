@@ -11,7 +11,7 @@ declare module 'express-serve-static-core' {
       id: string;
       email: string;
       role: Detso_Role; // atau Detso_Role
-      tenant_id: string | null; // [IMPORTANT] Bisa null jika SAAS_SUPER_ADMIN
+      tenantId: string | null; // [IMPORTANT] Bisa null jika SAAS_SUPER_ADMIN
     };
   }
 }
@@ -68,7 +68,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
       id: user.id,
       email: user.email,
       role: user.role,
-      tenant_id: user.tenant_id // Tempelkan ke request object
+      tenantId: user.tenant_id // Tempelkan ke request object
     };
 
     next();

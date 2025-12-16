@@ -16,7 +16,6 @@ import { authService } from "@/api/auth.api";
 import { ChangePasswordDialog } from "./_components/change-password";
 import { getInitials } from "@/utils/get-initial";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
-import { ThemeSettingsCard } from "./_components/settings";
 
 function ProfilePage() {
   const router = useRouter();
@@ -188,9 +187,6 @@ function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-          <div className="lg:col-span-3">
-            <ThemeSettingsCard />
-          </div>
         </div>
       </div>
     </AdminPanelLayout>

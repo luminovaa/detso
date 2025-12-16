@@ -16,10 +16,10 @@ interface CustomerUploadedFiles {
 export const createCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari user yang login
     const user = req.user;
-    if (!user || !user.tenant_id!) {
+    if (!user || !user.tenantId!) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenant_id!;
+    const tenantId = user.tenantId!;
 
     const files = req.files as CustomerUploadedFiles;
 

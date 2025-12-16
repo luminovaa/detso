@@ -4,7 +4,7 @@ import { Request } from 'express';
 export const uploadCustomerFiles = createUploadMiddleware({
     destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
         // Gunakan path yang konsisten
-        const basePath = 'storage/image/customer';
+        const basePath = 'storage/private/customer';
         
         if (file.fieldname === 'documents') {
             cb(null, `${basePath}/documents`);
@@ -22,14 +22,14 @@ export const uploadCustomerFiles = createUploadMiddleware({
 ]);
 
 export const avatarUpload = createUploadMiddleware({
-    destination: 'storage/image/profile',
+    destination: 'storage/public/profile',
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
     maxFileSize: 5 * 1024 * 1024, // 5MB
     fieldName: 'avatar'
 });
 
 export const serviceUpload = createUploadMiddleware({
-    destination: 'storage/image/customer/photos',
+    destination: 'storage/public/customer/photos',
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
     maxFileSize: 5 * 1024 * 1024, // 5MB
     fieldName: 'photos'
@@ -38,8 +38,15 @@ export const serviceUpload = createUploadMiddleware({
 ])
 
 export const ticketUpload = createUploadMiddleware({
-    destination: 'storage/image/tickets',
+    destination: 'storage/public/tickets',
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
+    maxFileSize: 5 * 1024 * 1024,
+    fieldName: 'image'
+})
+
+export const tenantUpload = createUploadMiddleware({
+    destination: 'storage/public/tenants/logo',
+    allowedMimeTypes: ['image/jpeg', 'image/png'],
     maxFileSize: 5 * 1024 * 1024,
     fieldName: 'image'
 })

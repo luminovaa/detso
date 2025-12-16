@@ -9,10 +9,10 @@ import { responseData } from "../../utils/response-handler";
 export const getAllSchedules = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const queryParams = {
         ...req.query,
@@ -159,10 +159,10 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
 export const getScheduleById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const { id } = req.params;
 

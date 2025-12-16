@@ -10,24 +10,27 @@ datasource db {
 
 // [NEW] Model untuk Perusahaan ISP (Tenant)
 model Detso_Tenant {
-    id         String   @id @default(cuid())
-    name       String   @unique // Nama ISP, misal "Berkah Net"
-    slug       String   @unique // Untuk URL, misal "berkah-net"
+    id         String    @id @default(cuid())
+    name       String    @unique // Nama ISP, misal "Berkah Net"
+    slug       String    @unique // Untuk URL, misal "berkah-net"
     logo       String?
     address    String?
     phone      String?
-    is_active  Boolean  @default(true) // Jika mereka telat bayar ke kamu, bisa di-false
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+    is_active  Boolean   @default(true) // Jika mereka telat bayar ke kamu, bisa di-false
+    deleted_at DateTime?
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
 
     // Relasi ke semua data milik ISP ini
-    users     Detso_User[]
-    customers Detso_Customer[]
-    services  Detso_Service_Connection[]
-    packages  Detso_Package[]
-    tickets   Detso_Ticket[]
-    schedules Detso_Work_Schedule[]
+    users             Detso_User[]
+    customers         Detso_Customer[]
+    services          Detso_Service_Connection[]
+    packages          Detso_Package[]
+    tickets           Detso_Ticket[]
+    schedules         Detso_Work_Schedule[]
+    detsoWhatsAppLogs Detso_WhatsApp_Log[]
 
+    @@index([deleted_at])
     @@map("detso_tenants")
 }
 
@@ -103,7 +106,6 @@ model Detso_Customer {
 
     // [NEW] Customer ini milik ISP mana?
     tenant_id String
-    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
 
     name        String
     phone       String?
@@ -122,6 +124,8 @@ model Detso_Customer {
     whatsApp_Log Detso_WhatsApp_Log[]
     ticket       Detso_Ticket[]
 
+    tenant Detso_Tenant @relation(fields: [tenant_id], references: [id])
+
     @@index([tenant_id]) // Penting untuk performa query per ISP
     @@index([deleted_at])
     @@index([phone])
@@ -129,10 +133,24 @@ model Detso_Customer {
     @@map("detso_customers")
 }
 
+model Detso_Whatsapp_Session {
+  id         String   @id @default(cuid())
+  sessionId  String   // Ini akan diisi dengan tenant_id
+  id_key     String   // Jenis key (misal: 'creds', 'app-state-sync-key-xxxx')
+  data       Json     // Data session (encrypted keys dari WA)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([sessionId, id_key]) // Kombinasi sessionId & id_key harus unik
+  @@map("detso_whatsapp_sessions")
+}
+
 model Detso_WhatsApp_Log {
     id            String   @id @default(cuid())
     customer_id   String?
     phone_number  String
+    tenant_id     String
     message_type  String
     status        String
     error_message String?
@@ -140,6 +158,7 @@ model Detso_WhatsApp_Log {
     created_at    DateTime @default(now())
     updated_at    DateTime @updatedAt
 
+    tenant   Detso_Tenant    @relation(fields: [tenant_id], references: [id])
     customer Detso_Customer? @relation(fields: [customer_id], references: [id])
 
     @@map("detso_whatsapp_logs")
@@ -163,7 +182,6 @@ model Detso_Service_Connection {
 
     // [NEW] Service ini milik ISP mana?
     tenant_id String
-    tenant    Detso_Tenant @relation(fields: [tenant_id], references: [id])
 
     customer_id   String
     id_pel        String? // ID Pelanggan biasanya unik per tenant, bukan global
@@ -182,6 +200,7 @@ model Detso_Service_Connection {
     deleted_at    DateTime?
     notes         String?
 
+    tenant   Detso_Tenant          @relation(fields: [tenant_id], references: [id])
     customer Detso_Customer        @relation(fields: [customer_id], references: [id])
     package  Detso_Package         @relation(fields: [package_id], references: [id])
     photos   Detso_Service_Photo[]

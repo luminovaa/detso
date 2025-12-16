@@ -8,10 +8,10 @@ import { Detso_Role } from '@prisma/client' // Import Enum Role
 export const createPackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id & Cek Session
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     // [NEW] 2. Cek Role (Gunakan Role Baru SaaS)
     // Hanya Owner dan Admin Tenant yang boleh buat paket. Teknisi tidak boleh.

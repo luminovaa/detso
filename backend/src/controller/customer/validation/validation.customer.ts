@@ -88,7 +88,6 @@ export const createCustomerSchema = z.object({
   photos: z.array(photoSchema).optional(),
 });
 
-
 export const paginationSchema = z.object({
   page: z
     .string()

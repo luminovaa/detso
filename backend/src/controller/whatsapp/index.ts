@@ -4,9 +4,9 @@ import { checkWhatsAppStatus, sendTestMessage, whatsappLogs } from "./check.what
 import { logoutWhatsapp } from "./logout.whatsapp";
 const whatsappRouter = express.Router();
 
-whatsappRouter.get('/check-status', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), checkWhatsAppStatus);
-whatsappRouter.post('/message',authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), sendTestMessage )
-whatsappRouter.get('/logs', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), whatsappLogs);
-whatsappRouter.post('/disconnect', authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), logoutWhatsapp);
+whatsappRouter.get('/check-status', authMiddleware, requireRole(['TENANT_OWNER','TENANT_ADMIN', 'SAAS_SUPER_ADMIN']), checkWhatsAppStatus);
+whatsappRouter.post('/message',authMiddleware, requireRole(['TENANT_OWNER','TENANT_ADMIN', 'SAAS_SUPER_ADMIN']), sendTestMessage )
+whatsappRouter.get('/logs', authMiddleware, requireRole(['TENANT_OWNER','TENANT_ADMIN', 'SAAS_SUPER_ADMIN']), whatsappLogs);
+whatsappRouter.post('/disconnect', authMiddleware, requireRole(['TENANT_OWNER','TENANT_ADMIN', 'SAAS_SUPER_ADMIN']), logoutWhatsapp);
 
 export default whatsappRouter; 

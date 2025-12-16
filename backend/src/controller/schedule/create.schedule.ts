@@ -7,10 +7,10 @@ import { createWorkScheduleSchema } from './validation/validation.schedule';
 export const createWorkSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dari user yang login (Admin/Owner/Dispatcher)
   const user = req.user;
-  if (!user || !user.tenant_id) {
+  if (!user || !user.tenantId) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenant_id;
+  const tenantId = user.tenantId;
 
   const validationResult = createWorkScheduleSchema.safeParse(req.body);
 

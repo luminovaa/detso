@@ -7,7 +7,9 @@ import {
   UserCircle2,
   Calendar,
   Ticket,
-  DollarSign
+  DollarSign,
+  MonitorPause,
+  Settings
 } from "lucide-react";
 
 type Submenu = {
@@ -93,6 +95,18 @@ export function getMenuList(pathname: string, userRole?: string): Group[] {
           label: "Pengguna",
           icon: Users,
           roles: ["SAAS_SUPER_ADMIN", "TENANT_OWNER"]
+        },
+        {
+          href: "/admin/tenant",
+          label: "Tenant",
+          icon: MonitorPause,
+          roles: ["SAAS_SUPER_ADMIN"]
+        },
+        {
+          href: "/admin/setting",
+          label: "Pengaturan",
+          icon: Settings,
+          roles: ["TENANT_ADMIN", "TENANT_OWNER"]
         },
       ],
     }

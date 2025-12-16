@@ -113,7 +113,7 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
         // Normalize tenant_id: convert null to undefined to satisfy expected type
         req.user = {
             ...user,
-            tenant_id: user.tenant_id! ?? undefined
+            tenantId: user.tenant_id! ?? undefined
         };
         next();
     } catch (error) {

@@ -33,7 +33,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "app/admin/tenant/_components/tenant.filter.tsxx"  ],
   "exclude": [
     "node_modules"
   ]

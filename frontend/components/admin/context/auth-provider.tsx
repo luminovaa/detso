@@ -23,7 +23,7 @@ interface User {
   username: string;
   role: UserRole;
   exp: number;
-  tenant_id: string | null;
+  tenantId: string | null;
   profile: {
     id: string;
     full_name: string;
@@ -133,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const result = await authService.login(credentials);
       if (result) {
         const { accessToken, refreshToken, ...userData } = result;
+        console.log(userData)
         setUser(userData);
       } else {
         const currentUser = await authService.getCurrentUser();
@@ -237,7 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [router, clearRefreshTimeout]);
 
   const isSuperAdmin = user?.role === 'SAAS_SUPER_ADMIN';
-  const isTenantStaff = !!user?.tenant_id;
+  const isTenantStaff = !!user?.tenantId;
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo((): AuthContextType => ({

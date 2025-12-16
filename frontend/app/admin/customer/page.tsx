@@ -1,31 +1,23 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AdminPanelLayout from "@/components/admin/admin-layout";
 import { deleteService, getCustomers } from "@/api/customer.api";
-import { Customer, Service_Connection } from "@/types/customer.types";
+import { Service_Connection } from "@/types/customer.types";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   Pagination,
   PaginationMeta,
 } from "@/components/admin/table/reusable-pagination";
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
-import { Button } from "@/components/ui/button";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { StatusCustomerBadge } from "@/components/admin/badge/status-badge";
 import { formatDate } from "@/utils/date-format";
 import { CustomerFilters } from "./_components/customer_filter";
 import { useToast } from "@/hooks/use-toast";
 import { useErrorToast } from "@/components/admin/toast-reusable";
+import { useCustomerParams } from "./_components/customer.params";
+
 interface CustomersResponse {
   services: Service_Connection[];
   pagination: PaginationMeta;
@@ -33,18 +25,24 @@ interface CustomersResponse {
 
 function CustomerTable() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentPage = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const urlSearch = searchParams.get("search") || "";
   
-  const selectedStatus = searchParams.get("status") || "all";
-  const selectedPackage = searchParams.get("package") || "all";
+  // Gunakan custom hook
+  const {
+    page,
+    limit,
+    searchTerm,
+    status,
+    package_name,
+    setPage,
+    setSearchTerm,
+    setStatus,
+    setPackageName,
+  } = useCustomerParams();
   
   const { success } = useToast();
   const { showApiError } = useErrorToast();
 
-  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [searchInput, setSearchInput] = useState(searchTerm);
   const debouncedSearch = useDebounce(searchInput, 500);
 
   const [customers, setCustomers] = useState<Service_Connection[]>([]);
@@ -82,31 +80,15 @@ function CustomerTable() {
     }
   ];
 
-   const updateSearchParams = (newParams: Record<string, string | number>) => {
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value && value !== "all") { 
-        current.set(key, value.toString());
-      } else {
-        current.delete(key);
-      }
-    });
-
-    const search = current.toString();
-    const query = search ? `?${search}` : "";
-    router.push(`${window.location.pathname}${query}`);
-  };
-
   const fetchCustomers = async () => {
     try {
       setLoading(true);
       const params = {
-        page: currentPage,
+        page,
         limit,
-        ...(urlSearch && { search: urlSearch }),
-        ...(selectedStatus !== "all" && { status: selectedStatus }),
-        ...(selectedPackage !== "all" && { package_id: selectedPackage }), 
+        ...(searchTerm && { search: searchTerm }),
+        ...(status && { status }),
+        ...(package_name && { package_name }), 
       };
 
       const response = await getCustomers(params);
@@ -120,25 +102,32 @@ function CustomerTable() {
       setLoading(false);
     }
   };
-  
+
+  // Fetch data setiap kali params berubah
+  useEffect(() => {
+    fetchCustomers();
+    setSearchInput(searchTerm);
+  }, [page, limit, searchTerm, status, package_name]);
+
+  // Sync debounced search dengan URL params
+  useEffect(() => {
+    if (debouncedSearch !== searchTerm) {
+      setSearchTerm(debouncedSearch);
+    }
+  }, [debouncedSearch, searchTerm, setSearchTerm]);
+
+  // Handler functions - sekarang lebih sederhana
   const handleStatusChange = (value: string) => {
-    updateSearchParams({
-      page: 1,
-      status: value,
-    });
+    setStatus(value === "all" ? null : value);
   };
 
   const handlePackageChange = (value: string) => {
-    updateSearchParams({
-      page: 1,
-      package: value,
-    });
+    setPackageName(value === "all" ? null : value);
   };
 
-  useEffect(() => {
-    fetchCustomers();
-    setSearchInput(urlSearch);
-  }, [currentPage, limit, urlSearch, selectedStatus, selectedPackage, urlSearch]);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   const handleEditCustomer = async (customer: Service_Connection) => {
     console.log("Edit customer:", customer);
@@ -146,34 +135,18 @@ function CustomerTable() {
 
   const handleCreateCustomer = async () => {
     router.push("/admin/customer/create-customer");
-  }
+  };
+
   const handleDeleteCustomer = async (customer: Service_Connection) => {
     try {
       await deleteService(customer.id!);
-
       fetchCustomers();
       success(`Pelanggan ${customer.customer?.name} berhasil dihapus!`, {
         title: "Berhasil Menghapus Pelanggan!",
-      })
+      });
     } catch (error) {
       showApiError(error);
     }
-  };
-  useEffect(() => {
-    if (debouncedSearch !== urlSearch) {
-      updateSearchParams({
-        page: 1,
-        limit,
-        search: debouncedSearch,
-      });
-    }
-  }, [debouncedSearch, urlSearch, limit]);
-
-  const handlePageChange = (page: number) => {
-    updateSearchParams({
-      page,
-      limit,
-    });
   };
 
   if (loading && !customers.length) {
@@ -189,7 +162,7 @@ function CustomerTable() {
           data={[]}
           loading={true}
           showIndex={true}
-          indexStartFrom={(currentPage - 1) * limit + 1}
+          indexStartFrom={(page - 1) * limit + 1}
         />
       </AdminPanelLayout>
     );
@@ -204,8 +177,8 @@ function CustomerTable() {
     >
       <div className="space-y-4">
         <CustomerFilters
-          selectedStatus={selectedStatus}
-          selectedPackage={selectedPackage}
+          selectedStatus={status || "all"}
+          selectedPackage={package_name || "all"}
           onStatusChange={handleStatusChange}
           onPackageChange={handlePackageChange}
           onCreateCustomer={handleCreateCustomer}
@@ -216,9 +189,9 @@ function CustomerTable() {
           loading={loading}
           emptyMessage="Tidak ada data"
           emptySearchMessage="Tidak ada data yang ditemukan"
-          hasSearch={!!urlSearch}
+          hasSearch={!!searchTerm}
           showIndex={true}
-          indexStartFrom={(currentPage - 1) * limit + 1}
+          indexStartFrom={(page - 1) * limit + 1}
           actions={{
             onDelete: handleDeleteCustomer,
             onEdit: handleEditCustomer,

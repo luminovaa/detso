@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import QRCode from "react-qr-code";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ import {
 import { ColumnDef, DataTable } from "@/components/admin/table/reusable-table";
 import { SendMessageDialog } from "./_components/send-message";
 import { DisconnectDialog } from "./_components/dialog-disconnect";
+import { useAuth } from "@/components/admin/context/auth-provider";
 
 interface WhatsappResponse {
   logs: Whatsapp_logs[];
@@ -38,74 +39,125 @@ interface WhatsappResponse {
 const WhatsAppAuthPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth(); // Dapatkan user/tenant info
   const currentPage = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
+
   // WhatsApp Auth States
   const [qrCode, setQrCode] = useState<string>("");
-  const [status, setStatus] = useState<"connecting" | "waiting" | "ready">(
+  const [status, setStatus] = useState<"connecting" | "waiting" | "ready" | "disconnected">(
     "connecting"
   );
   const [isConnected, setIsConnected] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   // WhatsApp Logs States
   const [whatsapps, setWhatsapp] = useState<Whatsapp_logs[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Get tenant ID - sesuaikan dengan struktur user Anda
+  const tenantId = user?.tenantId || user?.id || "default-tenant";
+
   // Socket.IO connection for WhatsApp auth
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_WS_URL);
+    if (!tenantId) {
+      console.error("❌ No tenant ID found!");
+      return;
+    }
 
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-      setIsConnected(true);
-      socket.emit("get-whatsapp-status");
+    console.log("🔌 Connecting to Socket.IO with tenant:", tenantId);
+    const newSocket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:6589", {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     });
 
-    socket.on("disconnect", () => {
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("✅ Connected to Socket.IO server, ID:", newSocket.id);
+      setIsConnected(true);
+
+      // 1. JOIN TENANT ROOM (WAJIB!)
+      console.log("📡 Joining tenant room:", tenantId);
+      newSocket.emit("join-tenant", tenantId);
+
+      // 2. START WHATSAPP SESSION (WAJIB!)
+      // Delay sedikit untuk memastikan join-tenant sudah diproses
+      setTimeout(() => {
+        console.log("🚀 Starting WhatsApp session for:", tenantId);
+        newSocket.emit("start-whatsapp", tenantId);
+      }, 500);
+    });
+
+    newSocket.on("disconnect", (reason) => {
+      console.log("❌ Disconnected from Socket.IO:", reason);
       setIsConnected(false);
     });
 
-    socket.on("whatsapp-status", (data: { isReady: boolean }) => {
-      if (data.isReady) {
+    newSocket.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error);
+      setIsConnected(false);
+    });
+
+    // WhatsApp Status Events
+    newSocket.on("whatsapp-status", (data: { status: string }) => {
+      console.log("📱 WhatsApp status update:", data);
+      if (data.status === "ready") {
         setStatus("ready");
         setQrCode("");
         setQrLoading(false);
-      } else {
+      } else if (data.status === "waiting") {
         setStatus("waiting");
-        setQrLoading(true); // Set loading ketika waiting tapi QR belum ada
+        setQrLoading(true);
+      } else if (data.status === "connecting") {
+        setStatus("connecting");
+        setQrCode("");
+        setQrLoading(true);
+      } else if (data.status === "disconnected") {
+        setStatus("disconnected");
+        setQrCode("");
+        setQrLoading(false);
       }
     });
 
-    socket.on("whatsapp-disconnected", () => {
-      setStatus("connecting");
-      setQrCode("");
-      setQrLoading(false);
-    });
-
-    socket.on("whatsapp-authenticated", () => {
-      setStatus("ready");
-      setQrCode("");
-      setQrLoading(false);
-    });
-
-    socket.on("whatsapp-qr", (qr: string) => {
+    newSocket.on("whatsapp-qr", (qr: string) => {
+      console.log("📷 QR Code received, length:", qr.length);
       setQrCode(qr);
       setStatus("waiting");
-      setQrLoading(false); // QR sudah tersedia, hilangkan loading
+      setQrLoading(false);
     });
 
-    socket.on("whatsapp-ready", () => {
+    newSocket.on("whatsapp-ready", () => {
+      console.log("✅ WhatsApp ready!");
       setStatus("ready");
+      setQrCode("");
+      setQrLoading(false);
+    });
+
+    newSocket.on("whatsapp-disconnected", () => {
+      console.log("⚠️ WhatsApp disconnected");
+      setStatus("disconnected");
+      setQrCode("");
+      setQrLoading(false);
+    });
+
+    newSocket.on("whatsapp-error", (data: { message: string }) => {
+      console.error("❌ WhatsApp error:", data);
+      setStatus("disconnected");
       setQrCode("");
       setQrLoading(false);
     });
 
     return () => {
-      socket.disconnect();
+      console.log("🔌 Disconnecting socket...");
+      newSocket.disconnect();
     };
-  }, []);
+  }, [tenantId]);
 
   const fetchWhatsapp = async () => {
     try {
@@ -198,7 +250,20 @@ const WhatsAppAuthPage = () => {
   };
 
   const refreshConnection = () => {
-    window.location.reload();
+    if (socket && tenantId) {
+      console.log("🔄 Refreshing connection...");
+      socket.emit("join-tenant", tenantId);
+      setTimeout(() => {
+        socket.emit("start-whatsapp", tenantId);
+      }, 500);
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (socket && tenantId) {
+      console.log("⚠️ Manual logout...");
+      socket.emit("logout-whatsapp", tenantId);
+    }
   };
 
   const getStatusInfo = () => {
@@ -224,6 +289,13 @@ const WhatsAppAuthPage = () => {
           description: "Selamat! WhatsApp berhasil terhubung ke sistem",
           icon: <CheckCircle2 className="w-8 h-8 text-green-500" />,
           badge: { text: "Terhubung", variant: "default" as const },
+        };
+      case "disconnected":
+        return {
+          title: "WhatsApp Terputus",
+          description: "Koneksi WhatsApp terputus. Silakan hubungkan kembali.",
+          icon: <WifiOff className="w-8 h-8 text-red-500" />,
+          badge: { text: "Terputus", variant: "destructive" as const },
         };
     }
   };
@@ -280,7 +352,6 @@ const WhatsAppAuthPage = () => {
     </Card>
   );
 
-  // QR Code Skeleton Component
   const QRCodeSkeleton = () => (
     <div className="flex flex-col items-center space-y-4">
       <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-yellow-200">
@@ -313,7 +384,7 @@ const WhatsAppAuthPage = () => {
         <div className="space-y-4">
           <WhatsAppStatus />
           <div className="flex justify-end gap-3">
-            <DisconnectDialog onDisconnectSuccess={() => router.refresh()}>
+            <DisconnectDialog onDisconnectSuccess={handleDisconnect}>
               <Button
                 variant="outline"
                 size="sm"
@@ -385,7 +456,6 @@ const WhatsAppAuthPage = () => {
                 {status === "waiting" && (
                   <>
                     {qrCode ? (
-                      // QR Code sudah tersedia
                       <div className="flex flex-col items-center space-y-4">
                         <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-yellow-200">
                           <QRCode value={qrCode} size={200} level="H" />
@@ -409,7 +479,6 @@ const WhatsAppAuthPage = () => {
                         </div>
                       </div>
                     ) : qrLoading ? (
-                      // QR Code belum tersedia, tampilkan skeleton
                       <div className="space-y-4">
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-2 mb-4">
@@ -441,7 +510,7 @@ const WhatsAppAuthPage = () => {
                   </div>
                 )}
 
-                {!isConnected && (
+                {(status === "disconnected" || !isConnected) && (
                   <Button
                     onClick={refreshConnection}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -456,6 +525,9 @@ const WhatsAppAuthPage = () => {
             <div className="text-center text-xs text-muted-foreground space-y-1">
               <p>QR Code akan kedaluwarsa dalam beberapa menit</p>
               <p>Pastikan perangkat Anda terhubung ke internet</p>
+              {tenantId && (
+                <p className="text-xs opacity-50">Tenant ID: {tenantId}</p>
+              )}
             </div>
           </div>
         </div>

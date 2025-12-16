@@ -9,10 +9,10 @@ import { getPagination } from '../../utils/pagination'
 export const getAllPackages = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id untuk filter
   const user = req.user;
-  if (!user || !user.tenant_id) {
+  if (!user || !user.tenantId) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenant_id;
+  const tenantId = user.tenantId;
 
   const validationResult = paginationSchema.safeParse(req.query)
 
@@ -57,10 +57,10 @@ export const getAllPackages = asyncHandler(async (req: Request, res: Response): 
 
 export const getPackageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const user = req.user;
-  if (!user || !user.tenant_id) {
+  if (!user || !user.tenantId) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenant_id;
+  const tenantId = user.tenantId;
 
   const packageId = req.params.id;
 

@@ -9,10 +9,10 @@ import { Detso_Role } from "@prisma/client";
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const validationResult = paginationSchema.safeParse(req.query);
 
@@ -172,10 +172,10 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 export const getTicketById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const ticketId = req.params.id;
 
@@ -268,10 +268,10 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
 export const getTicketHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const ticketId = req.params.id;
 
@@ -382,10 +382,10 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
 export const getTicketImageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenant_id) {
+    if (!user || !user.tenantId) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenant_id;
+    const tenantId = user.tenantId;
 
     const { historyId } = req.params;
 
