@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "detso-mobile",
+    "name": "Detso Mobile",
     "slug": "detso-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.karim064.detsomobile"
+      "package": "com.neoncode.detso"
     },
     "web": {
       "output": "static",
@@ -40,7 +40,30 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Aplikasi membutuhkan akses kamera",
+          "enableMicrophonePermission": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Aplikasi membutuhkan akses kamera",
+          "microphonePermission": false,
+          "photosPermission": "Aplikasi membutuhkan akses galeri"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Aplikasi membutuhkan akses lokasi"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,7 +1,7 @@
 import React from "react";
-import { View, ViewProps, Text as RNText, TextProps } from "react-native";
+import { View, ViewProps, TextProps } from "react-native";
 import { cn } from "../../lib/utils";
-import { Text } from "./text";
+import { CustomTextProps, Text } from "./text";
 
 const Card = React.forwardRef<View, ViewProps>(
   ({ className, ...props }, ref) => (
@@ -28,29 +28,31 @@ const CardHeader = React.forwardRef<View, ViewProps>(
 );
 CardHeader.displayName = "CardHeader";
 
-const CardTitle = React.forwardRef<RNText, TextProps>(
-  ({ className, ...props }, ref) => (
-    <Text
-      ref={ref}
-      className={cn(
-        "text-2xl font-semibold leading-none tracking-tight text-card-foreground",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
+const CardTitle = React.forwardRef<
+  React.ElementRef<typeof Text>,
+  CustomTextProps
+>(({ className, ...props }, ref) => (
+  <Text
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight text-card-foreground",
+      className,
+    )}
+    {...props}
+  />
+));
 CardTitle.displayName = "CardTitle";
 
-const CardDescription = React.forwardRef<RNText, TextProps>(
-  ({ className, ...props }, ref) => (
-    <Text
-      ref={ref}
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  ),
-);
+const CardDescription = React.forwardRef<
+  React.ElementRef<typeof Text>,
+  CustomTextProps
+>(({ className, ...props }, ref) => (
+  <Text
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+));
 CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<View, ViewProps>(
