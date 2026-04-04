@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { asyncHandler, AuthenticationError, ValidationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
-import { loginSchema, refreshTokenSchema } from './validation/validation.auth'
+import { loginSchema,  } from './validation/validation.auth'
 import { prisma } from '../../utils/prisma'
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {

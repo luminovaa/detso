@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { asyncHandler, AuthenticationError, ValidationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
-import { loginSchema, refreshTokenSchema } from './validation/validation.auth'
+import { loginSchema,  } from './validation/validation.auth'
 import { prisma } from '../../utils/prisma'
 
 interface TokenPayload {

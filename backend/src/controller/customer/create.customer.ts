@@ -6,7 +6,7 @@ import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateUniqueIdPel } from '../../helper/random.idpel';
 import { PDFGeneratorService } from '../../services/generate.service.pdf';
-import { whatsappService } from '../../services/whatsapp.service';
+// import { whatsappService } from '../../services/whatsapp.service';
 
 interface CustomerUploadedFiles {
     documents?: Express.Multer.File[];
@@ -196,32 +196,32 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 }
             });
 
-            // Kirim WA (Logic sama persis seperti kodemu)
-            if (pdfPath) {
-                const isWhatsAppReady = await whatsappService.isClientReady();
-                if (isWhatsAppReady && phone) {
-                    const textMessage = `Halo ${name}! 👋\n\nSelamat! Instalasi internet Anda telah berhasil diselesaikan.\n\n📋 Detail Layanan:\n• ID Pelanggan: ${result.idPel}\n• Paket: ${result.serviceConnection.package_name}\n• Kecepatan: ${result.serviceConnection.package_speed}\n• Alamat: ${address}\n\nTerimakasih!`;
+            // // Kirim WA (Logic sama persis seperti kodemu)
+            // if (pdfPath) {
+            //     const isWhatsAppReady = await whatsappService.isClientReady();
+            //     if (isWhatsAppReady && phone) {
+            //         const textMessage = `Halo ${name}! 👋\n\nSelamat! Instalasi internet Anda telah berhasil diselesaikan.\n\n📋 Detail Layanan:\n• ID Pelanggan: ${result.idPel}\n• Paket: ${result.serviceConnection.package_name}\n• Kecepatan: ${result.serviceConnection.package_speed}\n• Alamat: ${address}\n\nTerimakasih!`;
 
-                    await whatsappService.sendMessage(phone, textMessage);
+            //         await whatsappService.sendMessage(phone, textMessage);
 
-                    const fileName = `Laporan_Instalasi_${result.idPel}.pdf`;
-                    const caption = `📄 Laporan Instalasi Internet`;
+            //         const fileName = `Laporan_Instalasi_${result.idPel}.pdf`;
+            //         const caption = `📄 Laporan Instalasi Internet`;
 
-                    whatsappSent = await whatsappService.sendDocument(phone, pdfPath, caption, fileName);
+            //         whatsappSent = await whatsappService.sendDocument(phone, pdfPath, caption, fileName);
 
-                    if (whatsappSent) {
-                        await prisma.detso_WhatsApp_Log.create({
-                            data: {
-                                customer_id: result.customer.id,
-                                phone_number: phone,
-                                message_type: 'installation_report',
-                                status: 'sent',
-                                sent_at: new Date()
-                            }
-                        });
-                    }
-                }
-            }
+            //         if (whatsappSent) {
+            //             await prisma.detso_WhatsApp_Log.create({
+            //                 data: {
+            //                     customer_id: result.customer.id,
+            //                     phone_number: phone,
+            //                     message_type: 'installation_report',
+            //                     status: 'sent',
+            //                     sent_at: new Date()
+            //                 }
+            //             });
+            //         }
+            //     }
+            // }
         } catch (pdfError) {
             console.error('Error generating/sending PDF:', pdfError);
         }

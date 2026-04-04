@@ -37,7 +37,7 @@ function GlobalLogic() {
         type: "warning",
       });
       // Arahkan paksa kembali ke layar login
-      router.replace("/login");
+      router.replace("/sign-in");
     });
 
     // Jangan lupa bersihkan listener saat komponen dibongkar

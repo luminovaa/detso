@@ -1,0 +1,44 @@
+import { z } from 'zod';
+
+const photoSchema = z.object({
+  type: z.string().min(1, 'Tipe foto harus diisi'),
+  notes: z.string().optional().nullable(),
+});
+
+export const createServiceConnectionSchema = z.object({
+  customer_id: z.string().min(1, 'Customer ID harus diisi'),
+  package_id: z.string().min(1, 'Package ID harus diisi'),
+  address: z.string().min(1, 'Alamat harus diisi'),
+  package_name: z.string().min(1, 'Nama paket harus diisi'),
+  package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
+  ip_address: z.ipv4().optional().or(z.literal('')),
+  mac_address: z.string()
+    .regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
+      message: 'Format MAC address tidak valid',
+    })
+    .optional()
+    .or(z.literal('')),
+  notes: z.string().optional().nullable(),
+  photos: z.array(photoSchema).optional(),
+});
+
+export type CreateServiceConnectionInput = z.infer<typeof createServiceConnectionSchema>;
+
+export const updateServiceConnectionSchema = z.object({
+  package_id: z.string().min(1, 'Package ID harus diisi').optional(),
+  address: z.string().min(1, 'Alamat harus diisi').optional(),
+  package_name: z.string().min(1, 'Nama paket harus diisi').optional(),
+  package_speed: z.string().min(1, 'Kecepatan paket harus diisi').optional(),
+  ip_address: z.ipv4().optional().or(z.literal('')),
+  mac_address: z.string()
+    .regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
+      message: 'Format MAC address tidak valid',
+    })
+    .optional()
+    .or(z.literal('')),
+  notes: z.string().optional().nullable(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+  photos: z.array(photoSchema).optional(),
+});
+
+export type UpdateServiceConnectionInput = z.infer<typeof updateServiceConnectionSchema>;
