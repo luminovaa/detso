@@ -1,0 +1,4 @@
+name: Local
+variables:
+  - name: BASE_URL
+    value: http://192.168.90.2:6589/api

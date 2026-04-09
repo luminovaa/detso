@@ -7,10 +7,10 @@ import { prisma } from '../../utils/prisma';
 export const createTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const validationResult = createTicketSchema.safeParse(req.body);
 
@@ -29,7 +29,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         const service = await prisma.detso_Service_Connection.findFirst({
             where: {
                 id: service_id,
-                tenant_id: tenantId, // <--- Filter Tenant
+                tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             },
             select: { id: true, customer_id: true }
@@ -49,7 +49,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         const technician = await prisma.detso_User.findFirst({
             where: {
                 id: assigned_to,
-                tenant_id: tenantId, // <--- Filter Tenant
+                tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             },
             include: {
@@ -79,7 +79,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         // [NEW] 4. Create Ticket (Inject tenant_id)
         const ticket = await tx.detso_Ticket.create({
             data: {
-                tenant_id: tenantId, // <--- Inject Tenant
+                tenant_id: tenant_id, // <--- Inject Tenant
                 customer_id,
                 service_id: service_id || null,
                 title,
@@ -122,7 +122,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             // [NEW] 5. Create Schedule (Inject tenant_id)
             schedule = await tx.detso_Work_Schedule.create({
                 data: {
-                    tenant_id: tenantId, // <--- Inject Tenant (PENTING untuk fitur kalender)
+                    tenant_id: tenant_id, // <--- Inject Tenant (PENTING untuk fitur kalender)
                     technician_id: assigned_to,
                     ticket_id: ticket.id,
                     start_time: new Date(),

@@ -9,10 +9,10 @@ import { getPagination } from '../../utils/pagination'
 export const getAllPackages = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id untuk filter
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const validationResult = paginationSchema.safeParse(req.query)
 
@@ -24,7 +24,7 @@ export const getAllPackages = asyncHandler(async (req: Request, res: Response): 
 
   // [NEW] 2. Buat Where Clause dengan tenant_id
   const whereClause = {
-      tenant_id: tenantId, // <--- Filter WAJIB
+      tenant_id: tenant_id, // <--- Filter WAJIB
       deleted_at: null
   };
 
@@ -57,10 +57,10 @@ export const getAllPackages = asyncHandler(async (req: Request, res: Response): 
 
 export const getPackageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const packageId = req.params.id;
 
@@ -68,7 +68,7 @@ export const getPackageById = asyncHandler(async (req: Request, res: Response): 
   const packageData = await prisma.detso_Package.findFirst({
     where: {
       id: packageId,
-      tenant_id: tenantId, // <--- Security Check: Pastikan milik ISP yang login
+      tenant_id: tenant_id, // <--- Security Check: Pastikan milik ISP yang login
       deleted_at: null,
     },
   });

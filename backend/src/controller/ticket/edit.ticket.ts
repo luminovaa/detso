@@ -9,10 +9,10 @@ import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 export const editTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const { id } = req.params;
 
@@ -49,7 +49,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
-            tenant_id: tenantId, // <--- Filter Tenant
+            tenant_id: tenant_id, // <--- Filter Tenant
             deleted_at: null
         },
         include: {
@@ -69,7 +69,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
         const service = await prisma.detso_Service_Connection.findFirst({
             where: {
                 id: service_id,
-                tenant_id: tenantId, // <--- Filter Tenant
+                tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             }
         });
@@ -91,7 +91,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
         const technician = await prisma.detso_User.findFirst({
             where: {
                 id: assigned_to,
-                tenant_id: tenantId, // <--- Filter Tenant
+                tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             }
         });
@@ -216,7 +216,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                         // [NEW] 5. Inject Tenant ID saat buat jadwal baru
                         await tx.detso_Work_Schedule.create({
                             data: {
-                                tenant_id: tenantId, // <--- INJECT (PENTING)
+                                tenant_id: tenant_id, // <--- INJECT (PENTING)
                                 technician_id: assigned_to,
                                 ticket_id: id,
                                 start_time: new Date(),
@@ -285,10 +285,10 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 export const updateTicketStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const { id } = req.params;
     const { status } = req.body;
@@ -316,7 +316,7 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
-            tenant_id: tenantId, // <--- Filter Tenant
+            tenant_id: tenant_id, // <--- Filter Tenant
             deleted_at: null
         }
     });
@@ -402,10 +402,10 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
 export const addTicketNote = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
     
     const { id } = req.params;
     const { notes } = req.body;
@@ -433,7 +433,7 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
-            tenant_id: tenantId, // <--- Filter Tenant
+            tenant_id: tenant_id, // <--- Filter Tenant
             deleted_at: null
         }
     });

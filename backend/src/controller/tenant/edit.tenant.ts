@@ -14,7 +14,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenantIdToEdit = req.params.id;
+    const tenant_idToEdit = req.params.id;
     const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN;
     const isOwner = user.role === Detso_Role.TENANT_OWNER;
 
@@ -25,7 +25,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
             throw new AuthorizationError('Hanya Owner yang dapat mengedit profil perusahaan');
         }
         // IDOR Protection: Owner ISP A tidak boleh edit ISP B
-        if (user.tenantId !== tenantIdToEdit) {
+        if (user.tenant_id !== tenant_idToEdit) {
             throw new AuthorizationError('Anda tidak memiliki akses ke tenant ini');
         }
     }
@@ -53,7 +53,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
 
     // 5. Cek Data Existing
     const existingTenant = await prisma.detso_Tenant.findUnique({
-        where: { id: tenantIdToEdit, deleted_at: null }
+        where: { id: tenant_idToEdit, deleted_at: null }
     });
 
     if (!existingTenant) {
@@ -76,7 +76,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
             const duplicateCheck = await prisma.detso_Tenant.findFirst({
                 where: {
                     OR: [{ name: { equals: name, mode: 'insensitive' } }, { slug: newSlug }],
-                    id: { not: tenantIdToEdit }, // Jangan hitung diri sendiri
+                    id: { not: tenant_idToEdit }, // Jangan hitung diri sendiri
                     deleted_at: null
                 }
             });
@@ -108,7 +108,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
 
         // 6. Eksekusi Update ke Database
         const updatedTenant = await prisma.detso_Tenant.update({
-            where: { id: tenantIdToEdit },
+            where: { id: tenant_idToEdit },
             data: updateData
         });
 

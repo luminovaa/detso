@@ -8,10 +8,10 @@ import { prisma } from '../../utils/prisma';
 export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari session user
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const validationResult = paginationSchema.safeParse(req.query);
 
@@ -24,7 +24,7 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
     // [NEW] 2. Masukkan tenant_id ke Base Query
     // Ini memastikan SEMUA filter di bawahnya hanya berjalan di dalam lingkup tenant ini
     const whereClause: any = {
-        tenant_id: tenantId, // <--- KUNCI KEAMANAN SAAS
+        tenant_id: tenant_id, // <--- KUNCI KEAMANAN SAAS
         deleted_at: null
     };
 
@@ -243,10 +243,10 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
 export const checkCustomerByNik = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari user yang sedang login
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const { nik } = req.params;
 
@@ -258,7 +258,7 @@ export const checkCustomerByNik = asyncHandler(async (req: Request, res: Respons
     const customer = await prisma.detso_Customer.findFirst({
         where: {
             nik: nik,
-            tenant_id: tenantId, // <--- Filter wajib!
+            tenant_id: tenant_id, // <--- Filter wajib!
             deleted_at: null
         },
         select: {

@@ -81,17 +81,17 @@ io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
   // [NEW] Logic Multi-Tenant
-  // Client (Frontend) harus mengirim tenantId saat connect/mount page
-  socket.on('join-tenant', (tenantId: string) => {
-    if (!tenantId) return;
+  // Client (Frontend) harus mengirim tenant_id saat connect/mount page
+  socket.on('join-tenant', (tenant_id: string) => {
+    if (!tenant_id) return;
 
     // Masukkan socket ini ke room khusus tenant tersebut
-    socket.join(`tenant:${tenantId}`);
-    console.log(`Socket ${socket.id} joined room tenant:${tenantId}`);
+    socket.join(`tenant:${tenant_id}`);
+    console.log(`Socket ${socket.id} joined room tenant:${tenant_id}`);
 
     // [UX] Kirim status terkini langsung ke user yang baru join
     // Agar user tidak melihat loading terus menerus jika bot sudah ready
-    const statusData = whatsappManager.getStatus(tenantId);
+    const statusData = whatsappManager.getStatus(tenant_id);
     
     // Kirim status
     if (statusData.status === 'READY') {
@@ -107,20 +107,20 @@ io.on('connection', (socket) => {
   });
 
   // [NEW] Client meminta inisialisasi/start bot
-  socket.on('start-whatsapp', async (tenantId: string) => {
-    if (!tenantId) return;
+  socket.on('start-whatsapp', async (tenant_id: string) => {
+    if (!tenant_id) return;
     try {
-      await whatsappManager.initializeSession(tenantId);
+      await whatsappManager.initializeSession(tenant_id);
     } catch (error) {
       console.error('Error starting WhatsApp via socket:', error);
     }
   });
 
   // [NEW] Client meminta logout
-  socket.on('logout-whatsapp', async (tenantId: string) => {
-    if (!tenantId) return;
+  socket.on('logout-whatsapp', async (tenant_id: string) => {
+    if (!tenant_id) return;
     try {
-      await whatsappManager.logout(tenantId);
+      await whatsappManager.logout(tenant_id);
     } catch (error) {
       console.error('Error logout WhatsApp via socket:', error);
     }

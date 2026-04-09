@@ -7,10 +7,10 @@ import { responseData } from '../../utils/response-handler';
 export const editSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const scheduleId = req.params.id;
 
@@ -35,7 +35,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
   const existingSchedule = await prisma.detso_Work_Schedule.findFirst({
     where: { 
       id: scheduleId,
-      tenant_id: tenantId // <--- Filter Tenant
+      tenant_id: tenant_id // <--- Filter Tenant
     },
     include: {
       technician: true,
@@ -52,7 +52,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
     const technician = await prisma.detso_User.findFirst({
       where: { 
         id: technician_id, 
-        tenant_id: tenantId, // <--- Filter Tenant
+        tenant_id: tenant_id, // <--- Filter Tenant
         deleted_at: null 
       }
     });
@@ -68,7 +68,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
       const ticket = await prisma.detso_Ticket.findFirst({
         where: { 
           id: ticket_id, 
-          tenant_id: tenantId, // <--- Filter Tenant
+          tenant_id: tenant_id, // <--- Filter Tenant
           deleted_at: null 
         }
       });
@@ -81,7 +81,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
       const existingTicketSchedule = await prisma.detso_Work_Schedule.findFirst({
         where: { 
           ticket_id: ticket_id,
-          tenant_id: tenantId, // Safety check extra
+          tenant_id: tenant_id, // Safety check extra
           id: { not: scheduleId }
         }
       });

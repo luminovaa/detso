@@ -11,7 +11,7 @@ interface TokenPayload {
     id: string;
     email: string;
     role: string;
-    tenantId: string | null; // null jika dia SAAS_SUPER_ADMIN
+    tenant_id: string | null; // null jika dia SAAS_SUPER_ADMIN
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {
@@ -82,7 +82,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
         id: user.id,
         email: user.email,
         role: user.role,
-        tenantId: user.tenant_id
+        tenant_id: user.tenant_id
     })
 
     const refreshToken = generateRefreshToken()
@@ -120,7 +120,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
         email: user.email,
         username: user.username,
         role: user.role,
-        tenantId: user.tenant_id, // [UPDATED] Kembalikan info tenant ke client
+        tenant_id: user.tenant_id, // [UPDATED] Kembalikan info tenant ke client
         profile: user.profile,
         accessToken,
         refreshToken,

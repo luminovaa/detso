@@ -44,7 +44,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
         id: tokenRecord.user.id,
         email: tokenRecord.user.email,
         role: tokenRecord.user.role,
-        tenantId: tokenRecord.user.tenant_id
+        tenant_id: tokenRecord.user.tenant_id
     });
 
     const decoded = jwt.verify(newAccessToken, process.env.JWT_SECRET_TOKEN as string) as any;
@@ -71,7 +71,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
             username: tokenRecord.user.username,
             role: tokenRecord.user.role,
             profile: tokenRecord.user.profile,
-            tenantId: tokenRecord.user.tenant_id,
+            tenant_id: tokenRecord.user.tenant_id,
             exp: (jwt.decode(newAccessToken) as any).exp
         }
     };
@@ -113,7 +113,7 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
         // Normalize tenant_id: convert null to undefined to satisfy expected type
         req.user = {
             ...user,
-            tenantId: user.tenant_id! ?? undefined
+            tenant_id: user.tenant_id
         };
         next();
     } catch (error) {

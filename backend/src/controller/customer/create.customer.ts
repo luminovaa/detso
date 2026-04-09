@@ -16,10 +16,10 @@ interface CustomerUploadedFiles {
 export const createCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari user yang login
     const user = req.user;
-    if (!user || !user.tenantId!) {
+    if (!user || !user.tenant_id!) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId!;
+    const tenant_id = user.tenant_id!;
 
     const files = req.files as CustomerUploadedFiles;
 
@@ -65,7 +65,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             const existingCustomer = await tx.detso_Customer.findFirst({
                 where: {
                     nik,
-                    tenant_id: tenantId, // Wajib filter by tenant
+                    tenant_id: tenant_id, // Wajib filter by tenant
                     deleted_at: null
                 }
             });
@@ -76,7 +76,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 // [NEW] 3. Create Customer dengan tenant_id
                 customer = await tx.detso_Customer.create({
                     data: {
-                        tenant_id: tenantId, // Link ke tenant
+                        tenant_id: tenant_id, // Link ke tenant
                         name,
                         phone,
                         email,
@@ -94,7 +94,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             const packageData = await tx.detso_Package.findFirst({
                 where: {
                     id: package_id,
-                    tenant_id: tenantId, // Security check: Paket harus milik ISP ini
+                    tenant_id: tenant_id, // Security check: Paket harus milik ISP ini
                     deleted_at: null
                 }
             });
@@ -108,7 +108,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             // [NEW] 5. Create Service Connection dengan tenant_id
             const serviceConnection = await tx.detso_Service_Connection.create({
                 data: {
-                    tenant_id: tenantId, // Link ke tenant
+                    tenant_id: tenant_id, // Link ke tenant
                     customer_id: customer.id,
                     id_pel: idPel,
                     package_id,

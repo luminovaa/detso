@@ -12,10 +12,10 @@ interface UpdateServiceFiles {
 export const editServiceConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const serviceId = req.params.id;
   const files = req.files as UpdateServiceFiles;
@@ -46,7 +46,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
   const existingService = await prisma.detso_Service_Connection.findFirst({
     where: { 
         id: serviceId,
-        tenant_id: tenantId // <--- Filter Tenant
+        tenant_id: tenant_id // <--- Filter Tenant
     },
     include: {
       photos: true,
@@ -78,7 +78,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
       const packageExists = await prisma.detso_Package.findFirst({
         where: {
           id: package_id,
-          tenant_id: tenantId, // <--- Filter Tenant
+          tenant_id: tenant_id, // <--- Filter Tenant
           deleted_at: null
         }
       });
@@ -180,7 +180,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
       const finalService = await tx.detso_Service_Connection.findFirst({
         where: { 
             id: serviceId,
-            tenant_id: tenantId // <--- Filter Tenant
+            tenant_id: tenant_id // <--- Filter Tenant
         },
         include: {
           photos: {

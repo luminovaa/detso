@@ -7,10 +7,10 @@ import { createWorkScheduleSchema } from './validation/validation.schedule';
 export const createWorkSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dari user yang login (Admin/Owner/Dispatcher)
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const validationResult = createWorkScheduleSchema.safeParse(req.body);
 
@@ -32,7 +32,7 @@ export const createWorkSchedule = asyncHandler(async (req: Request, res: Respons
   const technician = await prisma.detso_User.findFirst({
     where: { 
       id: technician_id,
-      tenant_id: tenantId, // <--- WAJIB: Pastikan teknisi adalah karyawan ISP ini
+      tenant_id: tenant_id, // <--- WAJIB: Pastikan teknisi adalah karyawan ISP ini
       deleted_at: null 
     }
   });
@@ -50,7 +50,7 @@ export const createWorkSchedule = asyncHandler(async (req: Request, res: Respons
     const ticket = await prisma.detso_Ticket.findFirst({
       where: { 
         id: ticket_id,
-        tenant_id: tenantId, // <--- WAJIB: Pastikan tiket milik ISP ini
+        tenant_id: tenant_id, // <--- WAJIB: Pastikan tiket milik ISP ini
         deleted_at: null 
       }
     });
@@ -73,7 +73,7 @@ export const createWorkSchedule = asyncHandler(async (req: Request, res: Respons
   // [NEW] 4. Buat Jadwal dengan tenant_id
   const schedule = await prisma.detso_Work_Schedule.create({
     data: {
-      tenant_id: tenantId, // <--- INJECT TENANT ID
+      tenant_id: tenant_id, // <--- INJECT TENANT ID
       title: title || null,
       technician_id,
       start_time: new Date(start_time),

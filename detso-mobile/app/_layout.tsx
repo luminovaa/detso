@@ -1,56 +1,77 @@
+import React, { useEffect, useRef } from "react";
+import { AppState, AppStateStatus, BackHandler, Platform, ToastAndroid } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
+// import "@/src/lib/i18n";
+
+// UI Providers
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-
-import "../global.css";
-import { useEffect } from "react";
-import { Stack, useRouter } from "expo-router";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
 import { PortalProvider } from "@gorhom/portal";
+import { useLanguageStore } from "@/src/features/i18n/store";
+
+// Global & Utils
+import "../global.css";
 import { ToastProvider, useToast } from "@/src/hooks/use-toast";
 import { ToastViewport } from "@/src/components/global/toast";
-import { authEvents } from "@/src/lib/auth-events";
 import { ErrorBoundary } from "@/src/components/global/error-boundary";
+import { authEvents } from "@/src/lib/auth-events";
 
+// Auth & Security
+import { useAuthStore } from "@/src/features/auth/store"; // Sesuaikan path jika berbeda
+import { useProtectedRoute } from "@/src/hooks/use-secure-router";
+
+// Tahan splash screen bawaan OS agar tidak hilang duluan
 SplashScreen.preventAutoHideAsync();
 
+// ==========================================
+// 1. KOMPONEN GLOBAL LOGIC (Untuk Toast Event)
+// ==========================================
 function GlobalLogic() {
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Dengarkan jika Server Error (500)
     const unsubscribeServerError = authEvents.on("server_error", () => {
       toast({
         title: "Gangguan Server",
-        description:
-          "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat.",
+        description: "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat.",
         type: "destructive",
       });
     });
 
-    // 2. Dengarkan jika Sesi Habis / Refresh Token Gagal
     const unsubscribeSessionExpired = authEvents.on("session_expired", () => {
       toast({
         title: "Sesi Habis",
         description: "Sesi login Anda telah berakhir. Silakan login kembali.",
         type: "warning",
       });
-      // Arahkan paksa kembali ke layar login
       router.replace("/sign-in");
     });
 
-    // Jangan lupa bersihkan listener saat komponen dibongkar
     return () => {
       unsubscribeServerError();
       unsubscribeSessionExpired();
     };
   }, [toast, router]);
 
-  return null; // Komponen ini tidak merender UI apa-apa, hanya logic
+  return null;
 }
 
+// ==========================================
+// 2. ROOT LAYOUT UTAMA
+// ==========================================
 export default function RootLayout() {
+  const router = useRouter();
+  const backPressTimeRef = useRef(0);
+  const appState = useRef(AppState.currentState);
+const loadLocale = useLanguageStore((s) => s.loadLocale);
+
+  // Ambil state dan fungsi dari Zustand Store
+  const { checkAuth, isInitialized, setupAutoRefresh, clearAutoRefresh } = useAuthStore();
+
+  // Load Font
   const [fontsLoaded, fontError] = useFonts({
     "SF-Pro-Regular": require("../assets/fonts/SF-Pro-Rounded-Regular.otf"),
     "SF-Pro-Medium": require("../assets/fonts/SF-Pro-Rounded-Medium.otf"),
@@ -59,16 +80,78 @@ export default function RootLayout() {
     "SF-Pro-Heavy": require("../assets/fonts/SF-Pro-Rounded-Heavy.otf"),
   });
 
+  // --- EFEK 1: Inisialisasi Auth saat pertama buka aplikasi ---
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    checkAuth();
+    loadLocale();
+  }, []);
+
+  // --- EFEK 2: Pantau Background/Foreground Aplikasi (Auto Refresh Token) ---
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      const prev = appState.current;
+      appState.current = nextAppState;
+      // Jika aplikasi baru saja dibuka kembali dari background
+      if (prev.match(/inactive|background/) && nextAppState === "active") {
+        const currentTimer = useAuthStore.getState().refreshTimer;
+        // Nyalakan ulang timer jika mati
+        if (!currentTimer) setupAutoRefresh();
+      }
+    };
+    
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => {
+      subscription.remove();
+      clearAutoRefresh(); // Bersihkan memori saat aplikasi benar-benar ditutup
+    };
+  }, []);
+
+  // --- EFEK 3: Double Tap to Exit (Fitur UX Android Premium) ---
+  useEffect(() => {
+    const onBackPress = () => {
+      // Jika masih ada riwayat halaman, biarkan user kembali ke halaman sebelumnya
+      if (router.canGoBack()) {
+        return false;
+      }
+
+      // Jika user menekan back 2x dalam 2 detik, keluar aplikasi
+      const now = Date.now();
+      if (now - backPressTimeRef.current < 2000) {
+        BackHandler.exitApp();
+        return true;
+      }
+
+      backPressTimeRef.current = now;
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Tekan sekali lagi untuk keluar", ToastAndroid.SHORT);
+      }
+      return true; // Tahan agar aplikasi tidak langsung tertutup
+    };
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => backHandler.remove();
+  }, [router]);
+
+  // --- PENGATURAN KESIAPAN APLIKASI ---
+  // Aplikasi dianggap "Ready" jika font selesai diunduh DAN token JWT selesai dicek
+  const isAppReady = fontsLoaded && isInitialized;
+
+  // Jalankan perlindungan rute (Redirect ke Login jika belum auth)
+  useProtectedRoute(isAppReady);
+
+  // Sembunyikan Splash Screen bawaan OS hanya jika aplikasi sudah benar-benar siap
+  useEffect(() => {
+    if (isAppReady || fontError) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [isAppReady, fontError]);
 
-  if (!fontsLoaded && !fontError) {
-    return null;
+  // Tahan layar hitam/putih (Native Splash) selama isAppReady masih false
+  if (!isAppReady && !fontError) {
+    return null; 
   }
 
+  // --- RENDER SEMUA PROVIDER ---
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
@@ -76,9 +159,7 @@ export default function RootLayout() {
           <BottomSheetModalProvider>
             <ToastProvider>
               <GlobalLogic />
-              <Stack>
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-              </Stack>
+              <Stack screenOptions={{ headerShown: false }} />
               <ToastViewport />
             </ToastProvider>
           </BottomSheetModalProvider>

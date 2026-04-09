@@ -245,6 +245,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:^10.4.0":
+  version: 10.4.0
+  resolution: "@faker-js/faker@npm:10.4.0"
+  checksum: 10c0/29f15e46f91757d654f6f42ac8313ac4aebb6591e2ebae7fdd8d36d5017490327ea67be37cff06d18303db54abf468524bcc7e4b1de53be4eb884c1f71d571c1
+  languageName: node
+  linkType: hard
+
 "@gar/promise-retry@npm:^1.0.0":
   version: 1.0.3
   resolution: "@gar/promise-retry@npm:1.0.3"
@@ -296,6 +303,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/hashes@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@noble/hashes@npm:2.0.1"
+  checksum: 10c0/e81769ce21c3b1c80141a3b99bd001f17edea09879aa936692ae39525477386d696101cd573928a304806efb2b9fa751e1dd83241c67d0c84d30091e85c79bdb
+  languageName: node
+  linkType: hard
+
 "@npmcli/agent@npm:^4.0.0":
   version: 4.0.0
   resolution: "@npmcli/agent@npm:4.0.0"
@@ -322,6 +336,19 @@ __metadata:
   version: 4.0.0
   resolution: "@npmcli/redact@npm:4.0.0"
   checksum: 10c0/a1e9ba9c70a6b40e175bda2c3dd8cfdaf096e6b7f7a132c855c083c8dfe545c3237cd56702e2e6627a580b1d63373599d49a1192c4078a85bf47bbde824df31c
+  languageName: node
+  linkType: hard
+
+"@paralleldrive/cuid2@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "@paralleldrive/cuid2@npm:3.3.0"
+  dependencies:
+    "@noble/hashes": "npm:^2.0.1"
+    bignumber.js: "npm:^9.3.1"
+    error-causes: "npm:^3.0.2"
+  bin:
+    cuid2: bin/cuid2.js
+  checksum: 10c0/a1c71f73f3c7cec1233c1fc3325a9ae19c4ca37c05f89dabaff650064cb84d048856b38c2fcfb5cc3a11d0711896d26cb8ba85b402cb33ea725e45d0aee276ca
   languageName: node
   linkType: hard
 
@@ -1114,6 +1141,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bignumber.js@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "bignumber.js@npm:9.3.1"
+  checksum: 10c0/61342ba5fe1c10887f0ecf5be02ff6709271481aff48631f86b4d37d55a99b87ce441cfd54df3d16d10ee07ceab7e272fc0be430c657ffafbbbf7b7d631efb75
+  languageName: node
+  linkType: hard
+
 "binary-extensions@npm:^2.0.0":
   version: 2.3.0
   resolution: "binary-extensions@npm:2.3.0"
@@ -1759,6 +1793,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "detso-backend@workspace:."
   dependencies:
+    "@faker-js/faker": "npm:^10.4.0"
+    "@paralleldrive/cuid2": "npm:^3.3.0"
     "@prisma/adapter-pg": "npm:^6.12.0"
     "@prisma/client": "npm:^6.13.0"
     "@types/cookie-parser": "npm:^1.4.8"
@@ -1932,6 +1968,13 @@ __metadata:
   version: 2.2.1
   resolution: "env-paths@npm:2.2.1"
   checksum: 10c0/285325677bf00e30845e330eec32894f5105529db97496ee3f598478e50f008c5352a41a30e5e72ec9de8a542b5a570b85699cd63bd2bc646dbcb9f311d83bc4
+  languageName: node
+  linkType: hard
+
+"error-causes@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "error-causes@npm:3.0.2"
+  checksum: 10c0/9cb37797bbf57983ef8b9a762b5ba40442b1fc5487c9bdaed7f54eb9d3f13015cade9dc45f80b01cc3781332772fda43a72e537d36be961ebe50c6da083fb06d
   languageName: node
   linkType: hard
 

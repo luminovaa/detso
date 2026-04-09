@@ -7,10 +7,10 @@ import { Detso_Role } from '@prisma/client';
 export const deletePackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dan Validasi Session
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const packageId = req.params.id;
 
@@ -19,7 +19,7 @@ export const deletePackage = asyncHandler(async (req: Request, res: Response): P
   const packageData = await prisma.detso_Package.findFirst({
     where: {
       id: packageId,
-      tenant_id: tenantId, // <--- KUNCI KEAMANAN: Pastikan milik ISP yang login
+      tenant_id: tenant_id, // <--- KUNCI KEAMANAN: Pastikan milik ISP yang login
       deleted_at: null
     }
   });

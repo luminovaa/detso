@@ -9,10 +9,10 @@ import { responseData } from "../../utils/response-handler";
 export const getAllSchedules = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const queryParams = {
         ...req.query,
@@ -36,7 +36,7 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
 
     // [NEW] 2. Base Where Clause dengan tenant_id
     const whereClause: any = {
-        tenant_id: tenantId, // <--- KUNCI UTAMA SAAS
+        tenant_id: tenant_id, // <--- KUNCI UTAMA SAAS
         start_time: {
             gte: startDate,
             lte: endDate
@@ -159,10 +159,10 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
 export const getScheduleById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const { id } = req.params;
 
@@ -175,7 +175,7 @@ export const getScheduleById = asyncHandler(async (req: Request, res: Response):
     const schedule = await prisma.detso_Work_Schedule.findFirst({
         where: {
             id: id,
-            tenant_id: tenantId, // <--- Filter WAJIB
+            tenant_id: tenant_id, // <--- Filter WAJIB
         },
         include: {
             technician: {

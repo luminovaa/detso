@@ -72,7 +72,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Aplikasi membutuhkan akses lokasi"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

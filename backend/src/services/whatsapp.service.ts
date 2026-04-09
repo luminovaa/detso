@@ -7,13 +7,13 @@
 // // Get Logs
 // export const getWhatsappLogs = asyncHandler(async (req: Request, res: Response) => {
 //     const user = req.user;
-//     if (!user || !user.tenantId) throw new AuthenticationError('Sesi invalid');
+//     if (!user || !user.tenant_id) throw new AuthenticationError('Sesi invalid');
 
 //     const { page = 1, limit = 10 } = req.query;
 //     const skip = (Number(page) - 1) * Number(limit);
 
 //     const logs = await prisma.detso_WhatsApp_Log.findMany({
-//         where: { tenant_id: user.tenantId },
+//         where: { tenant_id: user.tenant_id },
 //         orderBy: { created_at: 'desc' },
 //         take: Number(limit),
 //         skip: skip,
@@ -21,7 +21,7 @@
 //     });
 
 //     const total = await prisma.detso_WhatsApp_Log.count({
-//         where: { tenant_id: user.tenantId }
+//         where: { tenant_id: user.tenant_id }
 //     });
 
 //     responseData(res, 200, 'Logs fetched', {
@@ -37,26 +37,26 @@
 // // Logout
 // export const logoutWhatsapp = asyncHandler(async (req: Request, res: Response) => {
 //     const user = req.user;
-//     if (!user || !user.tenantId) throw new AuthenticationError('Sesi invalid');
+//     if (!user || !user.tenant_id) throw new AuthenticationError('Sesi invalid');
 
-//     await whatsappManager.logout(user.tenantId);
+//     await whatsappManager.logout(user.tenant_id);
 //     responseData(res, 200, 'WhatsApp logged out successfully');
 // });
 
 // // Kirim Pesan Manual (Test)
 // export const sendWhatsappMessage = asyncHandler(async (req: Request, res: Response) => {
 //     const user = req.user;
-//     if (!user || !user.tenantId) throw new AuthenticationError('Sesi invalid');
+//     if (!user || !user.tenant_id) throw new AuthenticationError('Sesi invalid');
 
 //     const { phone, message } = req.body;
 
 //     try {
-//         await whatsappManager.sendMessage(user.tenantId, phone, message);
+//         await whatsappManager.sendMessage(user.tenant_id, phone, message);
         
 //         // Simpan Log
 //         await prisma.detso_WhatsApp_Log.create({
 //             data: {
-//                 tenant_id: user.tenantId,
+//                 tenant_id: user.tenant_id,
 //                 phone_number: phone,
 //                 message_type: 'TEXT',
 //                 status: 'sent'
@@ -67,7 +67,7 @@
 //     } catch (error: any) {
 //         await prisma.detso_WhatsApp_Log.create({
 //             data: {
-//                 tenant_id: user.tenantId,
+//                 tenant_id: user.tenant_id,
 //                 phone_number: phone,
 //                 message_type: 'TEXT',
 //                 status: 'failed',

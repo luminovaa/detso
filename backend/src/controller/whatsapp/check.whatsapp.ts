@@ -10,10 +10,10 @@ import { whatsappManager } from '../../services/whatsapp-manager';
 export const checkWhatsAppStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // Ambil Tenant ID
     const user = req.user;
-    if (!user || !user.tenantId) throw new AuthenticationError('Sesi tidak valid');
+    if (!user || !user.tenant_id) throw new AuthenticationError('Sesi tidak valid');
 
     // Ambil status spesifik tenant ini dari Manager
-    const sessionData = whatsappManager.getStatus(user.tenantId);
+    const sessionData = whatsappManager.getStatus(user.tenant_id);
     
     // sessionData format: { status: 'READY' | 'CONNECTING'..., qr: string | null }
     const isReady = sessionData.status === 'READY';
@@ -28,7 +28,7 @@ export const checkWhatsAppStatus = asyncHandler(async (req: Request, res: Respon
 // 2. Kirim Pesan Test (Manual)
 export const sendTestMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const user = req.user;
-    if (!user || !user.tenantId) throw new AuthenticationError('Sesi tidak valid');
+    if (!user || !user.tenant_id) throw new AuthenticationError('Sesi tidak valid');
 
     const { phone_number, message } = req.body;
     
@@ -38,12 +38,12 @@ export const sendTestMessage = asyncHandler(async (req: Request, res: Response):
     
     try {
         // [UBAH] Panggil manager dengan tenant_id
-        await whatsappManager.sendMessage(user.tenantId, phone_number, message);
+        await whatsappManager.sendMessage(user.tenant_id, phone_number, message);
         
         // Simpan Log Sukses (Dengan Tenant ID)
         await prisma.detso_WhatsApp_Log.create({
             data: {
-                tenant_id: user.tenantId, // <--- WAJIB
+                tenant_id: user.tenant_id, // <--- WAJIB
                 phone_number,
                 message_type: 'Private Chat', // Atau 'TEXT'
                 status: 'sent',
@@ -61,7 +61,7 @@ export const sendTestMessage = asyncHandler(async (req: Request, res: Response):
         // Simpan Log Gagal (Dengan Tenant ID)
         await prisma.detso_WhatsApp_Log.create({
             data: {
-                tenant_id: user.tenantId, // <--- WAJIB
+                tenant_id: user.tenant_id, // <--- WAJIB
                 phone_number,
                 message_type: 'Private Chat',
                 status: 'failed',
@@ -78,7 +78,7 @@ export const sendTestMessage = asyncHandler(async (req: Request, res: Response):
 // 3. Ambil Log History (Filter per Tenant)
 export const whatsappLogs = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const user = req.user;
-    if (!user || !user.tenantId) throw new AuthenticationError('Sesi tidak valid');
+    if (!user || !user.tenant_id) throw new AuthenticationError('Sesi tidak valid');
 
     const validationResult = paginationSchema.safeParse(req.query);
     
@@ -90,7 +90,7 @@ export const whatsappLogs = asyncHandler(async (req: Request, res: Response): Pr
     
     // Filter Dasar: Hanya log milik tenant ini
     const whereClause = {
-        tenant_id: user.tenantId
+        tenant_id: user.tenant_id
     };
 
     const totalLogs = await prisma.detso_WhatsApp_Log.count({

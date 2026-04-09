@@ -8,10 +8,10 @@ import { Detso_Role } from '@prisma/client' // Import Enum Role
 export const createPackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id & Cek Session
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     // [NEW] 2. Cek Role (Gunakan Role Baru SaaS)
     // Hanya Owner dan Admin Tenant yang boleh buat paket. Teknisi tidak boleh.
@@ -34,7 +34,7 @@ export const createPackage = asyncHandler(async (req: Request, res: Response): P
     const existingPackage = await prisma.detso_Package.findFirst({
         where: {
             name: { equals: name, mode: 'insensitive' }, // Cek case-insensitive
-            tenant_id: tenantId, // Filter tenant
+            tenant_id: tenant_id, // Filter tenant
             deleted_at: null
         }
     });
@@ -46,7 +46,7 @@ export const createPackage = asyncHandler(async (req: Request, res: Response): P
     // [NEW] 4. Create dengan tenant_id
     const packageData = await prisma.detso_Package.create({
         data: {
-            tenant_id: tenantId, // Link ke tenant
+            tenant_id: tenant_id, // Link ke tenant
             name,
             speed,
             price: price ? price : 0,

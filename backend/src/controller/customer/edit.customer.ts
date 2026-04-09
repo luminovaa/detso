@@ -12,10 +12,10 @@ interface UpdateCustomerFiles {
 export const editCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   const customerId = req.params.id;
   const files = req.files as UpdateCustomerFiles;
@@ -37,7 +37,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   const existingCustomer = await prisma.detso_Customer.findFirst({
     where: { 
         id: customerId,
-        tenant_id: tenantId // WAJIB: Pastikan customer milik tenant ini
+        tenant_id: tenant_id // WAJIB: Pastikan customer milik tenant ini
     },
     include: {
       documents: true,
@@ -63,7 +63,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
       const duplicate = await prisma.detso_Customer.findFirst({
         where: {
           nik,
-          tenant_id: tenantId, // Cek duplikat hanya di tenant ini
+          tenant_id: tenant_id, // Cek duplikat hanya di tenant ini
           id: { not: customerId },
           deleted_at: null
         }
@@ -135,7 +135,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
       const finalCustomer = await tx.detso_Customer.findFirst({
         where: { 
             id: customerId,
-            tenant_id: tenantId
+            tenant_id: tenant_id
         },
         include: {
           documents: {

@@ -46,7 +46,7 @@ export const Button = React.forwardRef<View, ButtonProps>(
           {
             "py-2 px-4": size === "sm",
             "py-4 px-6": size === "md",
-            "py-5 px-8": size === "lg",
+            "py-3 px-8": size === "lg",
           },
 
           // Variant styles
@@ -88,7 +88,7 @@ export const Button = React.forwardRef<View, ButtonProps>(
               {
                 "text-sm": size === "sm",
                 "text-base font-semibold": size === "md",
-                "text-lg font-bold": size === "lg",
+                "text-xl font-bold": size === "lg",
               },
               // Text colors
               {

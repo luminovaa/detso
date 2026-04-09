@@ -8,7 +8,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response): Prom
   // [NEW] 1. Ambil tenant_id dan Role User yang login
   const currentUser = req.user;
   
-  const tenantId = currentUser?.tenant_id;
+  const tenant_id = currentUser?.tenant_id;
   const myRole = currentUser?.role as Detso_Role;
 
   // [NEW] 2. Cek Izin Dasar (Hanya Owner & Admin yang boleh hapus user)
@@ -22,7 +22,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response): Prom
   const targetUser = await prisma.detso_User.findFirst({
     where: {
       id: id,
-      tenant_id: tenantId, // <--- Filter WAJIB: Pastikan target satu perusahaan
+      tenant_id: tenant_id, // <--- Filter WAJIB: Pastikan target satu perusahaan
       deleted_at: null
     }
   });

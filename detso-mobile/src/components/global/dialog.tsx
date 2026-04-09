@@ -8,7 +8,6 @@ import {
   TextProps,
 } from "react-native";
 import { cn } from "../../lib/utils";
-import { Portal } from "./portal";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export interface DialogProps {
@@ -18,23 +17,26 @@ export interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
-  if (!open) return null;
-
   return (
-    <Portal>
+    <Modal
+      transparent
+      visible={open}
+      animationType="none"
+      onRequestClose={() => onOpenChange(false)}
+    >
       <Animated.View
         entering={FadeIn.duration(200)}
         exiting={FadeOut.duration(200)}
-        className="absolute inset-0 z-50 flex-1 justify-center items-center px-6"
+        className="flex-1 justify-center items-center px-6 bg-black/50"
       >
         <Pressable
-          className="absolute inset-0 bg-black/50"
+          className="absolute inset-0"
           onPress={() => onOpenChange(false)}
         />
 
         {children}
       </Animated.View>
-    </Portal>
+    </Modal>
   );
 };
 

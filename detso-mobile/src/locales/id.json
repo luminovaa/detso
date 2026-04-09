@@ -1,0 +1,50 @@
+{
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi Kesalahan",
+    "save": "Simpan",
+    "cancel": "Batal"
+  },
+  "auth": {
+    "welcome": "ISP Portal",
+    "subtitle": "Manajemen jaringan, pelanggan, dan penanganan tiket dalam satu kontrol panel.",
+    "emailLabel": "ID Karyawan / Email",
+    "emailPlaceholder": "Masukkan username atau email",
+    "passwordLabel": "Kata Sandi",
+    "passwordPlaceholder": "Masukkan kata sandi",
+    "forgotPassword": "Lupa Sandi?",
+    "loginBtn": "Otorisasi Masuk",
+    "needHelp": "Butuh akses akun?",
+    "contactAdmin": "Hubungi Administrator"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "profile": {
+      "accountLabel": "Akun Perusahaan",
+      "editProfile": "Edit Profil"
+    },
+    "preferences": {
+      "title": "Preferensi",
+      "language": "Bahasa Aplikasi",
+      "notifications": "Notifikasi Push",
+      "theme": "Mode Gelap",
+      "selectLanguage": "Pilih Bahasa Aplikasi",
+      "langId": "Bahasa Indonesia",
+      "langEn": "English (US)"
+    },
+    "support": {
+      "title": "Bantuan & Informasi",
+      "helpCenter": "Pusat Bantuan",
+      "terms": "Syarat & Ketentuan",
+      "version": "Versi Aplikasi"
+    },
+    "security": {
+      "title": "Keamanan Akun",
+      "changePassword": "Ganti Kata Sandi",
+      "sessions": "Sesi Aktif"
+    },
+    "logout": "Keluar dari Akun",
+    "logoutConfirmTitle": "Keluar dari Akun?",
+    "logoutConfirmDescription": "Apakah Anda yakin ingin keluar? Anda harus memasukkan kredensial lagi untuk masuk kembali."
+  }
+}

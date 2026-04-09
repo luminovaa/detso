@@ -105,13 +105,13 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenantIdParam = req.params.id;
+    const tenant_idParam = req.params.id;
 
     // 1. Security Check (IDOR Protection)
     const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN || user.role === Detso_Role.TENANT_OWNER;
 
     // Jika bukan super admin, dia HANYA boleh lihat tenant ID miliknya sendiri
-    if (!isSuperAdmin && user.tenantId !== tenantIdParam) {
+    if (!isSuperAdmin && user.tenant_id !== tenant_idParam) {
         // Return Not Found agar attacker tidak tahu kalau ID itu sebenarnya ada
         throw new NotFoundError('Tenant tidak ditemukan');
     }
@@ -119,7 +119,7 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
     // 2. Get Data
     const tenant = await prisma.detso_Tenant.findFirst({
         where: {
-            id: tenantIdParam,
+            id: tenant_idParam,
             deleted_at: null
         },
         // Opsional: Include detail lengkap jika Super Admin yang buka
@@ -152,18 +152,18 @@ export const getTenantLogo = asyncHandler(async (req: Request, res: Response): P
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenantIdParam = req.params.id;
+    const tenant_idParam = req.params.id;
     const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN;
 
     // 2. Security Check: Isolasi Data
     // User biasa HANYA boleh ambil logo tenantnya sendiri
-    if (!isSuperAdmin && user.tenantId !== tenantIdParam) {
+    if (!isSuperAdmin && user.tenant_id !== tenant_idParam) {
         throw new NotFoundError('Logo tidak ditemukan'); // Return 404 agar aman
     }
 
     // 3. Ambil Path dari Database
     const tenant = await prisma.detso_Tenant.findUnique({
-        where: { id: tenantIdParam },
+        where: { id: tenant_idParam },
         select: { logo: true }
     });
 

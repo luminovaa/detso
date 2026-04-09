@@ -8,10 +8,10 @@ import { Detso_Role } from '@prisma/client';
 export const deleteServiceConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
   const user = req.user;
-  if (!user || !user.tenantId) {
+  if (!user || !user.tenant_id) {
       throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
   }
-  const tenantId = user.tenantId;
+  const tenant_id = user.tenant_id;
 
   // [NEW] 2. Cek Role (Hanya Owner & Admin)
   if (user.role !== Detso_Role.TENANT_OWNER && user.role !== Detso_Role.TENANT_ADMIN) {
@@ -24,7 +24,7 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
   const serviceConnection = await prisma.detso_Service_Connection.findFirst({
     where: { 
       id: serviceId,
-      tenant_id: tenantId, // <--- Filter WAJIB
+      tenant_id: tenant_id, // <--- Filter WAJIB
       deleted_at: null 
     },
     include: {
@@ -50,7 +50,7 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
     prisma.detso_Service_Connection.updateMany({
       where: { 
           id: serviceId,
-          tenant_id: tenantId // Double check
+          tenant_id: tenant_id // Double check
       },
       data: { deleted_at: new Date() }
     }),
@@ -64,7 +64,7 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
   const activeServiceCount = await prisma.detso_Service_Connection.count({
     where: {
       customer_id: customerId,
-      tenant_id: tenantId, // <--- Filter WAJIB
+      tenant_id: tenant_id, // <--- Filter WAJIB
       deleted_at: null
     }
   });
@@ -77,7 +77,7 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
     await prisma.detso_Customer.updateMany({
       where: { 
           id: customerId,
-          tenant_id: tenantId 
+          tenant_id: tenant_id 
       },
       data: { deleted_at: new Date() }
     });

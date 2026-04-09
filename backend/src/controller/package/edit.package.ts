@@ -8,10 +8,10 @@ import { Detso_Role } from '@prisma/client'
 export const editPackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dan Validasi Session
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     // [NEW] 2. Cek Role (Gunakan Role SaaS)
     if (user.role !== Detso_Role.TENANT_OWNER && user.role !== Detso_Role.TENANT_ADMIN) {
@@ -33,7 +33,7 @@ export const editPackage = asyncHandler(async (req: Request, res: Response): Pro
     const existingPackage = await prisma.detso_Package.findFirst({
         where: { 
             id: packageId,
-            tenant_id: tenantId // <--- KUNCI: Pastikan paket milik tenant ini
+            tenant_id: tenant_id // <--- KUNCI: Pastikan paket milik tenant ini
         }
     })
 
@@ -48,7 +48,7 @@ export const editPackage = asyncHandler(async (req: Request, res: Response): Pro
         const duplicateParams = await prisma.detso_Package.findFirst({
             where: {
                 name: { equals: name, mode: 'insensitive' },
-                tenant_id: tenantId, // Cek di tenant ini saja
+                tenant_id: tenant_id, // Cek di tenant ini saja
                 id: { not: packageId }, // Jangan hitung diri sendiri
                 deleted_at: null
             }

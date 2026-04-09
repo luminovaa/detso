@@ -1,0 +1,50 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An Error Occurred",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "auth": {
+    "welcome": "ISP Portal",
+    "subtitle": "Manage networks, customers, and ticket resolutions in one control panel.",
+    "emailLabel": "Employee ID / Email",
+    "emailPlaceholder": "Enter username or email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "forgotPassword": "Forgot Password?",
+    "loginBtn": "Authorize Access",
+    "needHelp": "Need account access?",
+    "contactAdmin": "Contact Administrator"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "accountLabel": "Enterprise Account",
+      "editProfile": "Edit Profile"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "language": "App Language",
+      "notifications": "Push Notifications",
+      "theme": "Dark Mode",
+      "selectLanguage": "Select App Language",
+      "langId": "Indonesian",
+      "langEn": "English (US)"
+    },
+    "support": {
+      "title": "Support & About",
+      "helpCenter": "Help Center",
+      "terms": "Terms & Conditions",
+      "version": "App Version"
+    },
+    "security": {
+      "title": "Account Security",
+      "changePassword": "Change Password",
+      "sessions": "Active Sessions"
+    },
+    "logout": "Sign Out",
+    "logoutConfirmTitle": "Sign Out?",
+    "logoutConfirmDescription": "Are you sure you want to sign out? You will need to enter your credentials again to log back in."
+  }
+}

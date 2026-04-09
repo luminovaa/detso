@@ -9,10 +9,10 @@ import { Detso_Role } from "@prisma/client";
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const validationResult = paginationSchema.safeParse(req.query);
 
@@ -24,7 +24,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 
     // [NEW] 2. Base Where Clause dengan tenant_id
     const whereClause: any = {
-        tenant_id: tenantId, // <--- KUNCI UTAMA FILTER
+        tenant_id: tenant_id, // <--- KUNCI UTAMA FILTER
         deleted_at: null
     };
 
@@ -172,10 +172,10 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
 export const getTicketById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const ticketId = req.params.id;
 
@@ -183,7 +183,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
     const ticket = await prisma.detso_Ticket.findFirst({
         where: { 
             id: ticketId, 
-            tenant_id: tenantId, // <--- Filter Tenant
+            tenant_id: tenant_id, // <--- Filter Tenant
             deleted_at: null 
         },
         include: {
@@ -268,10 +268,10 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
 export const getTicketHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const ticketId = req.params.id;
 
@@ -279,7 +279,7 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
     const ticketExists = await prisma.detso_Ticket.findFirst({
         where: { 
             id: ticketId, 
-            tenant_id: tenantId, // <--- Filter Tenant
+            tenant_id: tenant_id, // <--- Filter Tenant
             deleted_at: null 
         },
         select: { id: true }
@@ -382,10 +382,10 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
 export const getTicketImageById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const { historyId } = req.params;
 
@@ -411,7 +411,7 @@ export const getTicketImageById = asyncHandler(async (req: Request, res: Respons
         throw new NotFoundError('Gambar tiket tidak ditemukan');
     }
 
-    if (history.ticket.tenant_id !== tenantId) {
+    if (history.ticket.tenant_id !== tenant_id) {
         throw new NotFoundError('Gambar tiket tidak ditemukan'); // Jangan kasih tau "Akses Ditolak" biar attacker bingung
     }
 

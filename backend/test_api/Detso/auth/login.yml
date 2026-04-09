@@ -1,0 +1,22 @@
+info:
+  name: login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "identifier": "admin",
+        "password": "admin"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

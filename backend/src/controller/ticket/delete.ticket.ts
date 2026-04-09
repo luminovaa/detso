@@ -8,10 +8,10 @@ import { Detso_Role } from '@prisma/client';
 export const deleteTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
-    if (!user || !user.tenantId) {
+    if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
-    const tenantId = user.tenantId;
+    const tenant_id = user.tenant_id;
 
     const ticketId = req.params.id;
 
@@ -25,7 +25,7 @@ export const deleteTicket = asyncHandler(async (req: Request, res: Response): Pr
     const ticket = await prisma.detso_Ticket.findFirst({
         where: { 
             id: ticketId, 
-            tenant_id: tenantId, // <--- Filter WAJIB
+            tenant_id: tenant_id, // <--- Filter WAJIB
             deleted_at: null 
         },
         include: {

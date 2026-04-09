@@ -14,12 +14,12 @@ export const deleteTenant = asyncHandler(async (req: Request, res: Response): Pr
         throw new AuthorizationError('Hanya Super Admin yang dapat menghapus Tenant.');
     }
 
-    const tenantIdToDelete = req.params.id;
+    const tenant_idToDelete = req.params.id;
 
     // 3. Cek Keberadaan Tenant
     const tenant = await prisma.detso_Tenant.findUnique({
         where: { 
-            id: tenantIdToDelete, 
+            id: tenant_idToDelete, 
             deleted_at: null 
         },
         include: {
@@ -58,7 +58,7 @@ export const deleteTenant = asyncHandler(async (req: Request, res: Response): Pr
         // (Kita tidak perlu set is_active false lagi karena sudah pasti false dari pengecekan di atas, 
         // tapi tidak apa-apa di-set lagi untuk konsistensi data history)
         await tx.detso_Tenant.update({
-            where: { id: tenantIdToDelete },
+            where: { id: tenant_idToDelete },
             data: {
                 deleted_at: now,
                 is_active: false 
@@ -67,7 +67,7 @@ export const deleteTenant = asyncHandler(async (req: Request, res: Response): Pr
 
         // B. Soft Delete Semua User di Tenant ini
         await tx.detso_User.updateMany({
-            where: { tenant_id: tenantIdToDelete },
+            where: { tenant_id: tenant_idToDelete },
             data: {
                 deleted_at: now
             }
@@ -75,7 +75,7 @@ export const deleteTenant = asyncHandler(async (req: Request, res: Response): Pr
 
         // C. Revoke Semua Session User Tenant ini
         const users = await tx.detso_User.findMany({
-            where: { tenant_id: tenantIdToDelete },
+            where: { tenant_id: tenant_idToDelete },
             select: { id: true }
         });
         

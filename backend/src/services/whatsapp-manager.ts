@@ -36,28 +36,28 @@ export class WhatsAppManager {
     }
 
     // --- INITIALIZE SESSION ---
-    public async initializeSession(tenantId: string) {
+    public async initializeSession(tenant_id: string) {
         // Cegah double initialization
-        if (this.initializingTenants.has(tenantId)) {
-            console.log(`[WA] Already initializing ${tenantId}, skipping...`);
+        if (this.initializingTenants.has(tenant_id)) {
+            console.log(`[WA] Already initializing ${tenant_id}, skipping...`);
             return;
         }
 
-        if (this.sessions.has(tenantId)) {
-            const session = this.sessions.get(tenantId)!;
+        if (this.sessions.has(tenant_id)) {
+            const session = this.sessions.get(tenant_id)!;
             if (session.status === 'READY') {
-                console.log(`[WA] Session ${tenantId} already READY`);
+                console.log(`[WA] Session ${tenant_id} already READY`);
                 return;
             }
         }
 
-        this.initializingTenants.add(tenantId);
+        this.initializingTenants.add(tenant_id);
 
         try {
-            console.log(`[WA] Starting session for Tenant: ${tenantId}`);
+            console.log(`[WA] Starting session for Tenant: ${tenant_id}`);
 
             // 1. Load Auth dari DB
-            const { state, saveCreds } = await usePrismaAuthState(tenantId);
+            const { state, saveCreds } = await usePrismaAuthState(tenant_id);
             const { version } = await fetchLatestBaileysVersion();
 
             console.log(`[WA] Baileys version: ${version.join('.')}`);
@@ -79,7 +79,7 @@ export class WhatsAppManager {
             });
 
             // 3. Simpan di Memory Map
-            this.sessions.set(tenantId, {
+            this.sessions.set(tenant_id, {
                 sock,
                 qr: null,
                 status: 'CONNECTING'
@@ -90,10 +90,10 @@ export class WhatsAppManager {
             sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
                 const { connection, lastDisconnect, qr } = update;
                 
-                const session = this.sessions.get(tenantId);
+                const session = this.sessions.get(tenant_id);
                 if (!session) return;
 
-                console.log(`[WA] Connection update for ${tenantId}:`, {
+                console.log(`[WA] Connection update for ${tenant_id}:`, {
                     connection,
                     hasQR: !!qr,
                     reason: (lastDisconnect?.error as any)?.output?.statusCode
@@ -101,20 +101,20 @@ export class WhatsAppManager {
 
                 // A. QR Code Baru
                 if (qr) {
-                    console.log(`[WA] ✅ QR Generated for ${tenantId}`);
+                    console.log(`[WA] ✅ QR Generated for ${tenant_id}`);
                     session.qr = qr;
                     session.status = 'WAITING_QR';
-                    this.emitToTenant(tenantId, 'whatsapp-qr', qr);
-                    this.emitToTenant(tenantId, 'whatsapp-status', { status: 'waiting' });
+                    this.emitToTenant(tenant_id, 'whatsapp-qr', qr);
+                    this.emitToTenant(tenant_id, 'whatsapp-status', { status: 'waiting' });
                 }
 
                 // B. Terhubung (Ready)
                 if (connection === 'open') {
-                    console.log(`[WA] ✅ Connected & READY ${tenantId}`);
+                    console.log(`[WA] ✅ Connected & READY ${tenant_id}`);
                     session.status = 'READY';
                     session.qr = null;
-                    this.emitToTenant(tenantId, 'whatsapp-ready');
-                    this.emitToTenant(tenantId, 'whatsapp-status', { status: 'ready' });
+                    this.emitToTenant(tenant_id, 'whatsapp-ready');
+                    this.emitToTenant(tenant_id, 'whatsapp-status', { status: 'ready' });
                 }
 
                 // C. Terputus / Logout
@@ -122,54 +122,54 @@ export class WhatsAppManager {
                     const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
                     const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
                     
-                    console.log(`[WA] ⚠️ Connection closed ${tenantId}. Code: ${statusCode}, Reconnect: ${shouldReconnect}`);
+                    console.log(`[WA] ⚠️ Connection closed ${tenant_id}. Code: ${statusCode}, Reconnect: ${shouldReconnect}`);
 
-                    this.sessions.delete(tenantId);
-                    this.initializingTenants.delete(tenantId);
+                    this.sessions.delete(tenant_id);
+                    this.initializingTenants.delete(tenant_id);
 
                     if (shouldReconnect) {
                         // Reconnect dengan delay
-                        console.log(`[WA] Reconnecting ${tenantId} in 5s...`);
+                        console.log(`[WA] Reconnecting ${tenant_id} in 5s...`);
                         setTimeout(() => {
-                            this.initializeSession(tenantId);
+                            this.initializeSession(tenant_id);
                         }, 5000);
                     } else {
                         // Logout manual dari HP
-                        console.log(`[WA] Logged out ${tenantId}, clearing data...`);
-                        await this.clearSessionData(tenantId);
-                        this.emitToTenant(tenantId, 'whatsapp-disconnected');
-                        this.emitToTenant(tenantId, 'whatsapp-status', { status: 'disconnected' });
+                        console.log(`[WA] Logged out ${tenant_id}, clearing data...`);
+                        await this.clearSessionData(tenant_id);
+                        this.emitToTenant(tenant_id, 'whatsapp-disconnected');
+                        this.emitToTenant(tenant_id, 'whatsapp-status', { status: 'disconnected' });
                     }
                 }
             });
 
             sock.ev.on('creds.update', async () => {
-                console.log(`[WA] Creds updated for ${tenantId}`);
+                console.log(`[WA] Creds updated for ${tenant_id}`);
                 await saveCreds();
             });
 
             // Tambahan: Handle messages received (opsional untuk logging)
             sock.ev.on('messages.upsert', (m) => {
-                console.log(`[WA] Message received for ${tenantId}:`, m.messages[0]?.key);
+                console.log(`[WA] Message received for ${tenant_id}:`, m.messages[0]?.key);
             });
 
         } catch (error) {
-            console.error(`[WA] ❌ Error initializing session ${tenantId}:`, error);
-            this.sessions.delete(tenantId);
-            this.initializingTenants.delete(tenantId);
-            this.emitToTenant(tenantId, 'whatsapp-error', { 
+            console.error(`[WA] ❌ Error initializing session ${tenant_id}:`, error);
+            this.sessions.delete(tenant_id);
+            this.initializingTenants.delete(tenant_id);
+            this.emitToTenant(tenant_id, 'whatsapp-error', { 
                 message: error instanceof Error ? error.message : 'Unknown error' 
             });
             throw error;
         } finally {
-            this.initializingTenants.delete(tenantId);
+            this.initializingTenants.delete(tenant_id);
         }
     }
 
     // --- ACTIONS ---
 
-    public async sendMessage(tenantId: string, phone: string, text: string) {
-        const session = this.sessions.get(tenantId);
+    public async sendMessage(tenant_id: string, phone: string, text: string) {
+        const session = this.sessions.get(tenant_id);
         
         if (!session) {
             throw new Error('Session tidak ditemukan. Silakan hubungkan WhatsApp terlebih dahulu.');
@@ -181,7 +181,7 @@ export class WhatsAppManager {
 
         try {
             const jid = this.formatToJid(phone);
-            console.log(`[WA] Sending message to ${jid} from ${tenantId}`);
+            console.log(`[WA] Sending message to ${jid} from ${tenant_id}`);
             
             await session.sock.sendMessage(jid, { text });
             console.log(`[WA] ✅ Message sent successfully`);
@@ -192,23 +192,23 @@ export class WhatsAppManager {
         }
     }
 
-    public async logout(tenantId: string) {
-        const session = this.sessions.get(tenantId);
+    public async logout(tenant_id: string) {
+        const session = this.sessions.get(tenant_id);
         if (session) {
             try {
-                console.log(`[WA] Logging out ${tenantId}...`);
+                console.log(`[WA] Logging out ${tenant_id}...`);
                 await session.sock.logout();
             } catch (err) {
                 console.error(`[WA] Error during logout:`, err);
             }
-            await this.clearSessionData(tenantId);
-            this.emitToTenant(tenantId, 'whatsapp-disconnected');
-            this.emitToTenant(tenantId, 'whatsapp-status', { status: 'disconnected' });
+            await this.clearSessionData(tenant_id);
+            this.emitToTenant(tenant_id, 'whatsapp-disconnected');
+            this.emitToTenant(tenant_id, 'whatsapp-status', { status: 'disconnected' });
         }
     }
 
-    public getStatus(tenantId: string) {
-        const session = this.sessions.get(tenantId);
+    public getStatus(tenant_id: string) {
+        const session = this.sessions.get(tenant_id);
         if (!session) {
             return { 
                 status: 'DISCONNECTED', 
@@ -223,10 +223,10 @@ export class WhatsAppManager {
     }
 
     // Tambahan: Method untuk check apakah ada session tersimpan di DB
-    public async hasStoredSession(tenantId: string): Promise<boolean> {
+    public async hasStoredSession(tenant_id: string): Promise<boolean> {
         try {
             const count = await prisma.detso_Whatsapp_Session.count({
-                where: { sessionId: tenantId }
+                where: { sessionId: tenant_id }
             });
             return count > 0;
         } catch (error) {
@@ -237,19 +237,19 @@ export class WhatsAppManager {
 
     // --- HELPERS ---
 
-    private emitToTenant(tenantId: string, event: string, data?: any) {
-        console.log(`[WA] Emitting '${event}' to tenant:${tenantId}`, data ? '(with data)' : '');
-        this.io?.to(`tenant:${tenantId}`).emit(event, data);
+    private emitToTenant(tenant_id: string, event: string, data?: any) {
+        console.log(`[WA] Emitting '${event}' to tenant:${tenant_id}`, data ? '(with data)' : '');
+        this.io?.to(`tenant:${tenant_id}`).emit(event, data);
     }
 
-    private async clearSessionData(tenantId: string) {
-        console.log(`[WA] Clearing session data for ${tenantId}`);
-        this.sessions.delete(tenantId);
-        this.initializingTenants.delete(tenantId);
+    private async clearSessionData(tenant_id: string) {
+        console.log(`[WA] Clearing session data for ${tenant_id}`);
+        this.sessions.delete(tenant_id);
+        this.initializingTenants.delete(tenant_id);
         
         try {
             await prisma.detso_Whatsapp_Session.deleteMany({
-                where: { sessionId: tenantId }
+                where: { sessionId: tenant_id }
             });
             console.log(`[WA] ✅ Session data cleared from DB`);
         } catch (error) {

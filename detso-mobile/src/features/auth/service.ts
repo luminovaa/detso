@@ -18,15 +18,15 @@ export const authService = {
         const response = await api.post('/auth/logout');
         return response.data;
     },
-    refresh: async () => {
-        const response = await api.post('/auth/refresh');
+    refreshToken: async (refreshToken?: string) => {
+        const response = await api.post('/auth/refresh', { refreshToken });
         return response.data;
     },
     verify: async () => {
         const response = await api.get('/auth/verify');
         return response.data;
     },
-    me: async () => {
+    getMe: async () => {
         const response = await api.get('/auth/me');
         return response.data;
     },

@@ -123,8 +123,6 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
   // [NEW] 1. Ambil tenant_id
   const currentUser = req.user;
  
-  const tenantId = currentUser?.tenant_id;
-
   const { id } = req.params;
 
   // [NEW] 2. Cari User dengan ID + Tenant ID
@@ -132,7 +130,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
   const user = await prisma.detso_User.findFirst({
     where: {
       id,
-      tenant_id: tenantId, // <--- Security Check
+      tenant_id: currentUser?.tenant_id, // <--- Security Check
       deleted_at: null,
     },
     select: {
@@ -176,7 +174,7 @@ export const getPhotoUserById = asyncHandler(async (req: Request, res: Response)
   if (!currentUser || !currentUser.tenant_id) {
     throw new AuthenticationError('Sesi tidak valid');
   }
-  const tenantId = currentUser.tenant_id;
+  const tenant_id = currentUser.tenant_id;
 
   const { id } = req.params;
 
@@ -184,7 +182,7 @@ export const getPhotoUserById = asyncHandler(async (req: Request, res: Response)
   const user = await prisma.detso_User.findFirst({
     where: {
       id,
-      tenant_id: tenantId, // <--- Security Check
+      tenant_id: tenant_id, // <--- Security Check
       deleted_at: null,
     },
     select: {
