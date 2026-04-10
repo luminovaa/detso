@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -29,10 +29,11 @@ import {
 import { useAuthStore } from "@/src/features/auth/store";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 import { Header } from "@/src/components/global/header";
+import { SettingsSkeleton } from "@/src/features/settings/components/settings-skeleton";
 
 export default function SettingsScreen() {
   // 1. Hooks & Global State
-  const { user, logout } = useAuthStore();
+  const { user, logout, refreshUserData } = useAuthStore();
   const { locale, setLocale } = useLanguageStore();
   const { t } = useT();
 
@@ -43,6 +44,7 @@ export default function SettingsScreen() {
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   // 3. Functions
@@ -63,6 +65,14 @@ export default function SettingsScreen() {
 
   const toggleLanguage = () => {
     langSheetRef.current?.present();
+  };
+
+  const handleLanguageChange = async (newLocale: "id" | "en") => {
+    langSheetRef.current?.dismiss();
+    setIsLoading(true);
+    setLocale(newLocale);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsLoading(false);
   };
 
   // 4. Helper UI untuk Language Item
@@ -96,13 +106,31 @@ export default function SettingsScreen() {
 
   const onPullToRefresh = async () => {
     setIsRefreshing(true);
+    setIsLoading(true);
     try {
-      // Simulasi sinkronisasi data dari server (misal: cek update profile)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await refreshUserData();
+    } catch (error) {
+      console.error("Refresh failed:", error);
     } finally {
       setIsRefreshing(false);
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Sinkronisasi data awal saat masuk ke halaman settings
+    const init = async () => {
+      try {
+        await refreshUserData();
+      } catch (error) {
+        console.error("Initial load failed:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    init();
+  }, []);
 
   return (
     // Memanggil ScreenWrapper dengan fitur Refresh
@@ -112,7 +140,10 @@ export default function SettingsScreen() {
       <Header title={t("settings.title")} />
 
       {/* --- KONTEN UTAMA --- */}
-      <View className="flex-1 pt-4 pb-24">
+      {isLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <View className="flex-1 pt-4 pb-24">
         
         {/* --- 1. PROFILE SECTION --- */}
         <Card className="mb-8 overflow-hidden">
@@ -311,6 +342,7 @@ export default function SettingsScreen() {
         </Card>
 
       </View>
+      )}
       
       {/* 5. LOGOUT CONFIRMATION DIALOG */}
       <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
@@ -354,19 +386,13 @@ export default function SettingsScreen() {
             <LanguageItem 
               label={t("settings.preferences.langId")} 
               isActive={locale === "id"} 
-              onSelect={() => {
-                setLocale("id");
-                langSheetRef.current?.dismiss();
-              }}
+              onSelect={() => handleLanguageChange("id")}
             />
             <LanguageItem 
               label={t("settings.preferences.langEn")} 
               isActive={locale === "en"} 
               isLast
-              onSelect={() => {
-                setLocale("en");
-                langSheetRef.current?.dismiss();
-              }}
+              onSelect={() => handleLanguageChange("en")}
             />
           </Card>
 
