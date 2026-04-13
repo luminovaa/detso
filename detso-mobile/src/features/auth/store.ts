@@ -4,6 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { LoginInput } from './schema';
 import { authService } from './service';
 import { getSecondsUntilExpiry, isTokenExpired } from '@/src/lib/jwt';
+import { showToast } from '@/src/components/global/toast';
 
 interface UserProfile {
   id: string;
@@ -66,11 +67,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('Login successful:', user);
       // ← SETUP AUTO REFRESH SETELAH LOGIN
       get().setupAutoRefresh();
-
+      showToast.success("Otorisasi Berhasil", "Selamat datang kembali di Detso!");
       // router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
       set({ isLoading: false });
+      const msg = error.response?.data?.message || "Identitas atau sandi salah";
+      showToast.error("Login Gagal", msg);
       throw error;
     }
   },

@@ -15,14 +15,12 @@ import { router } from "expo-router";
 import { Text } from "@/src/components/global/text";
 import { Input } from "@/src/components/global/input";
 import { Button } from "@/src/components/global/button";
-import { useToast } from "@/src/hooks/use-toast";
 
 // [NEW] Import Zustand Store kita
 import { loginSchema, LoginInput } from "@/src/features/auth/schema";
 import { useAuthStore } from "@/src/features/auth/store";
 
 export default function SignInScreen() {
-  const { toast } = useToast();
   
   // [NEW] Ambil fungsi login dari Zustand Store
   const { login } = useAuthStore();
@@ -47,22 +45,11 @@ export default function SignInScreen() {
       // Zustand akan otomatis mengurus SecureStore, ambil data User, dan menyalakan Timer Auto-Refresh.
       await login(data);
 
-      toast({
-        title: "Login Berhasil",
-        description: "Selamat datang kembali di Detso!",
-        type: "success",
-      });
-
       // Redirect ke halaman utama / Dashboard
       router.replace("/");
     } catch (error: any) {
       console.error("Login Error:", error);
-      const errorMessage = error.response?.data?.message || "Identitas atau kata sandi salah.";
-      toast({
-        title: "Login Gagal",
-        description: errorMessage,
-        type: "destructive",
-      });
+    
     } finally {
       setIsLoading(false);
     }

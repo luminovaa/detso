@@ -13,14 +13,13 @@ import { useLanguageStore } from "@/src/features/i18n/store";
 
 // Global & Utils
 import "../global.css";
-import { ToastProvider, useToast } from "@/src/hooks/use-toast";
-import { ToastViewport } from "@/src/components/global/toast";
 import { ErrorBoundary } from "@/src/components/global/error-boundary";
 import { authEvents } from "@/src/lib/auth-events";
 
 // Auth & Security
 import { useAuthStore } from "@/src/features/auth/store"; // Sesuaikan path jika berbeda
 import { useProtectedRoute } from "@/src/hooks/use-secure-router";
+import { showToast, ToastProvider } from "@/src/components/global/toast";
 
 // Tahan splash screen bawaan OS agar tidak hilang duluan
 SplashScreen.preventAutoHideAsync();
@@ -29,24 +28,21 @@ SplashScreen.preventAutoHideAsync();
 // 1. KOMPONEN GLOBAL LOGIC (Untuk Toast Event)
 // ==========================================
 function GlobalLogic() {
-  const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribeServerError = authEvents.on("server_error", () => {
-      toast({
-        title: "Gangguan Server",
-        description: "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat.",
-        type: "destructive",
-      });
+     showToast.error(
+        "Gangguan Server", 
+        "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat."
+      );
     });
 
     const unsubscribeSessionExpired = authEvents.on("session_expired", () => {
-      toast({
-        title: "Sesi Habis",
-        description: "Sesi login Anda telah berakhir. Silakan login kembali.",
-        type: "warning",
-      });
+      showToast.warning(
+        "Sesi Habis", 
+        "Sesi login Anda telah berakhir. Silakan login kembali."
+      );
       router.replace("/sign-in");
     });
 
@@ -54,7 +50,7 @@ function GlobalLogic() {
       unsubscribeServerError();
       unsubscribeSessionExpired();
     };
-  }, [toast, router]);
+  }, [router]);
 
   return null;
 }
@@ -160,7 +156,6 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
             <ToastProvider>
               <GlobalLogic />
               <Stack screenOptions={{ headerShown: false }} />
-              <ToastViewport />
             </ToastProvider>
           </BottomSheetModalProvider>
         </PortalProvider>
