@@ -5,6 +5,7 @@ import { prisma } from "../../utils/prisma";
 import { getPagination } from "../../utils/pagination";
 import { responseData } from "../../utils/response-handler";
 import { Detso_Role } from "@prisma/client";
+import { generateFullUrl } from "../../utils/generate-full-url";
 
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -134,8 +135,6 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         }
     });
 
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
     const formattedTickets = tickets.map(ticket => ({
         id: ticket.id,
         title: ticket.title,
@@ -155,9 +154,7 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
             phone: ticket.technician.phone,
             profile: {
                 full_name: ticket.technician.profile?.full_name || null,
-                avatar: ticket.technician.profile?.avatar 
-                    ? `${baseUrl}/${ticket.technician.profile.avatar}` 
-                    : null
+                avatar: generateFullUrl(ticket.technician.profile?.avatar || null)
             }
         } : null,
         schedule: ticket.schedule
@@ -226,7 +223,6 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         throw new NotFoundError('Tiket tidak ditemukan');
     }
 
-    const baseUrl = process.env.BASE_URL;
     const formattedTicket = {
         id: ticket.id,
         title: ticket.title,
@@ -256,7 +252,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
                 id: ticket.schedule.technician.id,
                 username: ticket.schedule.technician.username,
                 full_name: ticket.schedule.technician.profile?.full_name,
-                avatar: ticket.schedule.technician.profile?.avatar ? `${baseUrl}/${ticket.schedule.technician.profile.avatar}` : null
+                avatar: generateFullUrl(ticket.schedule.technician.profile?.avatar || null)
             } : null
         } : null
     };
@@ -340,19 +336,17 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
         }
     });
 
-    const baseUrl = process.env.BASE_URL;
-
     const formattedHistories = ticketHistories.map(history => ({
         id: history.id,
         action: history.action,
         description: history.description,
-        image: history.image ? `${baseUrl}/${history.image}` : null,
+        image: generateFullUrl(history.image),
         created_at: history.created_at,
         created_by: history.user ? {
             id: history.user.id,
             username: history.user.username,
             full_name: history.user.profile?.full_name,
-            avatar: history.user.profile?.avatar ? `${baseUrl}/${history.user.profile.avatar}` : null
+            avatar: generateFullUrl(history.user.profile?.avatar || null)
         } : null
     }));
 
@@ -369,7 +363,7 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
             id: activity.technician.id,
             username: activity.technician.username,
             full_name: activity.technician.profile?.full_name,
-            avatar: activity.technician.profile?.avatar ? `${baseUrl}/${activity.technician.profile.avatar}` : null
+            avatar: generateFullUrl(activity.technician.profile?.avatar || null)
         } : null
     }));
 
@@ -415,10 +409,7 @@ export const getTicketImageById = asyncHandler(async (req: Request, res: Respons
         throw new NotFoundError('Gambar tiket tidak ditemukan'); // Jangan kasih tau "Akses Ditolak" biar attacker bingung
     }
 
-    const baseUrl = process.env.BASE_URL;
-    const imageUrl = `${baseUrl}/${history.image}`;
-
     responseData(res, 200, 'Gambar tiket berhasil diambil', {
-        image: imageUrl
+        image: generateFullUrl(history.image)
     });
 });

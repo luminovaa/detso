@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Image, ViewProps } from "react-native";
 import { cn } from "../../lib/utils";
 import { Text } from "./text";
@@ -48,6 +48,12 @@ export function Avatar({
   ...props
 }: AvatarProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  
+  // Reset state error saat sumber gambar (src) berubah
+  // Sangat penting agar preview update setelah ganti foto kalau sebelumnya error
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
 
   return (
     <View

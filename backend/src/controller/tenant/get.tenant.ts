@@ -5,6 +5,7 @@ import { responseData } from "../../utils/response-handler";
 import { prisma } from "../../utils/prisma";
 import { getPagination } from "../../utils/pagination";
 import { tenantPaginationSchema } from "./validation/validation.tenant";
+import { generateFullUrl } from "../../utils/generate-full-url";
 
 // [SUPER ADMIN ONLY]
 
@@ -85,7 +86,7 @@ export const getAllTenants = asyncHandler(async (req: Request, res: Response): P
         is_active: t.is_active,
         address: t.address,
         phone: t.phone,
-        logo: t.logo ? `${baseUrl}/${t.logo}` : null,
+        logo: generateFullUrl(t.logo),
         created_at: t.created_at,
         stats: {
             total_users: t._count.users,
@@ -140,7 +141,7 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
 
     const formattedTenant = {
         ...tenant,
-        logo: tenant.logo ? `${baseUrl}/${tenant.logo}` : null
+        logo: generateFullUrl(tenant.logo)
     };
 
 
@@ -173,19 +174,7 @@ export const getTenantLogo = asyncHandler(async (req: Request, res: Response): P
 
     // 4. Construct Full URL
 
-    let logoUrl = null;
-
-    if (tenant.logo) {
-        // Normalisasi path (ubah backslash Windows '\' jadi slash biasa '/')
-        const cleanPath = tenant.logo.replace(/\\/g, '/');
-
-        // Pastikan tidak ada double slash saat digabung
-        // Asumsi: tenant.logo di DB formatnya "storage/image/..."
-        logoUrl = `${baseUrl}/${cleanPath}`;
-    }
-
-    // 5. Kirim Response JSON
     responseData(res, 200, 'URL Logo berhasil diambil', {
-        logo_url: logoUrl
+        logo_url: generateFullUrl(tenant.logo)
     });
 });

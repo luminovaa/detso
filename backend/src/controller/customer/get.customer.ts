@@ -4,6 +4,7 @@ import { asyncHandler, AuthenticationError, NotFoundError, ValidationError } fro
 import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
 import { prisma } from '../../utils/prisma';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari session user
@@ -116,13 +117,6 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
         }
     });
 
-    const baseUrl = process.env.BASE_URL;
-
-    const addBaseUrl = (path: string | null | undefined): string | null => {
-        if (!path) return null;
-        return `${baseUrl}/${path}`;
-    };
-
     const formattedServices = services.map(service => ({
         id: service.id,
         id_pel: service.id_pel,
@@ -137,13 +131,13 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
         package_details: service.package,
         photos: service.photos.map(photo => ({
             ...photo,
-            photo_url: addBaseUrl(photo.photo_url)
+            photo_url: generateFullUrl(photo.photo_url)
         })),
         customer: {
             ...service.customer,
             documents: service.customer.documents.map(doc => ({
                 ...doc,
-                document_url: addBaseUrl(doc.document_url)
+                document_url: generateFullUrl(doc.document_url)
             }))
         }
     }));
@@ -201,13 +195,6 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         throw new NotFoundError('Customer tidak ditemukan atau telah dihapus');
     }
 
-    const baseUrl = process.env.BASE_URL;
-
-    const addBaseUrl = (path: string | null | undefined): string | null => {
-        if (!path) return null;
-        return `${baseUrl}/${path}`;
-    };
-
     const formattedCustomer = {
         id: customer.id,
         name: customer.name,
@@ -217,7 +204,7 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         created_at: customer.created_at,
         documents: customer.documents.map(doc => ({
             ...doc,
-            document_url: addBaseUrl(doc.document_url)
+            document_url: generateFullUrl(doc.document_url)
         })),
         services: customer.service.map(service => ({
             id: service.id,
@@ -231,7 +218,7 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
             package_details: service.package,
             photos: service.photos.map(photo => ({
                 ...photo,
-                photo_url: addBaseUrl(photo.photo_url)
+                photo_url: generateFullUrl(photo.photo_url)
             }))
         }))
     };

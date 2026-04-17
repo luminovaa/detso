@@ -5,6 +5,7 @@ import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { updateTenantSchema } from './validation/validation.tenant';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 // Helper slug sederhana
 const createSlug = (name: string) => name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
@@ -120,10 +121,9 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
         }
 
         // Format URL Logo untuk response
-        const baseUrl = process.env.BASE_URL;
         const responseTenant = {
             ...updatedTenant,
-            logo: updatedTenant.logo ? `${baseUrl}/${updatedTenant.logo}` : null
+            logo: generateFullUrl(updatedTenant.logo)
         };
 
         responseData(res, 200, 'Profil Tenant berhasil diperbarui', responseTenant);

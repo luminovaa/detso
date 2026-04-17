@@ -1,11 +1,11 @@
 info:
-  name: refresh-token
+  name: Get-Me
   type: http
-  seq: 3
+  seq: 2
 
 http:
-  method: POST
-  url: "{{BASE_URL}}/auth/refresh"
+  method: GET
+  url: "{{BASE_URL}}/user"
   auth: inherit
 
 settings:

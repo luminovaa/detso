@@ -26,7 +26,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 
     let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
-        uploadedImage = getUploadedFileInfo(req.file, 'storage/image/tickets');
+        uploadedImage = getUploadedFileInfo(req.file, 'storage/public/tickets');
     }
 
     const validationResult = updateTicketSchema.safeParse({
@@ -304,7 +304,7 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
 
     let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
-        uploadedImage = getUploadedFileInfo(req.file, 'storage/image/tickets');
+        uploadedImage = getUploadedFileInfo(req.file, 'storage/public/tickets');
     }
 
     if (!status || !['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(status)) {
@@ -421,7 +421,7 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
 
     let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
     if (req.file) {
-        uploadedImage = getUploadedFileInfo(req.file, 'storage/image/tickets');
+        uploadedImage = getUploadedFileInfo(req.file, 'storage/public/tickets');
     }
 
     if (!notes && !uploadedImage) {

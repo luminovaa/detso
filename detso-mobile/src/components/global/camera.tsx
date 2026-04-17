@@ -11,6 +11,7 @@ import {
   StyleSheet,
   AppState,
   Alert,
+  Modal,
 } from "react-native";
 import {
   Camera,
@@ -24,7 +25,8 @@ import { captureRef } from "react-native-view-shot";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Portal } from "./portal";
+// Hapus import Portal
+// import { Portal } from "./portal";
 import { cn } from "../../lib/utils";
 import { Text } from "./text";
 import { WatermarkOverlay } from "./watermark-overlay";
@@ -153,9 +155,13 @@ export function CustomCamera({
     }
   }, [visible]);
 
+  // HAPUS: Kita tidak ingin memicu izin sistem secara otomatis saat mount.
+  // Biarkan PermissionScreen yang menangani trigger via tombol "Izinkan Kamera".
+  /*
   useEffect(() => {
     if (visible && !hasCameraPerm) reqCameraPerm();
   }, [visible, hasCameraPerm]);
+  */
 
   const handleRequestCamera = async () => {
     const granted = await reqCameraPerm();
@@ -296,11 +302,11 @@ export function CustomCamera({
 
   if (!device)
     return (
-      <Portal>
+      <Modal transparent visible animationType="fade" onRequestClose={onClose}>
         <View className="absolute inset-0 bg-black justify-center items-center">
           <Text className="text-white">Kamera tidak tersedia</Text>
         </View>
-      </Portal>
+      </Modal>
     );
 
   const isShutterDisabled = isCapturing || (enableGeoTag && !liveGeo);
@@ -310,7 +316,7 @@ export function CustomCamera({
   const viewfinderTop = (SCREEN_HEIGHT - viewfinder.height) / 2;
 
   return (
-    <Portal>
+    <Modal transparent visible animationType="fade" onRequestClose={onClose}>
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
@@ -496,6 +502,6 @@ export function CustomCamera({
           />
         )}
       </View>
-    </Portal>
+    </Modal>
   );
 }

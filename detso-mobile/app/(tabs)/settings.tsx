@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 // --- Komponen Global Kita ---
 import { Text } from "@/src/components/global/text";
@@ -173,6 +174,7 @@ export default function SettingsScreen() {
 
             <TouchableOpacity 
               activeOpacity={0.7}
+              onPress={() => router.push("/settings/edit-profile")}
               className="w-10 h-10 bg-muted rounded-full items-center justify-center border border-border/50"
             >
               <Ionicons name="pencil" size={18} color="hsl(var(--foreground))" />

@@ -4,6 +4,7 @@ import { responseData } from '../../utils/response-handler';
 import { updateCustomerSchema } from './validation/validation.customer';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 interface UpdateCustomerFiles {
   documents?: Express.Multer.File[];
@@ -74,8 +75,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
       }
     }
 
-    const baseUrl = process.env.BASE_URL;
-
     return await prisma.$transaction(async (tx) => {
       // Update data customer
       const updatedCustomer = await tx.detso_Customer.update({
@@ -116,7 +115,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
             documents.map(async (doc, index) => {
               const file = files.documents![index];
               if(file) {
-                  const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/documents');
+                  const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/documents');
                   await tx.detso_Customer_Document.create({
                     data: {
                       customer_id: customerId,
@@ -155,7 +154,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
 
       const documentsWithUrl = finalCustomer.documents.map(doc => ({
         ...doc,
-        document_url: `${baseUrl}/${doc.document_url}`.replace(/\/+/g, '/')
+        document_url: generateFullUrl(doc.document_url)
       }));
 
       responseData(res, 200, 'Data customer berhasil diperbarui', {

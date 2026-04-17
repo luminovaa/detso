@@ -1,68 +1,12 @@
-import cors from 'cors';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import express, { NextFunction, Request, Response } from 'express';
-import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import path from 'path';
-
-import routes from './src/router/routes';
-import { handleError } from './src/utils/error-handler';
-import { whatsappManager } from './src/services/whatsapp-manager';
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import app from './src/app';
+// import { whatsappManager } from './src/services/whatsapp-manager';
+
 const PORT = Number(process.env.PORT) || 6589;
-
-const app = express();
-
-// Middleware
-app.use(express.json()); // Penting untuk parsing body JSON
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(helmet());
-
-// [CONFIG] Static Files (Storage)
-// Mengizinkan akses gambar profil/logo dengan header CORS yang benar
-app.use('/storage', (req, res, next) => {
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-}, express.static(path.join(__dirname, 'storage')));
-
-// [CONFIG] CORS
-const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || [];
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  credentials: true,
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-// Routes
-routes(app);
-
-// Global Error Handler
-app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
-  if (res.headersSent) {
-    return next(error);
-  }
-  handleError(error, res);
-});
 
 // --- SOCKET.IO SETUP ---
 const httpServer = createServer(app);
@@ -74,8 +18,8 @@ const io = new SocketIOServer(httpServer, {
   }
 });
 
-// 1. Hubungkan IO ke Manager agar bisa emit event ke frontend
-whatsappManager.setSocketIO(io);
+// 1. Hubungkan IO ke Manager agar bisa emit event ke frontend (Currently commented)
+// whatsappManager.setSocketIO(io);
 
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
@@ -89,8 +33,8 @@ io.on('connection', (socket) => {
     socket.join(`tenant:${tenant_id}`);
     console.log(`Socket ${socket.id} joined room tenant:${tenant_id}`);
 
-    // [UX] Kirim status terkini langsung ke user yang baru join
-    // Agar user tidak melihat loading terus menerus jika bot sudah ready
+    // [UX] Kirim status terkini langsung ke user yang baru join (Currently commented)
+    /*
     const statusData = whatsappManager.getStatus(tenant_id);
     
     // Kirim status
@@ -104,9 +48,11 @@ io.on('connection', (socket) => {
     } else {
        socket.emit('whatsapp-disconnected');
     }
+    */
   });
 
-  // [NEW] Client meminta inisialisasi/start bot
+  // [NEW] Client meminta inisialisasi/start bot (Currently commented)
+  /*
   socket.on('start-whatsapp', async (tenant_id: string) => {
     if (!tenant_id) return;
     try {
@@ -115,8 +61,10 @@ io.on('connection', (socket) => {
       console.error('Error starting WhatsApp via socket:', error);
     }
   });
+  */
 
-  // [NEW] Client meminta logout
+  // [NEW] Client meminta logout (Currently commented)
+  /*
   socket.on('logout-whatsapp', async (tenant_id: string) => {
     if (!tenant_id) return;
     try {
@@ -125,15 +73,18 @@ io.on('connection', (socket) => {
       console.error('Error logout WhatsApp via socket:', error);
     }
   });
+  */
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
   });
 });
 
+/*
 setTimeout(async () => {
   await whatsappManager.autoStartStoredSessions();
 }, 3000);
+*/
 
 // Start Server
 const server = httpServer.listen(PORT, () => {

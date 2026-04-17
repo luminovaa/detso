@@ -4,6 +4,7 @@ import { asyncHandler, AuthenticationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
 import { prisma } from '../../utils/prisma'
 import { generateAccessToken } from './login.auth'
+import { generateFullUrl } from '../../utils/generate-full-url'
 
 export const refreshAccessToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -27,9 +28,14 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
                     email: true,
                     role: true,
                     username: true,
+                    phone: true,
                     tenant_id: true,
                     profile: {
-                        select: { id: true, full_name: true }
+                        select: { 
+                            id: true, 
+                            full_name: true,
+                            avatar: true 
+                        }
                     }
                 }
             }
@@ -70,7 +76,11 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
             email: tokenRecord.user.email,
             username: tokenRecord.user.username,
             role: tokenRecord.user.role,
-            profile: tokenRecord.user.profile,
+            phone: tokenRecord.user.phone,
+            profile: tokenRecord.user.profile ? {
+                ...tokenRecord.user.profile,
+                avatar: generateFullUrl(tokenRecord.user.profile.avatar)
+            } : null,
             tenant_id: tokenRecord.user.tenant_id,
             exp: (jwt.decode(newAccessToken) as any).exp
         }
@@ -99,9 +109,14 @@ export const extractUserFromToken = asyncHandler(async (req: Request, res: Respo
                 email: true,
                 username: true,
                 role: true,
+                phone: true,
                 tenant_id: true,
                 profile: {
-                    select: { id: true, full_name: true }
+                    select: { 
+                        id: true, 
+                        full_name: true,
+                        avatar: true 
+                    }
                 }
             }
         });
@@ -140,6 +155,10 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response): 
 
     const responseDataWithExp = {
         ...user,
+        profile: user?.profile ? {
+            ...user?.profile,
+            avatar: generateFullUrl(user?.profile.avatar!)
+        } : null,
         exp: exp || null,
     };
 
@@ -173,7 +192,11 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
                     role: true,
                     tenant_id: true, // [NEW] WAJIB: Ambil tenant_id
                     profile: {
-                        select: { id: true, full_name: true, avatar: true } // Tambahkan avatar jika perlu
+                        select: { 
+                            id: true, 
+                            full_name: true, 
+                            avatar: true 
+                        } 
                     }
                 }
             });
@@ -215,7 +238,13 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
 
         if (tokenRecord) {
             isValid = true;
-            user = tokenRecord.user;
+            user = {
+                ...tokenRecord.user,
+                profile: tokenRecord.user.profile ? {
+                    ...tokenRecord.user.profile,
+                    avatar: generateFullUrl(tokenRecord.user.profile.avatar)
+                } : null
+            };
         }
     }
 
@@ -225,6 +254,12 @@ export const verifySession = asyncHandler(async (req: Request, res: Response): P
 
     responseData(res, 200, 'Session valid', {
         isValid: true,
-        user
+        user: {
+            ...user,
+            profile: user.profile ? {
+                ...user.profile,
+                avatar: generateFullUrl(user.profile.avatar)
+            } : null
+        }
     });
 });

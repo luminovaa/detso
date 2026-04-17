@@ -10,8 +10,15 @@ declare module 'express-serve-static-core' {
     user?: {
       id: string;
       email: string;
-      role: Detso_Role; // atau Detso_Role
-      tenant_id: string | null; // [IMPORTANT] Bisa null jika SAAS_SUPER_ADMIN
+      username: string;
+      role: Detso_Role;
+      phone: string | null;
+      tenant_id: string | null;
+      profile: {
+        id: string;
+        full_name: string;
+        avatar: string | null;
+      } | null;
     };
   }
 }
@@ -54,8 +61,17 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
       select: {
         id: true,
         email: true,
+        username: true,
         role: true,
-        tenant_id: true // [CRITICAL] Wajib diambil agar controller tahu ini user ISP mana
+        phone: true,
+        tenant_id: true,
+        profile: {
+          select: {
+            id: true,
+            full_name: true,
+            avatar: true
+          }
+        }
       }
     });
 
@@ -65,10 +81,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
     // [UPDATED] Attach tenant_id to req.user
     req.user = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      tenant_id: user.tenant_id // Tempelkan ke request object
+      ...user,
+      tenant_id: user.tenant_id
     };
 
     next();

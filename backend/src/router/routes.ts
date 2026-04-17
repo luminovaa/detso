@@ -4,7 +4,7 @@ import authRouter from '../controller/auth';
 import packageRouter from '../controller/package';
 import customerRouter from '../controller/customer';
 import serviceRouter from '../controller/service-connection';
-import whatsappRouter from '../controller/whatsapp';
+// import whatsappRouter from '../controller/whatsapp';
 import ticketRouter from '../controller/ticket';
 import scheduleRouter from '../controller/schedule';
 import tenantRouter from '../controller/tenant';
@@ -23,7 +23,7 @@ export default (app: Express) => {
     apiRouter.use('/package', packageRouter);
     apiRouter.use('/customer', customerRouter);
     apiRouter.use('/service-connection', serviceRouter);
-    apiRouter.use('/whatsapp', whatsappRouter);
+    // apiRouter.use('/whatsapp', whatsappRouter);
     apiRouter.use('/ticket', ticketRouter);
     apiRouter.use('/schedule', scheduleRouter);
     apiRouter.use('/tenant', tenantRouter)

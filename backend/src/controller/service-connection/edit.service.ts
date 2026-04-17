@@ -4,6 +4,7 @@ import { updateServiceConnectionSchema } from './validation/validation.service';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { responseData } from '../../utils/response-handler';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 interface UpdateServiceFiles {
   photos?: Express.Multer.File[];
@@ -90,7 +91,6 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
       newPackageData = packageExists;
     }
 
-    const baseUrl = process.env.BASE_URL;
 
     return await prisma.$transaction(async (tx) => {
       // [NEW] 4. Tentukan data paket mana yang dipakai
@@ -160,7 +160,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
             photos.map(async (photo, index) => {
               const file = files.photos![index];
               if(file) {
-                  const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
+                  const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/photos');
                   await tx.detso_Service_Photo.create({
                     data: {
                       service_id: serviceId,
@@ -212,7 +212,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
         ...finalService,
         photos: finalService.photos.map(photo => ({
           ...photo,
-          photo_url: `${baseUrl}/${photo.photo_url}`
+          photo_url: generateFullUrl(photo.photo_url)
         })),
         customer: finalService.customer,
         package: finalService.package

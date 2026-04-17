@@ -132,7 +132,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     const doc = documents[index];
                     const file = documentFiles[index];
                     if (file) { // Safety check
-                        const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/documents');
+                        const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/documents');
                         const createdDoc = await tx.detso_Customer_Document.create({
                             data: {
                                 customer_id: customer.id,
@@ -153,7 +153,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     const photo = photos[index];
                     const file = servicePhotoFiles[index];
                     if (file) {
-                        const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
+                        const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/photos');
                         const createdPhoto = await tx.detso_Service_Photo.create({
                             data: {
                                 service_id: serviceConnection.id,

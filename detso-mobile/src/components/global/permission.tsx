@@ -1,8 +1,9 @@
 import React from "react";
-import { View, StatusBar, Linking, Platform } from "react-native";
+import { View, StatusBar, Linking, Platform, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { Portal } from "./portal";
+// Hapus import Portal
+// import { Portal } from "./portal";
 import { Text } from "./text";
 import { Button, ButtonProps } from "./button";
 import { cn } from "../../lib/utils";
@@ -99,7 +100,12 @@ export function PermissionScreen({
   };
 
   return (
-    <Portal>
+    <Modal
+      transparent
+      visible
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       {/* Set status bar ke mode gelap/terang secara otomatis */}
       <StatusBar
         barStyle="light-content"
@@ -150,6 +156,6 @@ export function PermissionScreen({
           />
         </View>
       </View>
-    </Portal>
+    </Modal>
   );
 }

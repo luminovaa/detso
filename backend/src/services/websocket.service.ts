@@ -32,6 +32,7 @@ export class WebSocketService {
                 console.log('Client disconnected:', socket.id);
             });
 
+            /*
             // Join WhatsApp room untuk menerima update QR
             socket.on('join-whatsapp', () => {
                 socket.join('whatsapp-updates');
@@ -43,9 +44,11 @@ export class WebSocketService {
                 socket.leave('whatsapp-updates');
                 console.log('Client left WhatsApp updates room:', socket.id);
             });
+            */
         });
     }
 
+    /*
     // Emit QR code ke semua client yang join room whatsapp-updates
     public emitQRCode(qrCode: string): void {
         this.io.to('whatsapp-updates').emit('qr-code', {
@@ -62,7 +65,9 @@ export class WebSocketService {
             timestamp: new Date().toISOString()
         });
     }
+    */
 
+    /*
     // Emit general messages
     public emitMessage(event: string, data: any): void {
         this.io.to('whatsapp-updates').emit(event, {
@@ -70,6 +75,7 @@ export class WebSocketService {
             timestamp: new Date().toISOString()
         });
     }
+    */
 
     public getIO(): SocketIOServer {
         return this.io;

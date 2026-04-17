@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { View, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, TouchableOpacity, Image, ActivityIndicator, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
@@ -8,7 +8,8 @@ import {
   ImageResult,
 } from "expo-image-manipulator";
 
-import { Portal } from "./portal";
+// Hapus import Portal
+// import { Portal } from "./portal";
 import { CustomCamera } from "./camera";
 import { useImagePicker } from "../../hooks/use-image-picker";
 import {
@@ -69,6 +70,7 @@ export function ImagePickerSheet({
   } | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const isTransitioning = useRef(false); // <--- Lacak apakah kita sedang pindah mode (Kamera/Galeri)
 
   useEffect(() => {
     if (visible && sheetState === "source-select")
@@ -107,8 +109,13 @@ export function ImagePickerSheet({
   );
 
   const handleOpenCamera = useCallback(() => {
+    isTransitioning.current = true; // Tandai sedang transisi
     bottomSheetRef.current?.dismiss();
-    setSheetState("camera");
+    setSheetState("picking"); 
+    setTimeout(() => {
+      setSheetState("camera");
+      isTransitioning.current = false; // Transisi selesai
+    }, 500);
   }, []);
 
   const handleCameraCapture = useCallback(
@@ -129,10 +136,13 @@ export function ImagePickerSheet({
   );
 
   const handleOpenGallery = useCallback(async () => {
+    isTransitioning.current = true; // Tandai sedang transisi
     bottomSheetRef.current?.dismiss();
     setSheetState("picking");
     setTimeout(async () => {
       const asset = await pickImage(false);
+      isTransitioning.current = false; // Transisi selesai (file sudah dipilih atau batal)
+      
       if (!asset) {
         setSheetState("source-select");
         return;
@@ -170,11 +180,16 @@ export function ImagePickerSheet({
         enableGeoTag={enableGeoTag}
       />
 
-      {visible && (
+      {visible && sheetState !== "camera" && (
         <>
-          <Portal>
-            {/* LAYAR PREVIEW FOTO */}
-            {sheetState === "preview" && processedResult && (
+          {/* LAYAR PREVIEW FOTO */}
+          <Modal
+            visible={sheetState === "preview"}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setSheetState("source-select")}
+          >
+            {processedResult && (
               <View className="absolute inset-0 bg-background justify-center px-6 z-[60]">
                 <Text
                   weight="bold"
@@ -208,10 +223,15 @@ export function ImagePickerSheet({
                 </View>
               </View>
             )}
+          </Modal>
 
-            {/* LAYAR PROCESSING */}
-            {sheetState === "processing" && (
-              <View className="absolute inset-0 bg-background/95 justify-center items-center z-[60]">
+          {/* LAYAR PROCESSING */}
+          <Modal
+            visible={sheetState === "processing"}
+            transparent
+            animationType="fade"
+          >
+            <View className="absolute inset-0 bg-background/95 justify-center items-center z-[60]">
                 <ActivityIndicator
                   size="large"
                   color="#1d4ed8"
@@ -224,15 +244,18 @@ export function ImagePickerSheet({
                   Menyematkan titik koordinat GPS.
                 </Text>
               </View>
-            )}
-          </Portal>
+            </Modal>
 
           {/* BOTTOM SHEET PILIHAN SUMBER */}
           <BottomSheet
             ref={bottomSheetRef}
             snapPoints={["35%"]}
             onDismiss={() => {
-              if (sheetState === "source-select") resetAndClose();
+              // Hanya panggil resetAndClose (tutup picker total) jika 
+              // bukan bagian dari transisi ke Kamera/Galeri (misal swipe down manual)
+              if (sheetState === "source-select" && !isTransitioning.current) {
+                resetAndClose();
+              }
             }}
           >
             <Text

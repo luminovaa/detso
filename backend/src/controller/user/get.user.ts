@@ -5,6 +5,7 @@ import { responseData } from '../../utils/response-handler'
 import { getPagination } from '../../utils/pagination'
 import { prisma } from '../../utils/prisma'
 import { Detso_Role } from '@prisma/client' // [NEW] Import Enum
+import { generateFullUrl } from '../../utils/generate-full-url'
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const currentUser = req.user;
@@ -102,13 +103,12 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
     }
   })
 
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const usersWithAvatarUrl = users.map(user => ({
     ...user,
     profile: user.profile
       ? {
         ...user.profile,
-        avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null
+        avatar: generateFullUrl(user.profile.avatar)
       }
       : null
   }))
@@ -154,13 +154,12 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
     throw new NotFoundError('Pengguna tidak ditemukan atau telah dihapus');
   }
 
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const userWithAvatarUrl = {
     ...user,
     profile: user.profile
       ? {
         ...user.profile,
-        avatar: user.profile.avatar ? `${baseUrl}/${user.profile.avatar}` : null,
+        avatar: generateFullUrl(user.profile.avatar),
       }
       : null,
   };
@@ -198,10 +197,7 @@ export const getPhotoUserById = asyncHandler(async (req: Request, res: Response)
     throw new NotFoundError('Foto pengguna tidak ditemukan atau telah dihapus');
   }
 
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-  const photoUrl = `${baseUrl}/${user.profile.avatar}`;
-
   responseData(res, 200, 'Foto pengguna berhasil diambil', {
-    avatar: photoUrl
+    avatar: generateFullUrl(user.profile.avatar)
   });
 });

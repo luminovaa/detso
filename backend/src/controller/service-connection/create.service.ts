@@ -131,7 +131,7 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
                 await Promise.all(photos.map(async (photo, index) => {
                     const file = servicePhotoFiles[index];
                     if (file) { // Safety check
-                        const fileInfo = getUploadedFileInfo(file, 'storage/image/customer/photos');
+                        const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/photos');
                         
                         await tx.detso_Service_Photo.create({
                             data: {
