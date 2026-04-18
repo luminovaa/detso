@@ -146,11 +146,12 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
         id: updatedUser.id,
         email: updatedUser.email,
         username: updatedUser.username,
+        phone: updatedUser.phone,
         role: updatedUser.role,
         profile: {
             id: updatedProfile.id,
             full_name: updatedProfile.full_name,
-            avatar: updatedProfile.avatar
+            avatar: generateFullUrl(updatedProfile.avatar)
         }
     });
 });

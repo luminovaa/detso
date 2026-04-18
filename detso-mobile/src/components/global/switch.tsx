@@ -56,7 +56,7 @@ export function Switch({
       )}
     >
       <Animated.View
-        className="h-5 w-5 rounded-full bg-background shadow-sm shadow-black/30"
+        className="h-5 w-5 rounded-full bg-white shadow-sm shadow-black/30"
         style={thumbAnimatedStyle}
       />
     </Pressable>

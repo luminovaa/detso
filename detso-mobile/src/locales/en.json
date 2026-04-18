@@ -30,7 +30,11 @@
       "theme": "Dark Mode",
       "selectLanguage": "Select App Language",
       "langId": "Indonesian",
-      "langEn": "English (US)"
+      "langEn": "English (US)",
+      "selectTheme": "Select App Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "Follow System"
     },
     "support": {
       "title": "Support & About",

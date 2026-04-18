@@ -8,24 +8,18 @@ import { showToast } from '@/src/components/global/toast';
 
 interface UserProfile {
   id: string;
-  userId: string;
-  fullName: string | null;
-  gender: string | null;
-  phone: string | null;
+  full_name: string;
   avatar: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
 }
 
 interface User {
   id: string;
   username: string;
   email: string;
+  phone: string | null;
   role: string;
   tenant_id: string | null;
   profile?: UserProfile;
-  createdAt?: string;
   exp?: number;
 }
 

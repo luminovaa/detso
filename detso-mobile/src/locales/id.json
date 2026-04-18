@@ -30,7 +30,11 @@
       "theme": "Mode Gelap",
       "selectLanguage": "Pilih Bahasa Aplikasi",
       "langId": "Bahasa Indonesia",
-      "langEn": "English (US)"
+      "langEn": "English (US)",
+      "selectTheme": "Pilih Tema Aplikasi",
+      "themeLight": "Terang",
+      "themeDark": "Gelap",
+      "themeSystem": "Ikuti Sistem"
     },
     "support": {
       "title": "Bantuan & Informasi",

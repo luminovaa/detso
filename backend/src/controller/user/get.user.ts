@@ -82,8 +82,9 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
       id: true,
       email: true,
       username: true,
+      phone: true,
       role: true,
-      tenant_id: true, // [OPSIONAL] Tampilkan ini agar Super Admin tahu user ini milik siapa
+      tenant_id: true, 
       profile: {
         select: {
           id: true,

@@ -49,8 +49,9 @@
         --popover: 220 15% 10%;
         --popover-foreground: 0 0% 98%;
 
-        --primary: 217 71% 22%;
-        --primary-foreground: 0 0% 100%;
+        --primary: 217 100% 70%;
+        /* Biru Neon Sangat Terang untuk Dark Mode */
+        --primary-foreground: 220 15% 10%;
 
         --secondary: 217 36% 40%;
         --secondary-foreground: 0 0% 100%;
@@ -64,8 +65,9 @@
         --destructive: 0 72% 50%;
         --destructive-foreground: 0 0% 98%;
 
-        --border: 220 10% 20%;
-        --input: 220 10% 20%;
-        --ring: 217 71% 22%;
+        --border: 220 10% 30%;
+        /* Lighter border for dark mode */
+        --input: 220 10% 30%;
+        --ring: 217 91% 60%;
     }
 }

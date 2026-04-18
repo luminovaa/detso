@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -26,15 +27,27 @@ export default function EditProfileScreen() {
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; base64?: string } | null>(null);
 
-  const { control, handleSubmit, formState: { isDirty } } = useForm<UpdateUserInput>({
+  const { control, handleSubmit, reset, formState: { isDirty } } = useForm<UpdateUserInput>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: {
-      full_name: user?.profile?.fullName || "",
+      full_name: user?.profile?.full_name || "",
       username: user?.username || "",
       email: user?.email || "",
-      phone: user?.profile?.phone || "",
+      phone: user?.phone || "",
     },
   });
+
+  // Sync form when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        full_name: user.profile?.full_name || "",
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user, reset]);
 
   const onImageSelected = (uri: string, base64?: string) => {
     setSelectedImage({ uri, base64 });
@@ -95,7 +108,7 @@ export default function EditProfileScreen() {
           <View className="relative">
             <Avatar 
               src={selectedImage?.uri || user?.profile?.avatar} 
-              alt={user?.profile?.fullName || user?.username}
+              alt={user?.profile?.full_name || user?.username}
               size="2xl"
               className="border-4 border-background shadow-sm"
             />

@@ -21,13 +21,10 @@ export function useProtectedRoute(fontsLoaded: boolean) {
 
     const inAuthGroup = segments[0] === 'sign-in';
 
-    const timeout = setTimeout(() => {
-      if (!user && !inAuthGroup) {
-        router.replace('/sign-in');
-      } else if (user && inAuthGroup) {
-        router.replace('/(tabs)');
-      }
-    }, 100);
-    return () => clearTimeout(timeout);
+    if (!user && !inAuthGroup) {
+      router.replace('/sign-in');
+    } else if (user && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
   }, [user, isInitialized, fontsLoaded, segments]);
 }

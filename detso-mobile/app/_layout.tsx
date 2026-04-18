@@ -15,6 +15,7 @@ import { useLanguageStore } from "@/src/features/i18n/store";
 import "../global.css";
 import { ErrorBoundary } from "@/src/components/global/error-boundary";
 import { authEvents } from "@/src/lib/auth-events";
+import { ThemeProvider } from "@/src/components/global/theme-provider";
 
 // Auth & Security
 import { useAuthStore } from "@/src/features/auth/store"; // Sesuaikan path jika berbeda
@@ -150,16 +151,18 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
   // --- RENDER SEMUA PROVIDER ---
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <PortalProvider>
-          <BottomSheetModalProvider>
-            <ToastProvider>
-              <GlobalLogic />
-              <Stack screenOptions={{ headerShown: false }} />
-            </ToastProvider>
-          </BottomSheetModalProvider>
-        </PortalProvider>
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <PortalProvider>
+            <BottomSheetModalProvider>
+              <ToastProvider>
+                <GlobalLogic />
+                <Stack screenOptions={{ headerShown: false }} />
+              </ToastProvider>
+            </BottomSheetModalProvider>
+          </PortalProvider>
+        </ErrorBoundary>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

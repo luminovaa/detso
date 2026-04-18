@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useColorScheme } from "nativewind";
+
 interface ScreenWrapperProps {
   children: React.ReactNode;
   className?: string;
@@ -24,6 +26,7 @@ export function ScreenWrapper({
   onRefresh,
   refreshing = false
 }: ScreenWrapperProps) {
+  const { colorScheme } = useColorScheme();
   
   // Konten utama
   const content = (
@@ -34,7 +37,11 @@ export function ScreenWrapper({
 
   return (
     <SafeAreaView className={`flex-1 bg-background ${className}`}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar 
+        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"} 
+        backgroundColor="transparent" 
+        translucent 
+      />
       
       {onRefresh ? (
         // Jika ada fungsi onRefresh, bungkus dengan ScrollView + RefreshControl

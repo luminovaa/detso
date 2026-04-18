@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { View, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { useColorScheme } from "nativewind";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, {
   useSharedValue,
@@ -12,13 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { useAuthStore } from "@/src/features/auth/store";
 
-// ✅ 1. DISESUAIKAN DENGAN WARNA TAILWIND & GLOBAL.CSS KAMU
-const DESIGN_TOKENS = {
-  primary: "hsl(217, 71%, 22%)",             // Warna Biru Navy Logo DTS (--primary)
-  primaryLight: "hsla(217, 71%, 22%, 0.15)", // Transparansi 15% dari Primary
-  surface: "hsl(0, 0%, 100%)",               // Putih Card (--card)
-  uiMuted: "hsl(220, 10%, 50%)",             // Abu-abu text (--muted-foreground)
-};
+// Tokens akan dipindahkan ke dalam komponen agar dinamis
 
 interface TabItemProps {
   isFocused: boolean;
@@ -26,6 +21,7 @@ interface TabItemProps {
   label: string;
   onPress: () => void;
   onLongPress: () => void;
+  tokens: any; // Tambahkan tokens prop
 }
 
 const TabItem = ({
@@ -34,6 +30,7 @@ const TabItem = ({
   label,
   onPress,
   onLongPress,
+  tokens, // Destructure tokens
 }: TabItemProps) => {
   const activeWidth = useSharedValue(isFocused ? 1 : 0);
   const opacity = useSharedValue(isFocused ? 1 : 0);
@@ -55,7 +52,7 @@ const TabItem = ({
 
   const bgStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor: isFocused ? DESIGN_TOKENS.primaryLight : "transparent",
+      backgroundColor: isFocused ? tokens.primaryLight : "transparent",
       opacity: opacity.value,
     };
   });
@@ -86,7 +83,7 @@ const TabItem = ({
           <Ionicons
             name={isFocused ? iconName : `${iconName}-outline`}
             size={24}
-            color={isFocused ? DESIGN_TOKENS.primary : DESIGN_TOKENS.uiMuted}
+            color={isFocused ? tokens.primary : tokens.uiMuted}
             style={{ zIndex: 1 }}
           />
 
@@ -95,7 +92,7 @@ const TabItem = ({
               style={[
                 styles.tabLabel,
                 textStyle,
-                { color: DESIGN_TOKENS.primary, zIndex: 1 },
+                { color: tokens.primary, zIndex: 1 },
               ]}
               numberOfLines={1}
             >
@@ -115,6 +112,16 @@ export function CustomTabBar({
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  const TOKENS = useMemo(() => ({
+    primary: isDark ? "hsl(217, 100%, 70%)" : "hsl(217, 71%, 22%)",
+    primaryLight: isDark ? "hsla(217, 100%, 70%, 0.15)" : "hsla(217, 71%, 22%, 0.15)",
+    uiMuted: isDark ? "hsl(220, 10%, 70%)" : "hsl(220, 10%, 50%)",
+    bgOverlay: isDark ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.4)",
+    borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)",
+  }), [isDark]);
 
   return (
     <View
@@ -122,19 +129,20 @@ export function CustomTabBar({
         styles.tabBarContainer,
         {
           bottom: insets.bottom > 0 ? insets.bottom : 20,
+          borderColor: TOKENS.borderColor,
         },
       ]}
     >
       <BlurView
         intensity={100}
-        tint="light"
+        tint={isDark ? "dark" : "light"}
         style={StyleSheet.absoluteFillObject}
       />
 
       <View
         style={[
           StyleSheet.absoluteFillObject,
-          { backgroundColor: "rgba(255, 255, 255, 0.4)" },
+          { backgroundColor: TOKENS.bgOverlay },
         ]}
       />
 
@@ -194,16 +202,17 @@ export function CustomTabBar({
           if (route.name === "map") iconName = "map";
           if (route.name === "settings") iconName = "settings";
 
-          return (
-            <TabItem
-              key={route.key}
-              isFocused={isFocused}
-              iconName={iconName}
-              label={label as string}
-              onPress={onPress}
-              onLongPress={onLongPress}
-            />
-          );
+            return (
+              <TabItem
+                key={route.key}
+                isFocused={isFocused}
+                iconName={iconName}
+                label={label as string}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                tokens={TOKENS}
+              />
+            );
         })}
     </View>
   );
