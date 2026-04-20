@@ -3,7 +3,8 @@
     "loading": "Loading...",
     "error": "An Error Occurred",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "success": "Success"
   },
   "auth": {
     "welcome": "ISP Portal",
@@ -47,8 +48,26 @@
       "changePassword": "Change Password",
       "sessions": "Active Sessions"
     },
-    "logout": "Sign Out",
-    "logoutConfirmTitle": "Sign Out?",
-    "logoutConfirmDescription": "Are you sure you want to sign out? You will need to enter your credentials again to log back in."
+    "logout": "Logout from Account",
+    "logoutConfirmTitle": "Logout from Account?",
+    "logoutConfirmDescription": "Are you sure you want to logout? You will need to enter your credentials again to sign in."
+  },
+  "isp": {
+    "title": "ISP List",
+    "active": "Active",
+    "inactive": "Inactive",
+    "customers": "Customers",
+    "services": "Active",
+    "emptyTitle": "No ISP Found",
+    "emptyDesc": "There are no ISP records registered in the system yet.",
+    "refresh": "Refresh",
+    "detailTitle": "ISP Detail",
+    "totalUsers": "Total Users",
+    "totalPackages": "Total Packages",
+    "totalTickets": "Total Tickets",
+    "contactInfo": "Contact Information",
+    "address": "Address",
+    "phone": "Phone",
+    "createdAt": "Registered Since"
   }
 }

@@ -190,7 +190,7 @@ export default function SettingsScreen() {
               <SettingRow 
                 label={t("settings.security.changePassword")}
                 iconName="lock-closed"
-                onPress={() => {}}
+                onPress={() => router.push("/settings/change-password")}
               />
               <SettingRow 
                 label={t("settings.security.sessions")}

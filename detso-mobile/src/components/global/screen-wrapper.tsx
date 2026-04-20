@@ -30,7 +30,7 @@ export function ScreenWrapper({
   
   // Konten utama
   const content = (
-    <View className={`flex-1 ${noPadding ? "" : "px-6"}`}>
+    <View className={`flex-1 ${noPadding ? "" : "px-4"}`}>
       {children}
     </View>
   );

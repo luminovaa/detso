@@ -3,7 +3,8 @@
     "loading": "Memuat...",
     "error": "Terjadi Kesalahan",
     "save": "Simpan",
-    "cancel": "Batal"
+    "cancel": "Batal",
+    "success": "Berhasil"
   },
   "auth": {
     "welcome": "ISP Portal",
@@ -50,5 +51,23 @@
     "logout": "Keluar dari Akun",
     "logoutConfirmTitle": "Keluar dari Akun?",
     "logoutConfirmDescription": "Apakah Anda yakin ingin keluar? Anda harus memasukkan kredensial lagi untuk masuk kembali."
+  },
+  "isp": {
+    "title": "Daftar ISP",
+    "active": "Aktif",
+    "inactive": "Nonaktif",
+    "customers": "Pelanggan",
+    "services": "Aktif",
+    "emptyTitle": "Tidak Ada ISP",
+    "emptyDesc": "Belum ada data ISP yang terdaftar dalam sistem.",
+    "refresh": "Muat Ulang",
+    "detailTitle": "Detail ISP",
+    "totalUsers": "Total Pengguna",
+    "totalPackages": "Total Paket",
+    "totalTickets": "Total Tiket",
+    "contactInfo": "Informasi Kontak",
+    "address": "Alamat",
+    "phone": "Telepon",
+    "createdAt": "Terdaftar Sejak"
   }
 }

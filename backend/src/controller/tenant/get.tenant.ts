@@ -7,10 +7,6 @@ import { getPagination } from "../../utils/pagination";
 import { tenantPaginationSchema } from "./validation/validation.tenant";
 import { generateFullUrl } from "../../utils/generate-full-url";
 
-// [SUPER ADMIN ONLY]
-
-
-const baseUrl = process.env.BASE_URL;
 
 export const getAllTenants = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // 1. Security Check
@@ -109,10 +105,11 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
     const tenant_idParam = req.params.id;
 
     // 1. Security Check (IDOR Protection)
-    const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN || user.role === Detso_Role.TENANT_OWNER;
+    // Hanya SAAS_SUPER_ADMIN yang bisa melihat tenant lain.
+    const isPlatformAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN;
 
-    // Jika bukan super admin, dia HANYA boleh lihat tenant ID miliknya sendiri
-    if (!isSuperAdmin && user.tenant_id !== tenant_idParam) {
+    // Jika bukan platform admin, dia HANYA boleh lihat tenant ID miliknya sendiri
+    if (!isPlatformAdmin && user.tenant_id !== tenant_idParam) {
         // Return Not Found agar attacker tidak tahu kalau ID itu sebenarnya ada
         throw new NotFoundError('Tenant tidak ditemukan');
     }
@@ -123,13 +120,15 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
             id: tenant_idParam,
             deleted_at: null
         },
-        // Opsional: Include detail lengkap jika Super Admin yang buka
+        // Include statistik lengkap untuk dashboard
         include: {
             _count: {
                 select: {
-                    users: true,
-                    customers: true,
-                    packages: true
+                    users: { where: { deleted_at: null } },
+                    customers: { where: { deleted_at: null } },
+                    packages: { where: { deleted_at: null } },
+                    tickets: { where: { deleted_at: null } },
+                    services: { where: { status: 'ACTIVE', deleted_at: null } }
                 }
             }
         }
@@ -139,11 +138,25 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
         throw new NotFoundError('Tenant tidak ditemukan');
     }
 
+    // 3. Format Response (Clean & Informative)
     const formattedTenant = {
-        ...tenant,
-        logo: generateFullUrl(tenant.logo)
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        logo: generateFullUrl(tenant.logo),
+        address: tenant.address,
+        phone: tenant.phone,
+        is_active: tenant.is_active,
+        created_at: tenant.created_at,
+        updated_at: tenant.updated_at,
+        stats: {
+            total_users: tenant._count.users,
+            total_customers: tenant._count.customers,
+            total_packages: tenant._count.packages,
+            total_tickets: tenant._count.tickets,
+            active_services: tenant._count.services
+        }
     };
-
 
     responseData(res, 200, 'Detail Tenant berhasil diambil', formattedTenant);
 });

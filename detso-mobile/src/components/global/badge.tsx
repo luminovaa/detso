@@ -6,7 +6,7 @@ import { Text } from "./text"; // Gunakan Text custom kita agar font-nya SF Pro!
 export interface BadgeProps extends ViewProps {
   children?: React.ReactNode;
   label?: string;
-  variant?: "default" | "secondary" | "destructive" | "outline" | "accent";
+  variant?: "default" | "secondary" | "destructive" | "outline" | "accent" | "success";
 }
 
 function Badge({
@@ -22,7 +22,8 @@ function Badge({
     secondary: "bg-secondary border-transparent",
     destructive: "bg-destructive border-transparent",
     accent: "bg-accent border-transparent",
-    outline: "bg-transparent border-border", // Outline pakai border dari tema
+    success: "bg-green-500/10 border-green-500/20",
+    outline: "bg-transparent border-border",
   };
 
   // 2. Styling untuk Text (Warna Teks)
@@ -31,6 +32,7 @@ function Badge({
     secondary: "text-secondary-foreground",
     destructive: "text-destructive-foreground",
     accent: "text-accent-foreground",
+    success: "text-green-600 dark:text-green-400",
     outline: "text-foreground",
   };
 
@@ -43,9 +45,18 @@ function Badge({
       )}
       {...props}
     >
-      {/* Jika pakai children (bisa disisipi icon kecil) */}
+      {/* Memastikan children (teks) selalu dibungkus komponen <Text> */}
       {children ? (
-        children
+        typeof children === "string" ? (
+          <Text
+            weight="semibold"
+            className={cn("text-xs", textVariants[variant])}
+          >
+            {children}
+          </Text>
+        ) : (
+          children
+        )
       ) : (
         /* Jika pakai label biasa */
         <Text
