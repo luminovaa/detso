@@ -1,5 +1,9 @@
-import api from '@/src/lib/api';
-import { GetAllTenantInput, UpdateTenantInput } from './schema';
+import api from "@/src/lib/api";
+import {
+  CreateTenantInput,
+  GetAllTenantInput,
+  UpdateTenantInput,
+} from "./schema";
 
 export const tenantService = {
   /**
@@ -7,7 +11,7 @@ export const tenantService = {
    * Typically for SaaS Super Admin.
    */
   getAll: async (params?: GetAllTenantInput) => {
-    const response = await api.get('/tenant', { params });
+    const response = await api.get("/tenant", { params });
     return response.data;
   },
 
@@ -20,13 +24,25 @@ export const tenantService = {
   },
 
   /**
+   * Create a new tenant.
+   * Supports FormData for logo upload.
+   */
+  create: async (data: CreateTenantInput | FormData) => {
+    const isFormData = data instanceof FormData;
+    const response = await api.post("/tenant", data, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+    });
+    return response.data;
+  },
+
+  /**
    * Update an existing tenant.
    * Can accept plain object or FormData for logo upload.
    */
   update: async (id: string, data: UpdateTenantInput | FormData) => {
     const isFormData = data instanceof FormData;
     const response = await api.put(`/tenant/${id}`, data, {
-      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
     });
     return response.data;
   },

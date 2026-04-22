@@ -19,22 +19,22 @@ const TYPE_CONFIG = {
   success: {
     icon: "checkmark-circle" as const,
     iconColor: "#10B981", // Emerald
-    bgClass: "bg-emerald-500/10 border-emerald-500/20",
+    bgClass: "border-emerald-500/50",
   },
   error: {
     icon: "alert-circle" as const,
     iconColor: "#EF4444", // Destructive
-    bgClass: "bg-destructive/10 border-destructive/20",
+    bgClass: "border-destructive/50",
   },
   warning: {
     icon: "warning" as const,
     iconColor: "#F59E0B", // Amber
-    bgClass: "bg-amber-500/10 border-amber-500/20",
+    bgClass: "border-amber-500/50",
   },
   info: {
     icon: "information-circle" as const,
     iconColor: "#3B82F6", // Blue
-    bgClass: "bg-blue-500/10 border-blue-500/20",
+    bgClass: "border-blue-500/50",
   },
 };
 

@@ -68,6 +68,24 @@
     "contactInfo": "Informasi Kontak",
     "address": "Alamat",
     "phone": "Telepon",
-    "createdAt": "Terdaftar Sejak"
+    "createdAt": "Terdaftar Sejak",
+    "overview": "Ringkasan Statistik",
+    "createTitle": "Tambah ISP",
+    "nameLabel": "Nama ISP",
+    "namePlaceholder": "Masukkan nama perusahaan ISP",
+    "addressLabel": "Alamat Kantor",
+    "addressPlaceholder": "Masukkan alamat lengkap",
+    "phoneLabel": "Nomor Telepon",
+    "phonePlaceholder": "Masukkan nomor telepon",
+    "logoLabel": "Logo Perusahaan",
+    "isActiveLabel": "Status Aktif",
+    "submitBtn": "Simpan ISP Baru",
+    "creating": "Menyimpan...",
+    "successCreate": "ISP berhasil ditambahkan ke sistem",
+    "editTitle": "Edit Profil ISP",
+    "saveBtn": "Simpan Perubahan",
+    "updating": "Memperbarui...",
+    "successUpdate": "Profil ISP berhasil diperbarui",
+    "fetchingData": "Mengambil data..."
   }
 }

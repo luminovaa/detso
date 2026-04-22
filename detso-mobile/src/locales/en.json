@@ -68,6 +68,24 @@
     "contactInfo": "Contact Information",
     "address": "Address",
     "phone": "Phone",
-    "createdAt": "Registered Since"
+    "createdAt": "Registered Since",
+    "overview": "Statistical Overview",
+    "createTitle": "Create ISP",
+    "nameLabel": "ISP Name",
+    "namePlaceholder": "Enter ISP company name",
+    "addressLabel": "Office Address",
+    "addressPlaceholder": "Enter full address",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "Enter phone number",
+    "logoLabel": "Company Logo",
+    "isActiveLabel": "Active Status",
+    "submitBtn": "Register New ISP",
+    "creating": "Saving...",
+    "successCreate": "ISP has been successfully added to the system",
+    "editTitle": "Edit ISP Profile",
+    "saveBtn": "Save Changes",
+    "updating": "Updating...",
+    "successUpdate": "ISP profile has been successfully updated",
+    "fetchingData": "Fetching data..."
   }
 }

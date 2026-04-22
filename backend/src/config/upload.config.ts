@@ -46,7 +46,7 @@ export const ticketUpload = createUploadMiddleware({
 
 export const tenantUpload = createUploadMiddleware({
     destination: 'storage/public/tenants/logo',
-    allowedMimeTypes: ['image/jpeg', 'image/png'],
+    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
     maxFileSize: 5 * 1024 * 1024,
     fieldName: 'image'
 })

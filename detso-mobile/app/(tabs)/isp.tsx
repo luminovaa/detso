@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
+import { router } from "expo-router";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -130,6 +131,7 @@ export default function IspScreen() {
       {/* FAB untuk tambah ISP */}
       <TouchableOpacity 
         activeOpacity={0.9}
+        onPress={() => router.push("/isp/create")}
         className="absolute bottom-28 right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
       >
         <Ionicons name="add" size={30} color="white" />
