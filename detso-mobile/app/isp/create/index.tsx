@@ -13,15 +13,14 @@ import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
 import { Avatar } from "@/src/components/global/avatar";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
+import { Label } from "@/src/components/global/label";
 import { showToast } from "@/src/components/global/toast";
+import { MapLocationPicker } from "@/src/components/global/map-picker";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
-import { tenantService } from "@/src/features/tenant/service";
-import {
-  createTenantSchema,
-  CreateTenantInput,
-} from "@/src/features/tenant/schema";
+import { authService } from "@/src/features/auth/service";
+import { registerSchema, RegisterInput } from "@/src/features/auth/schema";
 
 export default function ISPCreateScreen() {
   const { t } = useT();
@@ -31,23 +30,36 @@ export default function ISPCreateScreen() {
     uri: string;
     base64?: string;
   } | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
-  const { control, handleSubmit } = useForm({
-    resolver: zodResolver(createTenantSchema),
+  const { control, handleSubmit, setValue, watch } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
-      address: "",
+      company_name: "",
       phone: "",
-    },
+      address: "",
+      full_name: "",
+      email: "",
+      username: "",
+      password: "",
+      lat: "",
+      long: "",
+    } as any,
   });
 
-  const onSubmit = async (data: CreateTenantInput) => {
+  const onSubmit = async (data: RegisterInput) => {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("name", data.name);
+      formData.append("company_name", data.company_name);
+      formData.append("phone", data.phone);
       formData.append("address", data.address || "");
-      formData.append("phone", data.phone || "");
+      formData.append("full_name", data.full_name);
+      formData.append("email", data.email);
+      formData.append("username", data.username);
+      formData.append("password", data.password);
+      if (data.lat) formData.append("lat", data.lat);
+      if (data.long) formData.append("long", data.long);
 
       if (selectedLogo) {
         const uri = selectedLogo.uri;
@@ -63,11 +75,11 @@ export default function ISPCreateScreen() {
         });
       }
 
-      await tenantService.create(formData);
+      await authService.registerTenant(formData);
       showToast.success(t("common.success"), t("isp.successCreate"));
       router.back();
     } catch (error: any) {
-      console.error("Create ISP error:", error);
+      console.error("Register ISP error:", error);
       showToast.error(
         t("common.error"),
         error.response?.data?.message || t("common.error"),
@@ -113,11 +125,15 @@ export default function ISPCreateScreen() {
           </Text>
         </View>
 
-        {/* Form Fields */}
-        <View className="gap-y-5">
+        {/* Company Info Section */}
+        <View className="gap-y-5 mb-10">
+          <Text weight="bold" className="text-lg mb-2">
+            {t("isp.companySection")}
+          </Text>
+
           <FormInput
             control={control}
-            name="name"
+            name="company_name"
             label={t("isp.nameLabel")}
             placeholder={t("isp.namePlaceholder")}
           />
@@ -138,6 +154,68 @@ export default function ISPCreateScreen() {
             isTextarea
             numberOfLines={3}
           />
+
+          <View>
+            <Label>{t("isp.latLabel")} & {t("isp.longLabel")}</Label>
+            <TouchableOpacity
+              onPress={() => setShowMap(true)}
+              activeOpacity={0.7}
+              className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
+            >
+              <View className="flex-row items-center flex-1">
+                <Ionicons name="location-outline" size={20} color="#64748b" />
+                <View className="ml-2">
+                  <Text className="text-foreground">
+                    {watch("lat") && watch("long") 
+                      ? `${watch("lat")}, ${watch("long")}`
+                      : "Pilih lokasi di peta"}
+                  </Text>
+                </View>
+              </View>
+              <View className="bg-primary/10 p-2 rounded-lg">
+                <Ionicons name="map" size={20} color="#1E40AF" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Owner Info Section */}
+        <View className="gap-y-5">
+          <Text weight="bold" className="text-lg mb-2">
+            {t("isp.ownerSection")}
+          </Text>
+
+          <FormInput
+            control={control}
+            name="full_name"
+            label={t("isp.ownerNameLabel")}
+            placeholder={t("isp.ownerNamePlaceholder")}
+          />
+
+          <FormInput
+            control={control}
+            name="email"
+            label={t("isp.ownerEmailLabel")}
+            placeholder={t("isp.ownerEmailPlaceholder")}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <FormInput
+            control={control}
+            name="username"
+            label={t("isp.ownerUsernameLabel")}
+            placeholder={t("isp.ownerUsernamePlaceholder")}
+            autoCapitalize="none"
+          />
+
+          <FormInput
+            control={control}
+            name="password"
+            label={t("isp.ownerPasswordLabel")}
+            placeholder={t("isp.ownerPasswordPlaceholder")}
+            secureTextEntry
+          />
         </View>
 
         <Button
@@ -154,6 +232,27 @@ export default function ISPCreateScreen() {
         onClose={() => setShowImagePicker(false)}
         onImageSelected={(uri, base64) => setSelectedLogo({ uri, base64 })}
         aspectRatio="1:1"
+      />
+
+      <MapLocationPicker
+        visible={showMap}
+        onClose={() => setShowMap(false)}
+        onLocationSelected={(lat, lng, addressText) => {
+          setValue("lat", lat.toString());
+          setValue("long", lng.toString());
+          if (addressText) {
+            setValue("address", addressText);
+          }
+        }}
+        initialCoordinate={
+          watch("lat") && watch("long")
+            ? {
+                latitude: parseFloat(watch("lat")!),
+                longitude: parseFloat(watch("long")!),
+              }
+            : null
+        }
+        initialAddress={watch("address")}
       />
     </ScreenWrapper>
   );

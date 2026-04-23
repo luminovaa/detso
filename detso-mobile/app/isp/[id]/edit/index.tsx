@@ -14,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Header } from "@/src/components/global/header";
-import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
@@ -22,6 +21,7 @@ import { Avatar } from "@/src/components/global/avatar";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
 import { Label } from "@/src/components/global/label";
 import { showToast } from "@/src/components/global/toast";
+import { MapLocationPicker } from "@/src/components/global/map-picker";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
@@ -44,6 +44,7 @@ export default function ISPEditScreen() {
     uri: string;
     base64?: string;
   } | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
   const { control, handleSubmit, setValue, watch, reset } =
     useForm<UpdateTenantInput>({
@@ -64,6 +65,8 @@ export default function ISPEditScreen() {
           address: data.address || "",
           phone: data.phone || "",
           is_active: data.is_active,
+          lat: data.lat || "",
+          long: data.long || "",
         });
       } catch (error) {
         console.error("Fetch ISP edit data error:", error);
@@ -87,6 +90,8 @@ export default function ISPEditScreen() {
       if (data.is_active !== undefined) {
         formData.append("is_active", String(data.is_active));
       }
+      if (data.lat) formData.append("lat", data.lat);
+      if (data.long) formData.append("long", data.long);
 
       if (selectedLogo) {
         const uri = selectedLogo.uri;
@@ -139,7 +144,7 @@ export default function ISPEditScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <Card className="p-6 border-border/40">
+        <View className="flex-1">
           {/* Logo Section */}
           <View className="items-center mb-10">
             <TouchableOpacity
@@ -166,6 +171,10 @@ export default function ISPEditScreen() {
 
           {/* Form Fields */}
           <View className="gap-y-5">
+            <Text weight="bold" className="text-lg mb-2">
+              {t("isp.companySection")}
+            </Text>
+
             <FormInput
               control={control}
               name="name"
@@ -189,6 +198,29 @@ export default function ISPEditScreen() {
               isTextarea
               numberOfLines={3}
             />
+
+            <View>
+              <Label>{t("isp.latLabel")} & {t("isp.longLabel")}</Label>
+              <TouchableOpacity
+                onPress={() => setShowMap(true)}
+                activeOpacity={0.7}
+                className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
+              >
+                <View className="flex-row items-center flex-1">
+                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <View className="ml-2">
+                    <Text className="text-foreground">
+                      {watch("lat") && watch("long") 
+                        ? `${watch("lat")}, ${watch("long")}`
+                        : "Pilih lokasi di peta"}
+                    </Text>
+                  </View>
+                </View>
+                <View className="bg-primary/10 p-2 rounded-lg">
+                  <Ionicons name="map" size={20} color="#1E40AF" />
+                </View>
+              </TouchableOpacity>
+            </View>
 
             {/* Active Status Switch */}
             <View className="flex-row items-center justify-between py-4 border-t border-border/40 mt-2">
@@ -214,7 +246,7 @@ export default function ISPEditScreen() {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           />
-        </Card>
+        </View>
       </ScrollView>
 
       <ImagePickerSheet
@@ -222,6 +254,27 @@ export default function ISPEditScreen() {
         onClose={() => setShowImagePicker(false)}
         onImageSelected={(uri, base64) => setSelectedLogo({ uri, base64 })}
         aspectRatio="1:1"
+      />
+
+      <MapLocationPicker
+        visible={showMap}
+        onClose={() => setShowMap(false)}
+        onLocationSelected={(lat, lng, addressText) => {
+          setValue("lat", lat.toString());
+          setValue("long", lng.toString());
+          if (addressText) {
+            setValue("address", addressText);
+          }
+        }}
+        initialCoordinate={
+          watch("lat") && watch("long")
+            ? {
+                latitude: parseFloat(watch("lat")!),
+                longitude: parseFloat(watch("long")!),
+              }
+            : null
+        }
+        initialAddress={watch("address")}
       />
     </ScreenWrapper>
   );

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "306142367329",
+    "project_id": "detsonet",
+    "storage_bucket": "detsonet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306142367329:android:d1d62e4c83bb4b51516420",
+        "android_client_info": {
+          "package_name": "com.neoncode.detso"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtgsyphIksT5HR9GZej3c58ucKG-ovivk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

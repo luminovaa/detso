@@ -50,7 +50,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
         throw new ValidationError('Validasi Gagal', validationResult.error.errors);
     }
 
-    const { name, address, phone, is_active } = validationResult.data;
+    const { name, address, phone, is_active, lat, long } = validationResult.data;
 
     // 5. Cek Data Existing
     const existingTenant = await prisma.detso_Tenant.findUnique({
@@ -93,6 +93,8 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
         // B. Update Info Dasar
         if (address !== undefined) updateData.address = address;
         if (phone !== undefined) updateData.phone = phone;
+        if (lat !== undefined) updateData.lat = lat;
+        if (long !== undefined) updateData.long = long;
 
         // C. Update Status (HANYA SUPER ADMIN)
         if (is_active !== undefined) {

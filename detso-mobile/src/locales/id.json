@@ -35,7 +35,7 @@
       "selectTheme": "Pilih Tema Aplikasi",
       "themeLight": "Terang",
       "themeDark": "Gelap",
-      "themeSystem": "Ikuti Sistem"
+      "themeSystem": "Sistem"
     },
     "support": {
       "title": "Bantuan & Informasi",
@@ -86,6 +86,18 @@
     "saveBtn": "Simpan Perubahan",
     "updating": "Memperbarui...",
     "successUpdate": "Profil ISP berhasil diperbarui",
-    "fetchingData": "Mengambil data..."
+    "fetchingData": "Mengambil data...",
+    "ownerSection": "Data Akun Pemilik (Owner)",
+    "ownerNameLabel": "Nama Lengkap Pemilik",
+    "ownerNamePlaceholder": "Masukkan nama lengkap pemilik",
+    "ownerEmailLabel": "Alamat Email",
+    "ownerEmailPlaceholder": "Masukkan alamat email aktif",
+    "ownerUsernameLabel": "Username",
+    "ownerUsernamePlaceholder": "Buat username login",
+    "ownerPasswordLabel": "Kata Sandi",
+    "ownerPasswordPlaceholder": "Buat kata sandi akun",
+    "companySection": "Data ISP / Perusahaan",
+    "latLabel": "Latitude",
+    "longLabel": "Longitude"
   }
 }

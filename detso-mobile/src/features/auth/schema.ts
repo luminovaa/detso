@@ -15,19 +15,21 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
-  email: z.email('Email tidak valid'),
+  email: z.string().email('Email tidak valid'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
   phone: z.string().min(10, 'Nomor telepon minimal 10 karakter'),
   username: z.string().min(3, 'Username minimal 3 karakter'),
-  role: z.enum(Detso_Role).optional(),
-  full_name: z.string().min(3, 'Nama lengkap minimal 3 karakter').optional().or(z.literal('')),
-  company_name: z.string().min(3, 'Nama perusahaan minimal 3 karakter').optional().or(z.literal('')),
+  address: z.string().min(3, 'Alamat minimal 3 karakter'),
+  lat: z.string().optional().or(z.literal('')),
+  long: z.string().optional().or(z.literal('')),
+  full_name: z.string().min(3, 'Nama lengkap minimal 3 karakter'),
+  company_name: z.string().min(3, 'Nama perusahaan minimal 3 karakter'),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const createUserSchema = z.object({
-  email: z.email('Email tidak valid'),
+  email: z.string().email('Email tidak valid'),
   username: z.string().min(3, 'Username minimal 3 karakter'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
   full_name: z.string().min(1, 'Nama lengkap wajib diisi'),
@@ -37,4 +39,3 @@ export const createUserSchema = z.object({
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
-

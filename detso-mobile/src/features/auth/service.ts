@@ -10,8 +10,11 @@ export const authService = {
         const response = await api.post('/auth/register', data);
         return response.data;
     },
-    registerTenant: async (data: RegisterInput) => {
-        const response = await api.post('/auth/register/tenant', data);
+    registerTenant: async (data: RegisterInput | FormData) => {
+        const isFormData = data instanceof FormData;
+        const response = await api.post('/auth/register/tenant', data, {
+            headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
+        });
         return response.data;
     },
     logout: async () => {

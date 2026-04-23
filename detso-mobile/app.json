@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "detsomobile",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -22,15 +21,24 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
+      "googleServicesFile": "./google-services.json",
       "predictiveBackGestureEnabled": false,
       "package": "com.neoncode.detso",
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCtgsyphIksT5HR9GZej3c58ucKG-ovivk"
+        }
+      }
     },
+    
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
@@ -73,7 +81,14 @@
           "locationAlwaysAndWhenInUsePermission": "Aplikasi membutuhkan akses lokasi"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "sk.GANTI_DENGAN_SECRET_TOKEN_MAPBOX_ANDA"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

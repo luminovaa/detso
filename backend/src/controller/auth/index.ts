@@ -6,11 +6,12 @@ import { logoutUser, revokeSession } from "./logout.auth";
 import { extractUserFromToken, getCurrentUser, refreshAccessToken, verifySession } from "./token.auth";
 import { createUser, registerTenant } from "./register.auth";
 import { createSuperAdminSeed } from "./seed.auth";
+import { tenantUpload } from "../../config/upload.config";
 const authRouter = express.Router();
 
 authRouter.post('/login', loginUser);
 authRouter.post('/refresh', refreshAccessToken);
-authRouter.post('/register/tenant', authMiddleware, requireRole(['SAAS_SUPER_ADMIN']), registerTenant)
+authRouter.post('/register/tenant', authMiddleware, requireRole(['SAAS_SUPER_ADMIN']), tenantUpload.single('image'), registerTenant)
 authRouter.post('/register', authMiddleware, requireRole(['TENANT_ADMIN', 'TENANT_OWNER']), createUser)
 authRouter.post('/seed/super-admin', createSuperAdminSeed);
 

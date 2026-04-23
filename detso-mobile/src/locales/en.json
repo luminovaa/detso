@@ -35,7 +35,7 @@
       "selectTheme": "Select App Theme",
       "themeLight": "Light",
       "themeDark": "Dark",
-      "themeSystem": "Follow System"
+      "themeSystem": "System"
     },
     "support": {
       "title": "Support & About",
@@ -86,6 +86,18 @@
     "saveBtn": "Save Changes",
     "updating": "Updating...",
     "successUpdate": "ISP profile has been successfully updated",
-    "fetchingData": "Fetching data..."
+    "fetchingData": "Fetching data...",
+    "ownerSection": "Owner Account Details",
+    "ownerNameLabel": "Full Name",
+    "ownerNamePlaceholder": "Enter owner's full name",
+    "ownerEmailLabel": "Email Address",
+    "ownerEmailPlaceholder": "Enter active email address",
+    "ownerUsernameLabel": "Username",
+    "ownerUsernamePlaceholder": "Create a login username",
+    "ownerPasswordLabel": "Password",
+    "ownerPasswordPlaceholder": "Create an account password",
+    "companySection": "ISP / Company Details",
+    "latLabel": "Latitude",
+    "longLabel": "Longitude"
   }
 }

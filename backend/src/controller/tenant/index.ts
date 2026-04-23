@@ -4,12 +4,10 @@ import { tenantUpload } from "../../config/upload.config";
 import { getAllTenants, getTenantById, getTenantLogo, } from "./get.tenant";
 import { deleteTenant } from "./delete.tenant";
 import { editTenant } from "./edit.tenant";
-import { createTenant } from "./create.tenant";
 
 const tenantRouter = express.Router();
 
 tenantRouter.get('/', authMiddleware, requireRole(['SAAS_SUPER_ADMIN']), getAllTenants);
-tenantRouter.post('/', authMiddleware, requireRole(['SAAS_SUPER_ADMIN']), tenantUpload.single('image'), createTenant);
 tenantRouter.get('/:id', authMiddleware, requireRole(['SAAS_SUPER_ADMIN', 'TENANT_OWNER']), getTenantById);
 tenantRouter.put('/:id', authMiddleware, requireRole(['SAAS_SUPER_ADMIN', 'TENANT_OWNER']), tenantUpload.single('image'), editTenant);
 tenantRouter.delete('/:id', authMiddleware, requireRole(ADMIN_ONLY), deleteTenant);

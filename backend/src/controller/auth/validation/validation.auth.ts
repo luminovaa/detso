@@ -12,9 +12,11 @@ export const registerSchema = z.object({
   password: z.string().min(6, 'Password minimal 6 karakter'),
   phone: z.string().min(10, 'Nomor telepon minimal 10 karakter'),
   username: z.string().min(3, 'Username minimal 3 karakter'),
-  role: z.enum([Detso_Role.TENANT_OWNER]).optional(),
   full_name: z.string().min(3, 'Nama lengkap minimal 3 karakter').optional(),
-  company_name: z.string().min(3, 'Nama perusahaan minimal 3 karakter').optional()
+  company_name: z.string().min(3, 'Nama perusahaan minimal 3 karakter'),
+  address: z.string().min(3, 'Alamat minimal 3 karakter'),
+  lat: z.string().optional(),
+  long: z.string().optional(),
 })
 
 export const createUserSchema = z.object({

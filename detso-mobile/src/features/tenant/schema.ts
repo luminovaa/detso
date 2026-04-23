@@ -18,6 +18,8 @@ export const updateTenantSchema = z.object({
   address: z.string().optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   is_active: z.boolean().optional(),
+  lat: z.string().optional().or(z.literal("")),
+  long: z.string().optional().or(z.literal("")),
 });
 
 export type UpdateTenantInput = z.infer<typeof updateTenantSchema>;

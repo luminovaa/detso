@@ -21,6 +21,8 @@ export const updateTenantSchema = z.object({
   phone: z.string().optional(),
   // is_active dikirim sebagai string 'true'/'false' via form-data
   is_active: z.enum(["true", "false"]).optional(),
+  lat: z.string().optional(),
+  long: z.string().optional(),
 });
 
 export const createTenantSchema = z.object({
