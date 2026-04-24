@@ -9,9 +9,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { useAuthStore } from "@/src/features/auth/store";
+import { useTabBarHeight, TAB_BAR_HEIGHT } from "@/src/hooks/use-tab-bar-height";
 
 interface TabItemProps {
   isFocused: boolean;
@@ -111,7 +111,7 @@ export function CustomTabBar({
   descriptors,
   navigation,
 }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
+  const { tabBarBottom } = useTabBarHeight();
   const { user } = useAuthStore();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -135,9 +135,10 @@ export function CustomTabBar({
 
   return (
     <View
-      className="absolute left-5 right-5 h-[70px] rounded-[35px] flex-row items-center justify-between px-2 overflow-hidden border"
+      className="absolute left-5 right-5 rounded-[35px] flex-row items-center justify-between px-2 overflow-hidden border"
       style={{
-        bottom: insets.bottom > 0 ? insets.bottom : 20,
+        height: TAB_BAR_HEIGHT,
+        bottom: tabBarBottom,
         borderColor: TOKENS.borderColor,
         backgroundColor:
           Platform.OS === "android"

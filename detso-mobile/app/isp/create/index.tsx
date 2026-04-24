@@ -7,7 +7,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Header } from "@/src/components/global/header";
 import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
@@ -21,10 +20,12 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 import { useT } from "@/src/features/i18n/store";
 import { authService } from "@/src/features/auth/service";
 import { registerSchema, RegisterInput } from "@/src/features/auth/schema";
+import { useMutation } from "@/src/hooks/use-async";
+import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPCreateScreen() {
   const { t } = useT();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate, isLoading: isSubmitting } = useMutation();
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedLogo, setSelectedLogo] = useState<{
     uri: string;
@@ -48,50 +49,45 @@ export default function ISPCreateScreen() {
   });
 
   const onSubmit = async (data: RegisterInput) => {
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append("company_name", data.company_name);
-      formData.append("phone", data.phone);
-      formData.append("address", data.address || "");
-      formData.append("full_name", data.full_name);
-      formData.append("email", data.email);
-      formData.append("username", data.username);
-      formData.append("password", data.password);
-      if (data.lat) formData.append("lat", data.lat);
-      if (data.long) formData.append("long", data.long);
+    const formData = new FormData();
+    formData.append("company_name", data.company_name);
+    formData.append("phone", data.phone);
+    formData.append("address", data.address || "");
+    formData.append("full_name", data.full_name);
+    formData.append("email", data.email);
+    formData.append("username", data.username);
+    formData.append("password", data.password);
+    if (data.lat) formData.append("lat", data.lat);
+    if (data.long) formData.append("long", data.long);
 
-      if (selectedLogo) {
-        const uri = selectedLogo.uri;
-        const uriParts = uri.split(".");
-        const extension = uriParts[uriParts.length - 1].toLowerCase();
-        const mimeType = extension === "jpg" ? "jpeg" : extension;
+    if (selectedLogo) {
+      const uri = selectedLogo.uri;
+      const uriParts = uri.split(".");
+      const extension = uriParts[uriParts.length - 1].toLowerCase();
+      const mimeType = extension === "jpg" ? "jpeg" : extension;
 
-        // @ts-ignore
-        formData.append("image", {
-          uri: uri,
-          name: `logo-${Date.now()}.${extension}`,
-          type: `image/${mimeType}`,
-        });
-      }
-
-      await authService.registerTenant(formData);
-      showToast.success(t("common.success"), t("isp.successCreate"));
-      router.back();
-    } catch (error: any) {
-      console.error("Register ISP error:", error);
-      showToast.error(
-        t("common.error"),
-        error.response?.data?.message || t("common.error"),
-      );
-    } finally {
-      setIsSubmitting(false);
+      // @ts-ignore
+      formData.append("image", {
+        uri: uri,
+        name: `logo-${Date.now()}.${extension}`,
+        type: `image/${mimeType}`,
+      });
     }
+
+    await mutate(
+      () => authService.registerTenant(formData),
+      {
+        onSuccess: () => {
+          showToast.success(t("common.success"), t("isp.successCreate"));
+          router.back();
+        },
+        toastTitle: t("common.error"),
+      },
+    );
   };
 
   return (
-    <ScreenWrapper>
-      <Header title={t("isp.createTitle")} showBackButton />
+    <ScreenWrapper headerTitle={t("isp.createTitle")} showBackButton>
 
       <ScrollView
         className="flex-1"
@@ -121,7 +117,7 @@ export default function ISPCreateScreen() {
             {t("isp.logoLabel")}
           </Text>
           <Text className="text-muted-foreground text-[12px] mt-1">
-            Tap untuk memilih logo
+            {t("isp.logoHint")}
           </Text>
         </View>
 
@@ -146,15 +142,6 @@ export default function ISPCreateScreen() {
             keyboardType="phone-pad"
           />
 
-          <FormInput
-            control={control}
-            name="address"
-            label={t("isp.addressLabel")}
-            placeholder={t("isp.addressPlaceholder")}
-            isTextarea
-            numberOfLines={3}
-          />
-
           <View>
             <Label>{t("isp.latLabel")} & {t("isp.longLabel")}</Label>
             <TouchableOpacity
@@ -164,12 +151,21 @@ export default function ISPCreateScreen() {
             >
               <View className="flex-row items-center flex-1">
                 <Ionicons name="location-outline" size={20} color="#64748b" />
-                <View className="ml-2">
-                  <Text className="text-foreground">
-                    {watch("lat") && watch("long") 
-                      ? `${watch("lat")}, ${watch("long")}`
-                      : "Pilih lokasi di peta"}
-                  </Text>
+                <View className="ml-2 flex-1">
+                  {watch("address") ? (
+                    <View>
+                      <Text className="text-foreground text-xs" numberOfLines={2}>
+                        {watch("address")}
+                      </Text>
+                      <Text className="text-muted-foreground text-[10px] mt-1">
+                        {watch("lat")}, {watch("long")}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-muted-foreground">
+                      {t("isp.selectOnMap")}
+                    </Text>
+                  )}
                 </View>
               </View>
               <View className="bg-primary/10 p-2 rounded-lg">
@@ -220,7 +216,8 @@ export default function ISPCreateScreen() {
 
         <Button
           title={isSubmitting ? t("isp.creating") : t("isp.submitBtn")}
-          className="mt-10 h-14 rounded-2xl"
+          size="lg"
+          className="w-full mt-10 shadow-lg shadow-primary/20"
           onPress={handleSubmit(onSubmit)}
           isLoading={isSubmitting}
           disabled={isSubmitting}

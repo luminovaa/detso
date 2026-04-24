@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Header } from "@/src/components/global/header";
 import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
@@ -31,14 +30,16 @@ import {
   UpdateTenantInput,
 } from "@/src/features/tenant/schema";
 import { Tenant } from "@/src/lib/types";
+import { useMutation } from "@/src/hooks/use-async";
+import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
 
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+    const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isFetching, setIsFetching] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate, isLoading: isSubmitting } = useMutation();
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedLogo, setSelectedLogo] = useState<{
     uri: string;
@@ -68,9 +69,8 @@ export default function ISPEditScreen() {
           lat: data.lat || "",
           long: data.long || "",
         });
-      } catch (error) {
-        console.error("Fetch ISP edit data error:", error);
-        showToast.error(t("common.error"), t("common.error"));
+            } catch (error) {
+        showErrorToast(error, t("common.error"));
       } finally {
         setIsFetching(false);
       }
@@ -79,52 +79,48 @@ export default function ISPEditScreen() {
     fetchDetail();
   }, [id, reset, t]);
 
-  const onSubmit = async (data: UpdateTenantInput) => {
+    const onSubmit = async (data: UpdateTenantInput) => {
     if (!id) return;
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      if (data.name) formData.append("name", data.name);
-      formData.append("address", data.address || "");
-      formData.append("phone", data.phone || "");
-      if (data.is_active !== undefined) {
-        formData.append("is_active", String(data.is_active));
-      }
-      if (data.lat) formData.append("lat", data.lat);
-      if (data.long) formData.append("long", data.long);
 
-      if (selectedLogo) {
-        const uri = selectedLogo.uri;
-        const uriParts = uri.split(".");
-        const extension = uriParts[uriParts.length - 1].toLowerCase();
-        const mimeType = extension === "jpg" ? "jpeg" : extension;
-
-        // @ts-ignore
-        formData.append("image", {
-          uri: uri,
-          name: `logo-update-${Date.now()}.${extension}`,
-          type: `image/${mimeType}`,
-        });
-      }
-
-      await tenantService.update(id, formData);
-      showToast.success(t("common.success"), t("isp.successUpdate"));
-      router.back();
-    } catch (error: any) {
-      console.error("Update ISP error:", error);
-      showToast.error(
-        t("common.error"),
-        error.response?.data?.message || t("common.error"),
-      );
-    } finally {
-      setIsSubmitting(false);
+    const formData = new FormData();
+    if (data.name) formData.append("name", data.name);
+    formData.append("address", data.address || "");
+    formData.append("phone", data.phone || "");
+    if (data.is_active !== undefined) {
+      formData.append("is_active", String(data.is_active));
     }
+    if (data.lat) formData.append("lat", data.lat);
+    if (data.long) formData.append("long", data.long);
+
+    if (selectedLogo) {
+      const uri = selectedLogo.uri;
+      const uriParts = uri.split(".");
+      const extension = uriParts[uriParts.length - 1].toLowerCase();
+      const mimeType = extension === "jpg" ? "jpeg" : extension;
+
+      // @ts-ignore
+      formData.append("image", {
+        uri: uri,
+        name: `logo-update-${Date.now()}.${extension}`,
+        type: `image/${mimeType}`,
+      });
+    }
+
+    await mutate(
+      () => tenantService.update(id, formData),
+      {
+        onSuccess: () => {
+          showToast.success(t("common.success"), t("isp.successUpdate"));
+          router.back();
+        },
+        toastTitle: t("common.error"),
+      },
+    );
   };
 
-  if (isFetching) {
+    if (isFetching) {
     return (
-      <ScreenWrapper>
-        <Header title={t("isp.editTitle")} showBackButton />
+      <ScreenWrapper headerTitle={t("isp.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="hsl(var(--primary))" />
           <Text className="mt-4 text-muted-foreground">
@@ -135,9 +131,8 @@ export default function ISPEditScreen() {
     );
   }
 
-  return (
-    <ScreenWrapper>
-      <Header title={t("isp.editTitle")} showBackButton />
+    return (
+    <ScreenWrapper headerTitle={t("isp.editTitle")} showBackButton>
 
       <ScrollView
         className="flex-1"
@@ -182,21 +177,12 @@ export default function ISPEditScreen() {
               placeholder={t("isp.namePlaceholder")}
             />
 
-            <FormInput
+                        <FormInput
               control={control}
               name="phone"
               label={t("isp.phoneLabel")}
               placeholder={t("isp.phonePlaceholder")}
               keyboardType="phone-pad"
-            />
-
-            <FormInput
-              control={control}
-              name="address"
-              label={t("isp.addressLabel")}
-              placeholder={t("isp.addressPlaceholder")}
-              isTextarea
-              numberOfLines={3}
             />
 
             <View>
@@ -206,14 +192,23 @@ export default function ISPEditScreen() {
                 activeOpacity={0.7}
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
               >
-                <View className="flex-row items-center flex-1">
+                                <View className="flex-row items-center flex-1">
                   <Ionicons name="location-outline" size={20} color="#64748b" />
-                  <View className="ml-2">
-                    <Text className="text-foreground">
-                      {watch("lat") && watch("long") 
-                        ? `${watch("lat")}, ${watch("long")}`
-                        : "Pilih lokasi di peta"}
-                    </Text>
+                  <View className="ml-2 flex-1">
+                    {watch("address") ? (
+                      <View>
+                        <Text className="text-foreground text-xs" numberOfLines={2}>
+                          {watch("address")}
+                        </Text>
+                        <Text className="text-muted-foreground text-[10px] mt-1">
+                          {watch("lat")}, {watch("long")}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text className="text-muted-foreground">
+                        {t("isp.selectOnMap")}
+                      </Text>
+                    )}
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
@@ -239,9 +234,10 @@ export default function ISPEditScreen() {
             </View>
           </View>
 
-          <Button
+                    <Button
             title={isSubmitting ? t("isp.updating") : t("isp.saveBtn")}
-            className="mt-10 h-14 rounded-2xl"
+            size="lg"
+            className="w-full mt-10 shadow-lg shadow-primary/20"
             onPress={handleSubmit(onSubmit)}
             isLoading={isSubmitting}
             disabled={isSubmitting}

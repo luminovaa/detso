@@ -2,14 +2,12 @@
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { authEvents } from './auth-events';
-
-// Ganti IP ini dengan IP komputermu saat development
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api';
+import { config } from './config';
 
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: config.API_URL,
     headers: { 'Content-Type': 'application/json' },
-    timeout: 10000,
+    timeout: config.API_TIMEOUT,
 });
 
 let isRefreshing = false;
@@ -63,7 +61,7 @@ api.interceptors.response.use(
                 if (!refreshToken) throw new Error('No refresh token');
 
                 // Gunakan axios murni (bukan api) agar tidak terjadi infinite loop interceptor
-                const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+                const response = await axios.post(`${config.API_URL}/auth/refresh`, { refreshToken });
 
                 // Sesuaikan dengan response body dari backend-mu
                 const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;

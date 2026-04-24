@@ -16,13 +16,12 @@ import { Text } from "@/src/components/global/text";
 import { Input } from "@/src/components/global/input";
 import { Button } from "@/src/components/global/button";
 
-// [NEW] Import Zustand Store kita
 import { loginSchema, LoginInput } from "@/src/features/auth/schema";
 import { useAuthStore } from "@/src/features/auth/store";
+import { useT } from "@/src/features/i18n/store";
 
 export default function SignInScreen() {
-  
-  // [NEW] Ambil fungsi login dari Zustand Store
+  const { t } = useT();
   const { login } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,15 +40,10 @@ export default function SignInScreen() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      // [UPDATED] Cukup panggil fungsi login dari store! 
-      // Zustand akan otomatis mengurus SecureStore, ambil data User, dan menyalakan Timer Auto-Refresh.
       await login(data);
-
-      // Redirect ke halaman utama / Dashboard
       router.replace("/");
     } catch (error: any) {
       console.error("Login Error:", error);
-    
     } finally {
       setIsLoading(false);
     }
@@ -77,10 +71,10 @@ export default function SignInScreen() {
                 />
             </View>
             <Text weight="bold" className="text-4xl tracking-tight text-center">
-              Welcome back
+              {t("auth.welcome")}
             </Text>
             <Text className="text-muted-foreground text-center mt-3 text-lg px-4 leading-relaxed">
-              Log in to your account to continue managing your services.
+              {t("auth.subtitle")}
             </Text>
           </View>
 
@@ -92,7 +86,7 @@ export default function SignInScreen() {
                 name="identifier"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    placeholder="Username or Email"
+                    placeholder={t("auth.emailPlaceholder")}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -109,7 +103,7 @@ export default function SignInScreen() {
                 name="password"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    placeholder="Password"
+                    placeholder={t("auth.passwordPlaceholder")}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -123,12 +117,12 @@ export default function SignInScreen() {
 
             <TouchableOpacity className="self-end mt-1 mb-10">
               <Text weight="semibold" className="text-primary text-[15px]">
-                Forgot Password?
+                {t("auth.forgotPassword")}
               </Text>
             </TouchableOpacity>
 
             <Button
-              title="Sign In"
+              title={t("auth.loginBtn")}
               onPress={handleSubmit(onSubmit)}
               isLoading={isLoading}
               size="lg"
@@ -138,11 +132,11 @@ export default function SignInScreen() {
 
           <View className="mt-auto mb-10 pt-8 pb-4 flex-row justify-center items-center">
             <Text className="text-muted-foreground mr-1.5 text-base">
-              Don&apos;t have an account?
+              {t("auth.needHelp")}
             </Text>
             <TouchableOpacity onPress={() => router.push("/register" as any)}>
               <Text weight="bold" className="text-primary text-base">
-                Contact Admin
+                {t("auth.contactAdmin")}
               </Text>
             </TouchableOpacity>
           </View>

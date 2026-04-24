@@ -8,6 +8,7 @@ import serviceRouter from '../controller/service-connection';
 import ticketRouter from '../controller/ticket';
 import scheduleRouter from '../controller/schedule';
 import tenantRouter from '../controller/tenant';
+import dashboardRouter from '../controller/dashboard';
 
 export default (app: Express) => {
     app.use(express.json({ limit: '10mb' }));
@@ -26,7 +27,8 @@ export default (app: Express) => {
     // apiRouter.use('/whatsapp', whatsappRouter);
     apiRouter.use('/ticket', ticketRouter);
     apiRouter.use('/schedule', scheduleRouter);
-    apiRouter.use('/tenant', tenantRouter)
+    apiRouter.use('/tenant', tenantRouter);
+    apiRouter.use('/dashboard', dashboardRouter);
 
     apiRouter.use('*', (req, res) => {
         res.status(404).send('Not found!!!');

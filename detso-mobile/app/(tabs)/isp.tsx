@@ -20,9 +20,12 @@ import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
 import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleteon-loading";
 import { ISPItem } from "@/src/components/screens/isp/isp-item";
+import { showErrorToast } from "@/src/lib/api-error";
+import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
 export default function IspScreen() {
   const { t } = useT();
+  const { contentPaddingBottom, fabBottom } = useTabBarHeight();
   
   // State
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -52,8 +55,8 @@ export default function IspScreen() {
       // Gunakan hasNextPage dari pagination backend
       setHasMore(pagination?.hasNextPage || false);
       
-    } catch (error) {
-      console.error("Fetch tenants error:", error);
+        } catch (error) {
+      showErrorToast(error, "Gagal Memuat");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -85,10 +88,8 @@ export default function IspScreen() {
   const isDark = colorScheme === "dark";
   const primaryColor = isDark ? "#66a3ff" : "#102a4d";
 
-  return (
-    <ScreenWrapper>
-      <Header title={t("isp.title")} />
-      
+    return (
+    <ScreenWrapper headerTitle={t("isp.title")}>
       {isLoading && page === 1 ? (
         <ISPSkeletonLoading />
       ) : (
@@ -96,7 +97,7 @@ export default function IspScreen() {
           data={tenants}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ISPItem item={item} />}
-          contentContainerStyle={{ paddingVertical: 16, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingVertical: 16, paddingBottom: contentPaddingBottom }}
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
@@ -128,11 +129,12 @@ export default function IspScreen() {
         />
       )}
 
-      {/* FAB untuk tambah ISP */}
+            {/* FAB untuk tambah ISP */}
       <TouchableOpacity 
         activeOpacity={0.9}
         onPress={() => router.push("/isp/create")}
-        className="absolute bottom-28 right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
+        className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
+        style={{ bottom: fabBottom }}
       >
         <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>

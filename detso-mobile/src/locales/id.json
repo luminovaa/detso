@@ -4,20 +4,27 @@
     "error": "Terjadi Kesalahan",
     "save": "Simpan",
     "cancel": "Batal",
-    "success": "Berhasil"
+    "success": "Berhasil",
+    "loadFailed": "Gagal Memuat",
+    "failed": "Gagal",
+    "user": "Pengguna"
   },
+
+  "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
   "auth": {
-    "welcome": "ISP Portal",
-    "subtitle": "Manajemen jaringan, pelanggan, dan penanganan tiket dalam satu kontrol panel.",
-    "emailLabel": "ID Karyawan / Email",
+    "welcome": "Selamat datang kembali",
+    "subtitle": "Masuk ke akun Anda untuk melanjutkan mengelola layanan.",
+    "emailLabel": "Username atau Email",
     "emailPlaceholder": "Masukkan username atau email",
     "passwordLabel": "Kata Sandi",
     "passwordPlaceholder": "Masukkan kata sandi",
     "forgotPassword": "Lupa Sandi?",
-    "loginBtn": "Otorisasi Masuk",
-    "needHelp": "Butuh akses akun?",
-    "contactAdmin": "Hubungi Administrator"
+    "loginBtn": "Masuk",
+    "needHelp": "Belum punya akun?",
+    "contactAdmin": "Hubungi Admin"
   },
+
+  "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
   "settings": {
     "title": "Pengaturan",
     "profile": {
@@ -46,14 +53,27 @@
     "security": {
       "title": "Keamanan Akun",
       "changePassword": "Ganti Kata Sandi",
-      "sessions": "Sesi Aktif"
+      "sessions": "Sesi Aktif",
+      "oldPasswordLabel": "Kata Sandi Lama",
+      "oldPasswordPlaceholder": "Masukkan kata sandi saat ini",
+      "newPasswordLabel": "Kata Sandi Baru",
+      "newPasswordPlaceholder": "Minimal 6 karakter",
+      "confirmPasswordLabel": "Konfirmasi Kata Sandi Baru",
+      "confirmPasswordPlaceholder": "Ulangi kata sandi baru",
+      "savePasswordBtn": "Simpan Kata Sandi",
+      "passwordChangeSuccess": "Kata sandi berhasil diubah. Silakan login kembali.",
+      "passwordChangeWarning": "Setelah berhasil mengubah kata sandi, sesi Anda akan dihentikan dan Anda harus masuk kembali dengan kata sandi baru.",
+      "securityTitle": "Keamanan Akun",
+      "useStrongPassword": "Gunakan kata sandi yang kuat dan unik untuk mengamankan akun Anda."
     },
     "logout": "Keluar dari Akun",
     "logoutConfirmTitle": "Keluar dari Akun?",
     "logoutConfirmDescription": "Apakah Anda yakin ingin keluar? Anda harus memasukkan kredensial lagi untuk masuk kembali."
   },
+
+  "_comment_isp": "ISP Management Screens (app/(tabs)/isp.tsx, app/isp/create/index.tsx, app/isp/[id]/detail/index.tsx, app/isp/[id]/edit/index.tsx)",
   "isp": {
-    "title": "Daftar ISP",
+    "title": "Internet Provider",
     "active": "Aktif",
     "inactive": "Nonaktif",
     "customers": "Pelanggan",
@@ -78,6 +98,8 @@
     "phoneLabel": "Nomor Telepon",
     "phonePlaceholder": "Masukkan nomor telepon",
     "logoLabel": "Logo Perusahaan",
+    "logoHint": "Tap untuk memilih logo",
+    "selectOnMap": "Pilih lokasi di peta",
     "isActiveLabel": "Status Aktif",
     "submitBtn": "Simpan ISP Baru",
     "creating": "Menyimpan...",
@@ -99,5 +121,119 @@
     "companySection": "Data ISP / Perusahaan",
     "latLabel": "Latitude",
     "longLabel": "Longitude"
+  },
+
+  "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
+  "map": {
+    "selectLocation": "Pilih Lokasi",
+    "tapToPlace": "Geser peta dan ketuk di lokasi untuk meletakkan pin koordinat.",
+    "fullAddress": "Detail Alamat Lengkap",
+    "addressPlaceholder": "Ketik alamat lengkap...",
+    "searchBtn": "Cari",
+    "confirmLocation": "Konfirmasi Lokasi Ini",
+    "selectLocationFirst": "Silakan ketuk peta untuk memilih lokasi.",
+    "emptyAddress": "Alamat kosong. Silakan isi alamat terlebih dahulu.",
+    "addressNotFound": "Alamat tidak dapat ditemukan di peta.",
+    "searchError": "Terjadi kesalahan saat mencari alamat.",
+    "notFound": "Tidak Ditemukan",
+    "getCurrentLocation": "Dapatkan Lokasi Saat Ini",
+    "locationError": "Tidak dapat mengambil lokasi saat ini.",
+    "locationServiceOff": "Layanan lokasi tidak aktif. Silakan aktifkan GPS di pengaturan perangkat Anda."
+  },
+
+  "_comment_permission": "Permission Request Components (src/components/global/permission.tsx)",
+  "permission": {
+    "camera": {
+      "title": "Akses Kamera Diperlukan",
+      "desc": "Aplikasi membutuhkan akses kamera untuk mengambil foto produk atau memindai dokumen dengan baik.",
+      "btnAllow": "Izinkan Kamera",
+      "btnSettings": "Buka Pengaturan OS"
+    },
+    "location": {
+      "title": "Akses Lokasi",
+      "desc": "Kami membutuhkan akses lokasi untuk menyematkan koordinat geografis yang tepat (GeoTag) ke dalam foto kunjungan Anda.",
+      "btnAllow": "Izinkan Lokasi",
+      "btnSettings": "Buka Pengaturan OS"
+    },
+    "locationService": {
+      "title": "Layanan GPS Tidak Aktif",
+      "desc": "Sistem mendeteksi bahwa GPS atau Layanan Lokasi perangkat Anda dimatikan. Harap aktifkan untuk melanjutkan.",
+      "btnSettings": "Buka Pengaturan Lokasi"
+    },
+    "btnLater": "Nanti Saja"
+  },
+
+  "_comment_imagePicker": "Image Picker Component (src/components/global/image-picker.tsx)",
+  "imagePicker": {
+    "selectSource": "Pilih Sumber Foto",
+    "camera": "Kamera",
+    "gallery": "Galeri",
+    "confirmPhoto": "Konfirmasi Foto",
+    "retake": "Ambil Ulang",
+    "use": "Gunakan",
+    "processing": "Memproses Foto...",
+    "embedGps": "Menyematkan titik koordinat GPS."
+  },
+
+  "_comment_camera": "Camera Component (src/components/global/camera.tsx)",
+  "camera": {
+    "notAvailable": "Kamera tidak tersedia",
+    "geoTag": "GeoTag",
+    "searchingGps": "Mencari GPS",
+    "processing": "Memproses foto...",
+    "waitingGps": "Menunggu GPS...",
+    "tapToCapture": "Ketuk untuk mengambil foto",
+    "searchingSignal": "Mencari sinyal GPS...",
+    "captureFailed": "Gagal mengambil foto."
+  },
+
+  "_comment_profile": "Edit Profile Screen (app/settings/edit-profile/index.tsx)",
+  "profile": {
+    "editTitle": "Edit Profil",
+    "cameraHint": "Ketuk ikon kamera untuk mengganti foto",
+    "fullNameLabel": "Nama Lengkap",
+    "fullNamePlaceholder": "Masukkan nama lengkap Anda",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Masukkan username",
+    "emailLabel": "Alamat Email",
+    "emailPlaceholder": "nama@email.com",
+    "phoneLabel": "Nomor Telepon",
+    "phonePlaceholder": "08xxxxxxxx",
+    "saving": "Menyimpan...",
+    "saveChanges": "Simpan Perubahan",
+    "updated": "Profil Diperbarui",
+    "updatedDesc": "Data profil Anda berhasil disimpan.",
+    "saveNote": "Pastikan data yang Anda masukkan sudah benar sebelum menekan tombol simpan."
+  },
+
+  "_comment_roles": "User Role Labels (Used in app/(tabs)/settings.tsx)",
+  "roles": {
+    "SAAS_SUPER_ADMIN": "Super Admin Detso",
+    "TENANT_OWNER": "Pemilik ISP",
+    "TENANT_ADMIN": "Admin ISP",
+    "TENANT_TEKNISI": "Teknisi Lapangan"
+  },
+
+  "_comment_notFound": "404 Not Found Screen (app/+not-found.tsx)",
+  "notFound": {
+    "badge": "Koneksi Terputus",
+    "title": "404 Not Found",
+    "desc": "Sistem gagal menemukan modul atau endpoint yang Anda minta. Rute mungkin telah dipindahkan atau Anda tidak memiliki akses.",
+    "logTitle": "System Diagnostic Log",
+    "logStart": "Memulai traceroute internal...",
+    "logTarget": "Target endpoint:",
+    "logResolving": "Resolving route...",
+    "logFailed": "GAGAL",
+    "logReason": "Packet dropped. Module does not exist in registry.",
+    "backBtn": "Muat Ulang Koneksi (Kembali)"
+  },
+
+  "_comment_global": "Global Messages & Errors (Used throughout the app)",
+  "global": {
+    "serverError": "Gangguan Server",
+    "serverErrorDesc": "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat.",
+    "sessionExpired": "Sesi Habis",
+    "sessionExpiredDesc": "Sesi login Anda telah berakhir. Silakan login kembali.",
+    "doubleBackExit": "Tekan sekali lagi untuk keluar"
   }
 }

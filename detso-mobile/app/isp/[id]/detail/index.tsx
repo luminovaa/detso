@@ -6,7 +6,6 @@ import { useColorScheme } from "nativewind";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Header } from "@/src/components/global/header";
 import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
@@ -19,6 +18,7 @@ import { cn } from "@/src/lib/utils";
 import { tenantService } from "@/src/features/tenant/service";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
+import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,13 +29,13 @@ export default function ISPDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchDetail = useCallback(async () => {
+    const fetchDetail = useCallback(async () => {
     if (!id) return;
     try {
       const response = await tenantService.getById(id);
       setTenant(response.data);
     } catch (error) {
-      console.error("Fetch ISP detail error:", error);
+      showErrorToast(error, "Gagal Memuat");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -65,10 +65,9 @@ export default function ISPDetailScreen() {
   const isDark = colorScheme === "dark";
   const primaryColor = isDark ? "#66a3ff" : "#102a4d";
 
-  if (isLoading && !tenant) {
+    if (isLoading && !tenant) {
     return (
-      <ScreenWrapper>
-        <Header title={t("isp.detailTitle")} showBackButton />
+      <ScreenWrapper headerTitle={t("isp.detailTitle")} showBackButton>
         <View className="p-4 gap-y-8">
           {/* Skeleton Hero */}
           <View className="items-center gap-y-4">
@@ -141,26 +140,25 @@ export default function ISPDetailScreen() {
     </Card>
   );
 
-  return (
-    <ScreenWrapper>
-      <Header
-        title={t("isp.detailTitle")}
-        showBackButton
-        rightNode={
-          <Button
-            variant="ghost"
-            size="sm"
-            onPress={() => router.push(`/isp/${id}/edit`)}
-            leftIcon={
-              <Ionicons
-                name="create-outline"
-                size={20}
-                color="hsl(var(--foreground))"
-              />
-            }
-          />
-        }
-      />
+    return (
+    <ScreenWrapper
+      headerTitle={t("isp.detailTitle")}
+      showBackButton
+      headerRightNode={
+        <Button
+          variant="ghost"
+          size="sm"
+          onPress={() => router.push(`/isp/${id}/edit`)}
+          leftIcon={
+            <Ionicons
+              name="create-outline"
+              size={20}
+              color="white"
+            />
+          }
+        />
+      }
+    >
 
       <ScrollView
         className="flex-1"

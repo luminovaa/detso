@@ -2,11 +2,10 @@ import React from "react";
 import { View, StatusBar, Linking, Platform, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-// Hapus import Portal
-// import { Portal } from "./portal";
 import { Text } from "./text";
 import { Button, ButtonProps } from "./button";
 import { cn } from "../../lib/utils";
+import { useT } from "@/src/features/i18n/store";
 
 export type PermissionType = "camera" | "location" | "location_service";
 //   | "notification";
@@ -34,6 +33,8 @@ export function PermissionScreen({
   onClose,
   isDenied = false,
 }: PermissionScreenProps) {
+  const { t } = useT();
+  
   // Konfigurasi dinamis berdasarkan tipe permission
   const getConfig = (): PermissionConfig => {
     switch (type) {
@@ -41,43 +42,32 @@ export function PermissionScreen({
         return {
           icon: "camera-outline" as const,
           iconBg: "bg-emerald-500/10",
-          iconColor: "#10b981", // Emerald 500
-          title: "Akses Kamera Diperlukan",
-          desc: "Aplikasi membutuhkan akses kamera untuk mengambil foto produk atau memindai dokumen dengan baik.",
-          btn: isDenied ? "Buka Pengaturan OS" : "Izinkan Kamera",
-          // [NEW] Kita gunakan variant dari Button kita
+          iconColor: "#10b981",
+          title: t("permission.camera.title"),
+          desc: t("permission.camera.desc"),
+          btn: isDenied ? t("permission.camera.btnSettings") : t("permission.camera.btnAllow"),
           btnVariant: isDenied ? "outline" : "primary",
         };
       case "location":
         return {
           icon: "location-outline" as const,
           iconBg: "bg-blue-500/10",
-          iconColor: "#3B82F6", // Blue 500
-          title: "Akses Lokasi",
-          desc: "Kami membutuhkan akses lokasi untuk menyematkan koordinat geografis yang tepat (GeoTag) ke dalam foto kunjungan Anda.",
-          btn: isDenied ? "Buka Pengaturan OS" : "Izinkan Lokasi",
+          iconColor: "#3B82F6",
+          title: t("permission.location.title"),
+          desc: t("permission.location.desc"),
+          btn: isDenied ? t("permission.location.btnSettings") : t("permission.location.btnAllow"),
           btnVariant: isDenied ? "outline" : "primary",
         };
       case "location_service":
         return {
           icon: "navigate-outline" as const,
           iconBg: "bg-amber-500/10",
-          iconColor: "#F59E0B", // Amber 500
-          title: "Layanan GPS Tidak Aktif",
-          desc: "Sistem mendeteksi bahwa GPS atau Layanan Lokasi perangkat Anda dimatikan. Harap aktifkan untuk melanjutkan.",
-          btn: "Buka Pengaturan Lokasi",
-          btnVariant: "destructive", // Gunakan merah/destruktif agar user notice
+          iconColor: "#F59E0B",
+          title: t("permission.locationService.title"),
+          desc: t("permission.locationService.desc"),
+          btn: t("permission.locationService.btnSettings"),
+          btnVariant: "destructive",
         };
-      //   case "notification":
-      //     return {
-      //       icon: "notifications-outline" as const,
-      //       iconBg: "bg-amber-500/10",
-      //       iconColor: "#F59E0B",
-      //       title: "Notifikasi Sistem",
-      //       desc: "Aktifkan notifikasi agar Anda dapat menerima pembaruan secara real-time mengenai status pesanan dan kunjungan.",
-      //       btn: isDenied ? "Buka Pengaturan OS" : "Aktifkan Notifikasi",
-      //       btnVariant: isDenied ? "outline" : "primary",
-      //     };
     }
   };
 
@@ -147,9 +137,9 @@ export function PermissionScreen({
             className="w-full mb-3" // Jarak ke tombol Nanti Saja
           />
 
-          {/* Tombol Batal/Nanti Saja */}
+                    {/* Tombol Batal/Nanti Saja */}
           <Button
-            title="Nanti Saja"
+            title={t("permission.btnLater")}
             variant="ghost"
             onPress={onClose}
             className="w-full"

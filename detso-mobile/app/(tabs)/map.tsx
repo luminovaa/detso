@@ -1,6 +1,16 @@
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useCallback } from "react";
-import { Stack } from "expo-router";
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/global/text";
 
 export default function Map() {
   return (

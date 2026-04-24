@@ -11,7 +11,6 @@ import { Avatar } from "@/src/components/global/avatar";
 import { Card, CardContent } from "@/src/components/global/card";
 import { Switch } from "@/src/components/global/switch";
 import { Button } from "@/src/components/global/button";
-import { Header } from "@/src/components/global/header";
 import { 
   Dialog, 
   DialogContent, 
@@ -31,12 +30,14 @@ import { SettingsSkeleton } from "@/src/components/screens/settings/settings-ske
 import { SettingRow } from "@/src/components/screens/settings/setting-row";
 import { LanguageSheet } from "@/src/components/screens/settings/language-sheet";
 import { ThemeSheet } from "@/src/components/screens/settings/theme-sheet";
+import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
 export default function SettingsScreen() {
   const { user, logout, refreshUserData } = useAuthStore();
   const { locale, setLocale } = useLanguageStore();
   const { theme } = useThemeStore();
   const { t } = useT();
+  const { contentPaddingBottom } = useTabBarHeight();
 
   const langSheetRef = useRef<BottomSheetModal>(null);
   const themeSheetRef = useRef<BottomSheetModal>(null);
@@ -84,19 +85,21 @@ export default function SettingsScreen() {
     setIsLoading(false);
   };
 
-  if (isLoading) return (
-    <ScreenWrapper>
-      <Header title={t("settings.title")} />
+    if (isLoading) return (
+    <ScreenWrapper headerTitle={t("settings.title")}>
       <SettingsSkeleton />
     </ScreenWrapper>
   );
 
   return (
-    <ScreenWrapper onRefresh={onPullToRefresh} refreshing={isRefreshing}>
+    <ScreenWrapper 
+      headerTitle={t("settings.title")}
+      onRefresh={onPullToRefresh} 
+      refreshing={isRefreshing}
+    >
       <>
-        <Header title={t("settings.title")} />
         
-        <View className="flex-1 pt-4 pb-24">
+        <View className="flex-1 pt-4" style={{ paddingBottom: contentPaddingBottom }}>
           <Card className="mb-8 overflow-hidden">
             <CardContent className="flex-row items-center p-5">
               <Avatar 

@@ -8,8 +8,6 @@ import {
   ImageResult,
 } from "expo-image-manipulator";
 
-// Hapus import Portal
-// import { Portal } from "./portal";
 import { CustomCamera } from "./camera";
 import { useImagePicker } from "../../hooks/use-image-picker";
 import {
@@ -19,7 +17,9 @@ import {
 } from "../../lib/camera-utils";
 import { Text } from "./text";
 import { Button } from "./button";
-import { BottomSheet } from "./bottom-sheet";
+import { BottomSheet, BottomSheetTitle } from "./bottom-sheet";
+import { useT } from "@/src/features/i18n/store";
+import { useTabBarHeight } from "../../hooks/use-tab-bar-height";
 
 type SheetState =
   | "source-select"
@@ -62,7 +62,9 @@ export function ImagePickerSheet({
   aspectRatio = "4:3",
   enableGeoTag,
 }: ImagePickerSheetProps) {
+  const { t } = useT();
   const { pickImage } = useImagePicker();
+  const { contentPaddingBottom } = useTabBarHeight();
   const [sheetState, setSheetState] = useState<SheetState>("source-select");
   const [processedResult, setProcessedResult] = useState<{
     uri: string;
@@ -70,7 +72,7 @@ export function ImagePickerSheet({
   } | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const isTransitioning = useRef(false); // <--- Lacak apakah kita sedang pindah mode (Kamera/Galeri)
+  const isTransitioning = useRef(false);
 
   useEffect(() => {
     if (visible && sheetState === "source-select")
@@ -191,11 +193,11 @@ export function ImagePickerSheet({
           >
             {processedResult && (
               <View className="absolute inset-0 bg-background justify-center px-6 z-[60]">
-                <Text
+                                <Text
                   weight="bold"
                   className="text-2xl text-foreground text-center mb-6"
                 >
-                  Konfirmasi Foto
+                  {t("imagePicker.confirmPhoto")}
                 </Text>
                 <View className="bg-card rounded-3xl overflow-hidden border border-border shadow-md mb-8">
                   <Image
@@ -207,15 +209,15 @@ export function ImagePickerSheet({
                     resizeMode="contain"
                   />
                 </View>
-                <View className="flex-row gap-4">
+                                <View className="flex-row gap-4">
                   <Button
-                    title="Ambil Ulang"
+                    title={t("imagePicker.retake")}
                     variant="outline"
                     className="flex-1"
                     onPress={() => setSheetState("source-select")}
                   />
                   <Button
-                    title="Gunakan"
+                    title={t("imagePicker.use")}
                     variant="primary"
                     className="flex-1"
                     onPress={handleConfirm}
@@ -231,17 +233,17 @@ export function ImagePickerSheet({
             transparent
             animationType="fade"
           >
-            <View className="absolute inset-0 bg-background/95 justify-center items-center z-[60]">
+                        <View className="absolute inset-0 bg-background/95 justify-center items-center z-[60]">
                 <ActivityIndicator
                   size="large"
                   color="#1d4ed8"
                   className="mb-4"
                 />
                 <Text weight="bold" className="text-xl text-foreground">
-                  Memproses Foto...
+                  {t("imagePicker.processing")}
                 </Text>
                 <Text className="text-muted-foreground mt-2">
-                  Menyematkan titik koordinat GPS.
+                  {t("imagePicker.embedGps")}
                 </Text>
               </View>
             </Modal>
@@ -249,21 +251,16 @@ export function ImagePickerSheet({
           {/* BOTTOM SHEET PILIHAN SUMBER */}
           <BottomSheet
             ref={bottomSheetRef}
-            snapPoints={["35%"]}
+            snapPoints={[`${35 + (contentPaddingBottom / 10)}%`]}
             onDismiss={() => {
-              // Hanya panggil resetAndClose (tutup picker total) jika 
-              // bukan bagian dari transisi ke Kamera/Galeri (misal swipe down manual)
               if (sheetState === "source-select" && !isTransitioning.current) {
                 resetAndClose();
               }
             }}
           >
-            <Text
-              weight="bold"
-              className="text-xl text-foreground text-center mb-8"
-            >
-              Pilih Sumber Foto
-            </Text>
+            <BottomSheetTitle className="mb-8">
+              {t("imagePicker.selectSource")}
+            </BottomSheetTitle>
             <View className="flex-row justify-center gap-8">
               <TouchableOpacity
                 onPress={handleOpenCamera}
@@ -273,8 +270,8 @@ export function ImagePickerSheet({
                 <View className="bg-primary/10 h-20 w-20 rounded-2xl items-center justify-center mb-3 border border-primary/20">
                   <Ionicons name="camera" size={32} color="#1d4ed8" />
                 </View>
-                <Text weight="semibold" className="text-foreground">
-                  Kamera
+                                <Text weight="semibold" className="text-foreground">
+                  {t("imagePicker.camera")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -286,7 +283,7 @@ export function ImagePickerSheet({
                   <Ionicons name="images" size={32} color="#64748b" />
                 </View>
                 <Text weight="semibold" className="text-foreground">
-                  Galeri
+                  {t("imagePicker.gallery")}
                 </Text>
               </TouchableOpacity>
             </View>

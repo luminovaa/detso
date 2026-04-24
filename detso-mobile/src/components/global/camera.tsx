@@ -41,6 +41,7 @@ import {
   formatTimestamp,
 } from "../../lib/camera-utils";
 import { PermissionScreen } from "./permission";
+import { useT } from "@/src/features/i18n/store";
 
 export interface CustomCameraProps {
   visible: boolean;
@@ -59,6 +60,7 @@ export function CustomCamera({
   enableGeoTag = false,
   allowClose = true,
 }: CustomCameraProps) {
+  const { t } = useT();
   const { hasPermission: hasCameraPerm, requestPermission: reqCameraPerm } =
     useCameraPermission();
   const [cameraDenied, setCameraDenied] = useState(false); // <--- State untuk pantau penolakan kamera
@@ -135,8 +137,8 @@ export function CustomCamera({
             );
           }, 1000);
         }
-      } catch (e) {
-        if (isMounted) setGeoError("Mencari sinyal GPS...");
+            } catch (e) {
+        if (isMounted) setGeoError(t("camera.searchingSignal"));
       }
     };
     startLiveGeo();
@@ -258,8 +260,8 @@ export function CustomCamera({
       }
       setPendingPhotoUri(uri);
       setPendingGeo(liveGeo);
-    } catch (e) {
-      setGeoError("Gagal mengambil foto.");
+        } catch (e) {
+      setGeoError(t("camera.captureFailed"));
       setIsCapturing(false);
     }
   }, [isCapturing, flash, enableGeoTag, liveGeo, animateShutter, onCapture]);
@@ -300,11 +302,11 @@ export function CustomCamera({
     );
   }
 
-  if (!device)
+    if (!device)
     return (
       <Modal transparent visible animationType="fade" onRequestClose={onClose}>
         <View className="absolute inset-0 bg-black justify-center items-center">
-          <Text className="text-white">Kamera tidak tersedia</Text>
+          <Text className="text-white">{t("camera.notAvailable")}</Text>
         </View>
       </Modal>
     );
@@ -357,11 +359,11 @@ export function CustomCamera({
                   size={12}
                   color="#fff"
                 />
-                <Text
+                                <Text
                   weight="bold"
                   className="text-white text-[10px] uppercase tracking-wider"
                 >
-                  {liveGeo ? "GeoTag" : "Mencari GPS"}
+                  {liveGeo ? t("camera.geoTag") : t("camera.searchingGps")}
                 </Text>
               </View>
             )}
@@ -483,12 +485,12 @@ export function CustomCamera({
               />
             </TouchableOpacity>
           </View>
-          <Text className="text-white/40 text-xs mt-2">
+                    <Text className="text-white/40 text-xs mt-2">
             {isCapturing
-              ? "Memproses foto..."
+              ? t("camera.processing")
               : enableGeoTag && !liveGeo
-                ? "Menunggu GPS..."
-                : "Ketuk untuk mengambil foto"}
+                ? t("camera.waitingGps")
+                : t("camera.tapToCapture")}
           </Text>
         </View>
 

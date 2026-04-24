@@ -7,7 +7,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { Text } from "@/src/components/global/text";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Header } from "@/src/components/global/header";
 import { Avatar } from "@/src/components/global/avatar";
 import { FormInput } from "@/src/components/global/form-input";
 import { Button } from "@/src/components/global/button";
@@ -18,12 +17,13 @@ import { useAuthStore } from "@/src/features/auth/store";
 import { useT } from "@/src/features/i18n/store";
 import { userService } from "@/src/features/user/service";
 import { updateUserSchema, UpdateUserInput } from "@/src/features/user/schema";
+import { useMutation } from "@/src/hooks/use-async";
 
 export default function EditProfileScreen() {
-  const { t } = useT();
+    const { t } = useT();
   const { user, refreshUserData } = useAuthStore();
   
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate, isLoading: isSubmitting } = useMutation();
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; base64?: string } | null>(null);
 
@@ -54,49 +54,46 @@ export default function EditProfileScreen() {
     setShowImagePicker(false);
   };
 
-  const onSubmit = async (data: UpdateUserInput) => {
+    const onSubmit = async (data: UpdateUserInput) => {
     if (!user?.id) return;
     
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      
-      // Append fields
-      if (data.full_name) formData.append("full_name", data.full_name);
-      if (data.username) formData.append("username", data.username);
-      if (data.email) formData.append("email", data.email);
-      if (data.phone) formData.append("phone", data.phone);
-      
-      // Append image if selected
-      if (selectedImage) {
-        const fileUri = selectedImage.uri;
-        const uriParts = fileUri.split(".");
-        const fileType = uriParts[uriParts.length - 1];
+    const formData = new FormData();
+    
+    // Append fields
+    if (data.full_name) formData.append("full_name", data.full_name);
+    if (data.username) formData.append("username", data.username);
+    if (data.email) formData.append("email", data.email);
+    if (data.phone) formData.append("phone", data.phone);
+    
+    // Append image if selected
+    if (selectedImage) {
+      const fileUri = selectedImage.uri;
+      const uriParts = fileUri.split(".");
+      const fileType = uriParts[uriParts.length - 1];
 
-        // Format untuk FormData React Native
-        formData.append("avatar", {
-          uri: fileUri,
-          name: `avatar-${user.id}.${fileType}`,
-          type: `image/${fileType === "jpg" ? "jpeg" : fileType}`,
-        } as any);
-      }
-
-      await userService.update(user.id, formData);
-      await refreshUserData();
-      
-      showToast.success("Profil Diperbarui", "Data profil Anda berhasil disimpan.");
-    } catch (error: any) {
-      console.error("Update profile error:", error);
-      const msg = error.response?.data?.message || "Gagal memperbarui profil";
-      showToast.error("Gagal", msg);
-    } finally {
-      setIsSubmitting(false);
+      formData.append("avatar", {
+        uri: fileUri,
+        name: `avatar-${user.id}.${fileType}`,
+        type: `image/${fileType === "jpg" ? "jpeg" : fileType}`,
+      } as any);
     }
+
+    await mutate(
+      async () => {
+        await userService.update(user.id, formData);
+        await refreshUserData();
+      },
+      {
+        onSuccess: () => {
+          showToast.success("Profil Diperbarui", "Data profil Anda berhasil disimpan.");
+        },
+        toastTitle: "Gagal",
+      },
+    );
   };
 
-  return (
-    <ScreenWrapper>
-      <Header title="Edit Profil" showBackButton />
+    return (
+    <ScreenWrapper headerTitle="Edit Profil" showBackButton>
 
       <ScrollView 
         className="flex-1" 
@@ -162,10 +159,11 @@ export default function EditProfileScreen() {
           />
         </View>
 
-        {/* --- ACTIONS --- */}
         <View className="mt-10">
           <Button 
             title={isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+            size="lg"
+            className="w-full shadow-lg shadow-primary/20"
             onPress={handleSubmit(onSubmit)}
             isLoading={isSubmitting}
             disabled={isSubmitting || (!isDirty && !selectedImage)}

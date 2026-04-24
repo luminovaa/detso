@@ -4,24 +4,31 @@
     "error": "An Error Occurred",
     "save": "Save",
     "cancel": "Cancel",
-    "success": "Success"
+    "success": "Success",
+    "loadFailed": "Failed to Load",
+    "failed": "Failed",
+    "user": "User"
   },
+
+  "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
   "auth": {
-    "welcome": "ISP Portal",
-    "subtitle": "Manage networks, customers, and ticket resolutions in one control panel.",
-    "emailLabel": "Employee ID / Email",
+    "welcome": "Welcome Back",
+    "subtitle": "Sign in to your account to continue managing services.",
+    "emailLabel": "Username or Email",
     "emailPlaceholder": "Enter username or email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter password",
     "forgotPassword": "Forgot Password?",
-    "loginBtn": "Authorize Access",
-    "needHelp": "Need account access?",
-    "contactAdmin": "Contact Administrator"
+    "loginBtn": "Sign In",
+    "needHelp": "Don't have an account?",
+    "contactAdmin": "Contact Admin"
   },
+
+  "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
   "settings": {
     "title": "Settings",
     "profile": {
-      "accountLabel": "Enterprise Account",
+      "accountLabel": "Company Account",
       "editProfile": "Edit Profile"
     },
     "preferences": {
@@ -30,7 +37,7 @@
       "notifications": "Push Notifications",
       "theme": "Dark Mode",
       "selectLanguage": "Select App Language",
-      "langId": "Indonesian",
+      "langId": "Bahasa Indonesia",
       "langEn": "English (US)",
       "selectTheme": "Select App Theme",
       "themeLight": "Light",
@@ -38,7 +45,7 @@
       "themeSystem": "System"
     },
     "support": {
-      "title": "Support & About",
+      "title": "Help & Information",
       "helpCenter": "Help Center",
       "terms": "Terms & Conditions",
       "version": "App Version"
@@ -46,22 +53,35 @@
     "security": {
       "title": "Account Security",
       "changePassword": "Change Password",
-      "sessions": "Active Sessions"
+      "sessions": "Active Sessions",
+      "oldPasswordLabel": "Old Password",
+      "oldPasswordPlaceholder": "Enter current password",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Minimum 6 characters",
+      "confirmPasswordLabel": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Repeat new password",
+      "savePasswordBtn": "Save Password",
+      "passwordChangeSuccess": "Password changed successfully. Please sign in again.",
+      "passwordChangeWarning": "After successfully changing your password, your session will be terminated and you must sign in again with your new password.",
+      "securityTitle": "Account Security",
+      "useStrongPassword": "Use a strong and unique password to secure your account."
     },
-    "logout": "Logout from Account",
-    "logoutConfirmTitle": "Logout from Account?",
-    "logoutConfirmDescription": "Are you sure you want to logout? You will need to enter your credentials again to sign in."
+    "logout": "Sign Out",
+    "logoutConfirmTitle": "Sign Out?",
+    "logoutConfirmDescription": "Are you sure you want to sign out? You will need to enter your credentials again to sign in."
   },
+
+  "_comment_isp": "ISP Management Screens (app/(tabs)/isp.tsx, app/isp/create/index.tsx, app/isp/[id]/detail/index.tsx, app/isp/[id]/edit/index.tsx)",
   "isp": {
-    "title": "ISP List",
+    "title": "Internet Service Provider",
     "active": "Active",
     "inactive": "Inactive",
     "customers": "Customers",
     "services": "Active",
-    "emptyTitle": "No ISP Found",
-    "emptyDesc": "There are no ISP records registered in the system yet.",
+    "emptyTitle": "No ISP",
+    "emptyDesc": "No ISP data registered in the system yet.",
     "refresh": "Refresh",
-    "detailTitle": "ISP Detail",
+    "detailTitle": "ISP Details",
     "totalUsers": "Total Users",
     "totalPackages": "Total Packages",
     "totalTickets": "Total Tickets",
@@ -69,8 +89,8 @@
     "address": "Address",
     "phone": "Phone",
     "createdAt": "Registered Since",
-    "overview": "Statistical Overview",
-    "createTitle": "Create ISP",
+    "overview": "Statistics Overview",
+    "createTitle": "Add ISP",
     "nameLabel": "ISP Name",
     "namePlaceholder": "Enter ISP company name",
     "addressLabel": "Office Address",
@@ -78,26 +98,142 @@
     "phoneLabel": "Phone Number",
     "phonePlaceholder": "Enter phone number",
     "logoLabel": "Company Logo",
+    "logoHint": "Tap to select logo",
+    "selectOnMap": "Select location on map",
     "isActiveLabel": "Active Status",
-    "submitBtn": "Register New ISP",
+    "submitBtn": "Save New ISP",
     "creating": "Saving...",
-    "successCreate": "ISP has been successfully added to the system",
+    "successCreate": "ISP successfully added to the system",
     "editTitle": "Edit ISP Profile",
     "saveBtn": "Save Changes",
     "updating": "Updating...",
-    "successUpdate": "ISP profile has been successfully updated",
+    "successUpdate": "ISP profile successfully updated",
     "fetchingData": "Fetching data...",
-    "ownerSection": "Owner Account Details",
-    "ownerNameLabel": "Full Name",
-    "ownerNamePlaceholder": "Enter owner's full name",
+    "ownerSection": "Owner Account Data",
+    "ownerNameLabel": "Owner Full Name",
+    "ownerNamePlaceholder": "Enter owner full name",
     "ownerEmailLabel": "Email Address",
     "ownerEmailPlaceholder": "Enter active email address",
     "ownerUsernameLabel": "Username",
-    "ownerUsernamePlaceholder": "Create a login username",
+    "ownerUsernamePlaceholder": "Create login username",
     "ownerPasswordLabel": "Password",
-    "ownerPasswordPlaceholder": "Create an account password",
-    "companySection": "ISP / Company Details",
+    "ownerPasswordPlaceholder": "Create account password",
+    "companySection": "ISP / Company Data",
     "latLabel": "Latitude",
     "longLabel": "Longitude"
+  },
+
+  "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
+  "map": {
+    "selectLocation": "Select Location",
+    "tapToPlace": "Drag the map and tap on a location to place a pin.",
+    "fullAddress": "Full Address Details",
+    "addressPlaceholder": "Type full address...",
+    "searchBtn": "Search",
+    "confirmLocation": "Confirm This Location",
+    "selectLocationFirst": "Please tap on the map to select a location.",
+    "emptyAddress": "Address is empty. Please enter an address first.",
+    "addressNotFound": "Address not found on the map.",
+    "searchError": "An error occurred while searching for the address.",
+    "notFound": "Not Found",
+    "getCurrentLocation": "Get Current Location",
+    "locationError": "Unable to get current location.",
+    "locationServiceOff": "Location service is off. Please enable GPS in your device settings."
+  },
+
+  "_comment_permission": "Permission Request Components (src/components/global/permission.tsx)",
+  "permission": {
+    "camera": {
+      "title": "Camera Access Required",
+      "desc": "The app needs camera access to take product photos or scan documents properly.",
+      "btnAllow": "Allow Camera",
+      "btnSettings": "Open OS Settings"
+    },
+    "location": {
+      "title": "Location Access",
+      "desc": "We need location access to embed accurate geographic coordinates (GeoTag) into your visit photos.",
+      "btnAllow": "Allow Location",
+      "btnSettings": "Open OS Settings"
+    },
+    "locationService": {
+      "title": "GPS Service Not Active",
+      "desc": "The system detects that your device's GPS or Location Service is turned off. Please enable it to continue.",
+      "btnSettings": "Open Location Settings"
+    },
+    "btnLater": "Later"
+  },
+
+  "_comment_imagePicker": "Image Picker Component (src/components/global/image-picker.tsx)",
+  "imagePicker": {
+    "selectSource": "Select Photo Source",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "confirmPhoto": "Confirm Photo",
+    "retake": "Retake",
+    "use": "Use",
+    "processing": "Processing Photo...",
+    "embedGps": "Embedding GPS coordinates."
+  },
+
+  "_comment_camera": "Camera Component (src/components/global/camera.tsx)",
+  "camera": {
+    "notAvailable": "Camera not available",
+    "geoTag": "GeoTag",
+    "searchingGps": "Searching GPS",
+    "processing": "Processing photo...",
+    "waitingGps": "Waiting for GPS...",
+    "tapToCapture": "Tap to take photo",
+    "searchingSignal": "Searching for GPS signal...",
+    "captureFailed": "Failed to take photo."
+  },
+
+  "_comment_profile": "Edit Profile Screen (app/settings/edit-profile/index.tsx)",
+  "profile": {
+    "editTitle": "Edit Profile",
+    "cameraHint": "Tap the camera icon to change photo",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "name@email.com",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "08xxxxxxxx",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "updated": "Profile Updated",
+    "updatedDesc": "Your profile data has been saved successfully.",
+    "saveNote": "Make sure the data you entered is correct before pressing save."
+  },
+
+  "_comment_roles": "User Role Labels (Used in app/(tabs)/settings.tsx)",
+  "roles": {
+    "SAAS_SUPER_ADMIN": "Detso Super Admin",
+    "TENANT_OWNER": "ISP Owner",
+    "TENANT_ADMIN": "ISP Admin",
+    "TENANT_TEKNISI": "Field Technician"
+  },
+
+  "_comment_notFound": "404 Not Found Screen (app/+not-found.tsx)",
+  "notFound": {
+    "badge": "Connection Lost",
+    "title": "404 Not Found",
+    "desc": "The system failed to find the module or endpoint you requested. The route may have been moved or you do not have access.",
+    "logTitle": "System Diagnostic Log",
+    "logStart": "Starting internal traceroute...",
+    "logTarget": "Target endpoint:",
+    "logResolving": "Resolving route...",
+    "logFailed": "FAILED",
+    "logReason": "Packet dropped. Module does not exist in registry.",
+    "backBtn": "Reload Connection (Go Back)"
+  },
+
+  "_comment_global": "Global Messages & Errors (Used throughout the app)",
+  "global": {
+    "serverError": "Server Issue",
+    "serverErrorDesc": "Our server is experiencing problems. Please try again shortly.",
+    "sessionExpired": "Session Expired",
+    "sessionExpiredDesc": "Your login session has ended. Please sign in again.",
+    "doubleBackExit": "Press again to exit"
   }
 }

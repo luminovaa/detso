@@ -5,6 +5,8 @@ import { LoginInput } from './schema';
 import { authService } from './service';
 import { getSecondsUntilExpiry, isTokenExpired } from '@/src/lib/jwt';
 import { showToast } from '@/src/components/global/toast';
+import { showErrorToast } from '@/src/lib/api-error';
+import { config } from '@/src/lib/config';
 
 interface UserProfile {
   id: string;
@@ -36,7 +38,7 @@ interface AuthState {
   clearAutoRefresh: () => void; // ← TAMBAHKAN INI
 }
 
-const REFRESH_BEFORE_EXPIRY = 2 * 60; // 2 menit sebelum expire (dalam detik)
+const REFRESH_BEFORE_EXPIRY = config.REFRESH_BEFORE_EXPIRY;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -63,10 +65,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().setupAutoRefresh();
       showToast.success("Otorisasi Berhasil", "Selamat datang kembali di Detso!");
       // router.replace('/(tabs)');
-    } catch (error: any) {
+        } catch (error: any) {
       set({ isLoading: false });
-      const msg = error.response?.data?.message || "Identitas atau sandi salah";
-      showToast.error("Login Gagal", msg);
+      showErrorToast(error, 'Login Gagal');
       throw error;
     }
   },

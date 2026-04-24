@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   TouchableOpacity,
@@ -17,8 +17,11 @@ import { Button } from "@/src/components/global/button";
 import { showToast } from "@/src/components/global/toast";
 import { Text } from "@/src/components/global/text";
 import { PermissionScreen } from "@/src/components/global/permission";
+import { config } from "@/src/lib/config";
+import { useT } from "@/src/features/i18n/store";
+import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
-Mapbox.setAccessToken("pk.GANTI_DENGAN_PUBLIC_TOKEN_MAPBOX_ANDA");
+Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
 interface MapLocationPickerProps {
   visible: boolean;
@@ -35,6 +38,9 @@ export function MapLocationPicker({
   initialCoordinate,
   initialAddress = "",
 }: MapLocationPickerProps) {
+  const { t } = useT();
+  const { insets } = useTabBarHeight();
+
   const [mapRegion, setMapRegion] = useState({
     latitude: initialCoordinate?.latitude || -6.2,
     longitude: initialCoordinate?.longitude || 106.816666,
@@ -58,6 +64,17 @@ export function MapLocationPicker({
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [isPermissionDenied, setIsPermissionDenied] = useState(false);
   const [isLocationServiceOff, setIsLocationServiceOff] = useState(false);
+
+  const cameraRef = useRef<Mapbox.Camera>(null);
+
+  const moveCamera = useCallback((latitude: number, longitude: number, zoom = 18) => {
+    cameraRef.current?.setCamera({
+      centerCoordinate: [longitude, latitude],
+      zoomLevel: zoom,
+      animationMode: "flyTo",
+      animationDuration: 1000,
+    });
+  }, []);
 
   const fetchAddressFromCoords = useCallback(
     async (latitude: number, longitude: number) => {
@@ -109,13 +126,9 @@ export function MapLocationPicker({
         const loc = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
-        const newRegion = {
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        };
-        setMapRegion(newRegion);
+
+        moveCamera(loc.coords.latitude, loc.coords.longitude, 16);
+
         setTempMarker({ lat: loc.coords.latitude, lng: loc.coords.longitude });
         await fetchAddressFromCoords(loc.coords.latitude, loc.coords.longitude);
         setIsLocating(false);
@@ -127,10 +140,10 @@ export function MapLocationPicker({
       }
     } catch (error) {
       console.log("Error checking location:", error);
-      showToast.error("Gagal", "Tidak dapat mengambil lokasi saat ini.");
+      showToast.error(t("common.error"), t("map.locationError"));
       setIsLocating(false);
     }
-  }, [fetchAddressFromCoords]);
+  }, [fetchAddressFromCoords, t]);
 
   const requestPermission = async () => {
     try {
@@ -168,8 +181,8 @@ export function MapLocationPicker({
     Keyboard.dismiss();
     if (!addressText || addressText.trim().length === 0) {
       showToast.error(
-        "Gagal",
-        "Alamat kosong. Silakan isi alamat terlebih dahulu.",
+        t("common.error"),
+        t("map.emptyAddress"),
       );
       return;
     }
@@ -179,24 +192,19 @@ export function MapLocationPicker({
       const result = await Location.geocodeAsync(addressText);
       if (result.length > 0) {
         const { latitude, longitude } = result[0];
-        const newRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        };
-        setMapRegion(newRegion);
+        moveCamera(latitude, longitude, 17);
+
         setTempMarker({ lat: latitude, lng: longitude });
 
         await fetchAddressFromCoords(latitude, longitude);
       } else {
         showToast.error(
-          "Tidak Ditemukan",
-          "Alamat tidak dapat ditemukan di peta.",
+          t("map.notFound"),
+          t("map.addressNotFound"),
         );
       }
     } catch {
-      showToast.error("Gagal", "Terjadi kesalahan saat mencari alamat.");
+      showToast.error(t("common.error"), t("map.searchError"));
     } finally {
       setIsSearching(false);
     }
@@ -223,7 +231,7 @@ export function MapLocationPicker({
         style={StyleSheet.absoluteFill}
         className="bg-background z-50"
       >
-        <View className="pt-12 pb-4 px-4 flex-row items-center justify-between bg-card border-b border-border shadow-sm z-10">
+        <View style={{ paddingTop: insets.top + 8 }} className="pb-4 px-4 flex-row items-center justify-between bg-card border-b border-border shadow-sm z-10">
           <TouchableOpacity
             onPress={onClose}
             className="w-10 h-10 items-center justify-center rounded-full bg-muted"
@@ -231,7 +239,7 @@ export function MapLocationPicker({
             <Ionicons name="close" size={24} color="#0f172a" />
           </TouchableOpacity>
           <Text weight="bold" className="text-lg">
-            Pilih Lokasi
+            {t("map.selectLocation")}
           </Text>
           <View className="w-10" />
         </View>
@@ -239,6 +247,7 @@ export function MapLocationPicker({
         <View className="flex-1 relative">
           <Mapbox.MapView
             style={StyleSheet.absoluteFill}
+            styleURL="mapbox://styles/mapbox/satellite-streets-v12"
             logoEnabled={false}
             scaleBarEnabled={false}
             onPress={(e) => {
@@ -247,11 +256,13 @@ export function MapLocationPicker({
               const longitude = coords[0];
               const latitude = coords[1];
               setTempMarker({ lat: latitude, lng: longitude });
+              moveCamera(latitude, longitude);
               fetchAddressFromCoords(latitude, longitude);
             }}
           >
             <Mapbox.Camera
-              zoomLevel={15}
+              ref={cameraRef}
+              zoomLevel={18}
               centerCoordinate={[mapRegion.longitude, mapRegion.latitude]}
               animationMode="flyTo"
               animationDuration={1000}
@@ -261,7 +272,12 @@ export function MapLocationPicker({
               <Mapbox.PointAnnotation
                 id="selected-location"
                 coordinate={[tempMarker.lng, tempMarker.lat]}
-              />
+                anchor={{ x: 0.5, y: 1 }}
+              >
+                <View className="items-center pb-1">
+                  <Ionicons name="location-sharp" size={40} color="#EF4444" className="shadow-md" />
+                </View>
+              </Mapbox.PointAnnotation>
             )}
 
             <Mapbox.LocationPuck />
@@ -270,7 +286,7 @@ export function MapLocationPicker({
           <View className="absolute top-4 left-4 right-4 bg-black/70 px-4 py-3 rounded-xl flex-row items-center gap-3">
             <Ionicons name="information-circle" size={24} color="#FCD34D" />
             <Text className="text-white text-xs flex-1">
-              Geser peta dan ketuk di lokasi untuk meletakkan pin kordinat.
+              {t("map.tapToPlace")}
             </Text>
           </View>
 
@@ -289,15 +305,15 @@ export function MapLocationPicker({
           </View>
         </View>
 
-        <View className="p-4 bg-card border-t border-border shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)]">
+        <View style={{ paddingBottom: Math.max(insets.bottom, 16) }} className="px-4 pt-4 bg-card border-t border-border shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)]">
           <View className="mb-4">
             <Text weight="semibold" className="text-sm mb-2">
-              Detail Alamat Lengkap
+              {t("map.fullAddress")}
             </Text>
             <View className="flex-row items-center border border-border rounded-xl px-3 py-1 bg-background focus:border-primary">
               <TextInput
                 className="flex-1 text-foreground text-sm py-2 min-h-[44px]"
-                placeholder="Ketik alamat lengkap..."
+                placeholder={t("map.addressPlaceholder")}
                 placeholderTextColor="#94A3B8"
                 value={addressText}
                 onChangeText={setAddressText}
@@ -313,9 +329,7 @@ export function MapLocationPicker({
                 {isSearching || isReverseGeocoding ? (
                   <ActivityIndicator size="small" color="#1E40AF" />
                 ) : (
-                  <Text weight="bold" className="text-primary text-sm">
-                    Cari
-                  </Text>
+                  <Ionicons name="search" size={20} color="#1E40AF" />
                 )}
               </TouchableOpacity>
             </View>
@@ -323,7 +337,7 @@ export function MapLocationPicker({
 
           {tempMarker ? (
             <Button
-              title="Konfirmasi Lokasi Ini"
+              title={t("map.confirmLocation")}
               leftIcon={
                 <Ionicons name="checkmark-circle" size={20} color="white" />
               }
@@ -333,7 +347,7 @@ export function MapLocationPicker({
             />
           ) : (
             <Text className="text-center text-muted-foreground py-3">
-              Silakan ketuk peta untuk memilih lokasi.
+              {t("map.selectLocationFirst")}
             </Text>
           )}
         </View>
@@ -352,10 +366,12 @@ export function MapLocationPicker({
       {isLocationServiceOff && (
         <PermissionScreen
           type="location_service"
-          onGrant={() => {}} // Not used for location_service type, it opens settings
+          onGrant={() => { }} // Not used for location_service type, it opens settings
           onClose={() => setIsLocationServiceOff(false)}
         />
       )}
     </Modal>
   );
 }
+
+
