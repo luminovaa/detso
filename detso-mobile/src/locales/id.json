@@ -228,6 +228,24 @@
     "backBtn": "Muat Ulang Koneksi (Kembali)"
   },
 
+  "_comment_dashboard": "Dashboard Screen (app/(tabs)/index.tsx)",
+  "dashboard": {
+    "title": "Dashboard",
+    "totalTenants": "Total ISP",
+    "activeTenants": "ISP Aktif",
+    "inactiveTenants": "ISP Nonaktif",
+    "totalCustomers": "Total Pelanggan",
+    "recentActivities": "ISP Terbaru Bergabung",
+    "emptyTitle": "Belum Ada Data",
+    "emptyDesc": "Belum ada ISP yang terdaftar dalam sistem.",
+    "refresh": "Muat Ulang",
+    "mapTitle": "Sebaran Lokasi ISP",
+    "mapPoints": "titik",
+    "mapEmpty": "Belum ada data lokasi ISP yang tersedia untuk ditampilkan di peta.",
+    "legendActive": "ISP Aktif",
+    "legendInactive": "ISP Nonaktif"
+  },
+
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
   "global": {
     "serverError": "Gangguan Server",

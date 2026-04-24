@@ -21,8 +21,14 @@ interface ScreenWrapperProps {
   // Props untuk Header
   headerTitle?: string;
   showBackButton?: boolean;
+  showAvatar?: boolean;
+  showNotification?: boolean;
   headerRightNode?: React.ReactNode;
   onBackPress?: () => void;
+  // Props untuk Avatar di Header
+  avatarSrc?: string | null;
+  avatarAlt?: string;
+  onAvatarPress?: () => void;
 }
 
 export function ScreenWrapper({ 
@@ -33,8 +39,13 @@ export function ScreenWrapper({
   refreshing = false,
   headerTitle,
   showBackButton = false,
+  showAvatar = false,
+  showNotification = false,
   headerRightNode,
-  onBackPress
+  onBackPress,
+  avatarSrc,
+  avatarAlt,
+  onAvatarPress,
 }: ScreenWrapperProps) {
   const { colorScheme } = useColorScheme();
   const hasHeader = !!headerTitle;
@@ -47,15 +58,24 @@ export function ScreenWrapper({
         <Header 
           title={headerTitle}
           showBackButton={showBackButton}
+          showAvatar={showAvatar}
+          showNotification={showNotification}
           rightNode={headerRightNode}
           onBackPress={onBackPress}
+          avatarSrc={avatarSrc}
+          avatarAlt={avatarAlt}
+          onAvatarPress={onAvatarPress}
         />
       )}
       
       {/* Content dengan padding dan rounded top */}
       <View 
         className={`flex-1 bg-background rounded-t-[32px] ${noPadding ? "" : "px-4"}`}
-        style={{ marginTop: hasHeader ? -24 : 0, paddingTop: hasHeader ? 24 : 0 }}
+        style={{ 
+          marginTop: hasHeader ? -24 : 0, 
+          paddingTop: hasHeader ? 24 : 0,
+          zIndex: 1,
+        }}
       >
         {children}
       </View>

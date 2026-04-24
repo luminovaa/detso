@@ -3,3 +3,4 @@ storage
 image
 whatsapp-auth
 .wwebjs_cache
+.env

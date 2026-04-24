@@ -228,6 +228,24 @@
     "backBtn": "Reload Connection (Go Back)"
   },
 
+  "_comment_dashboard": "Dashboard Screen (app/(tabs)/index.tsx)",
+  "dashboard": {
+    "title": "Dashboard",
+    "totalTenants": "Total ISP",
+    "activeTenants": "Active ISP",
+    "inactiveTenants": "Inactive ISP",
+    "totalCustomers": "Total Customers",
+    "recentActivities": "Recently Joined ISP",
+    "emptyTitle": "No Data Yet",
+    "emptyDesc": "No ISP registered in the system yet.",
+    "refresh": "Refresh",
+    "mapTitle": "ISP Location Distribution",
+    "mapPoints": "points",
+    "mapEmpty": "No ISP location data available to display on the map.",
+    "legendActive": "Active ISP",
+    "legendInactive": "Inactive ISP"
+  },
+
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
   "global": {
     "serverError": "Server Issue",
