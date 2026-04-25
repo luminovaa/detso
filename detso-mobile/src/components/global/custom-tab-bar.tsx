@@ -133,6 +133,18 @@ export function CustomTabBar({
     [isDark],
   );
 
+  const visibleRouteNames = useMemo(() => {
+    if (user?.role === "SAAS_SUPER_ADMIN") {
+      return new Set(["index", "isp", "settings"]);
+    }
+
+    if (user?.role === "TENANT_OWNER" || user?.role === "TENANT_ADMIN" || user?.role === "TENANT_TEKNISI") {
+      return new Set(["index", "schedule", "map", "settings"]);
+    }
+
+    return new Set(["index", "settings"]);
+  }, [user?.role]);
+
   return (
     <View
       className="absolute left-5 right-5 rounded-[35px] flex-row items-center justify-between px-2 overflow-hidden border"
@@ -167,15 +179,7 @@ export function CustomTabBar({
 
       {state.routes
         .filter((route) => {
-          if (user?.role === "SAAS_SUPER_ADMIN") {
-            if (route.name === "schedule" || route.name === "map") {
-              return false;
-            }
-          } else {
-            if (route.name === "isp") {
-              return false;
-            }
-          }
+          if (!visibleRouteNames.has(route.name)) return false;
 
           const href = (descriptors[route.key].options as any).href;
           if (href === null) return false;

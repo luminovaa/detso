@@ -11,7 +11,7 @@ export const createServiceConnectionSchema = z.object({
     address: z.string().min(1, 'Alamat harus diisi'),
     package_name: z.string().min(1, 'Nama paket harus diisi'),
     package_speed: z.string().min(1, 'Kecepatan paket harus diisi'),
-    ip_address: z.string().ip().optional().or(z.literal('')),
+    ip_address: z.ipv4().optional().or(z.literal('')),
     mac_address: z.string().regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
         message: 'Format MAC address tidak valid'
     }).optional().or(z.literal('')),
@@ -24,7 +24,7 @@ export const updateServiceConnectionSchema = z.object({
   address: z.string().min(1, 'Alamat harus diisi').optional(),
   package_name: z.string().min(1, 'Nama paket harus diisi').optional(),
   package_speed: z.string().min(1, 'Kecepatan paket harus diisi').optional(),
-  ip_address: z.string().ip().optional().or(z.literal('')),
+  ip_address: z.ipv4().optional().or(z.literal('')),
   mac_address: z.string()
     .regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
       message: 'Format MAC address tidak valid'

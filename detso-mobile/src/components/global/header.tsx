@@ -6,6 +6,7 @@ import { router } from "expo-router";
 
 import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
+import { Skeleton } from "@/src/components/global/skeleton";
 
 interface HeaderProps {
   /** Judul halaman */
@@ -26,6 +27,8 @@ interface HeaderProps {
   avatarAlt?: string;
   /** Override aksi saat avatar ditekan */
   onAvatarPress?: () => void;
+  /** Tampilkan skeleton loading state */
+  isLoading?: boolean;
 }
 
 export function Header({ 
@@ -38,6 +41,7 @@ export function Header({
   avatarSrc,
   avatarAlt,
   onAvatarPress,
+  isLoading = false,
 }: HeaderProps) {
   
     const handleBack = () => {
@@ -81,56 +85,75 @@ export function Header({
       <View className="flex-row items-center justify-between">
         {/* KIRI: Avatar atau Back Button */}
         <View className="flex-row items-center">
-          {showAvatar ? (
-            <TouchableOpacity 
-              activeOpacity={0.7}
-              onPress={handleAvatarPress}
-              className="mr-3"
-            >
-              <Avatar
-                src={avatarSrc}
-                alt={avatarAlt}
-                size="xl"
-                className="border-2 border-white/30"
-              />
-            </TouchableOpacity>
-          ) : showBackButton ? (
-            <TouchableOpacity 
-              activeOpacity={0.7}
-              onPress={handleBack} 
-              className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mr-3"
-            >
-              <Ionicons name="arrow-back" size={20} color="white" />
-            </TouchableOpacity>
-          ) : null}
-          
-          <Text 
-            weight="bold" 
-            className="text-2xl text-white" 
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
+          {isLoading ? (
+            <>
+              {showAvatar && (
+                <Skeleton className="w-16 h-16 rounded-full mr-3" />
+              )}
+              <Skeleton className="h-8 w-32 rounded-lg" />
+            </>
+          ) : (
+            <>
+              {showAvatar ? (
+                <TouchableOpacity 
+                  activeOpacity={0.7}
+                  onPress={handleAvatarPress}
+                  className="mr-3"
+                >
+                  <Avatar
+                    src={avatarSrc}
+                    alt={avatarAlt}
+                    size="xl"
+                    className="border-2 border-white/30"
+                  />
+                </TouchableOpacity>
+              ) : showBackButton ? (
+                <TouchableOpacity 
+                  activeOpacity={0.7}
+                  onPress={handleBack} 
+                  className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mr-3"
+                >
+                  <Ionicons name="arrow-back" size={20} color="white" />
+                </TouchableOpacity>
+              ) : null}
+              
+              <Text 
+                weight="bold" 
+                className="text-2xl text-white" 
+                numberOfLines={1}
+              >
+                {title}
+              </Text>
+            </>
+          )}
         </View>
 
         {/* KANAN: Notification atau Custom Node */}
         <View className="flex-row items-center gap-2">
-          {showNotification && (
-            <TouchableOpacity 
-              activeOpacity={0.7}
-              onPress={handleNotificationPress}
-              className="w-10 h-10 bg-white/20 rounded-full items-center justify-center"
-            >
-              <Ionicons name="notifications-outline" size={22} color="white" />
-              {/* Badge untuk unread notification */}
-              <View className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-            </TouchableOpacity>
-          )}
-          
-          {rightNode && (
-            <View className="justify-center items-end">
-              {rightNode}
-            </View>
+          {isLoading ? (
+            showNotification && (
+              <Skeleton className="w-10 h-10 rounded-full" />
+            )
+          ) : (
+            <>
+              {showNotification && (
+                <TouchableOpacity 
+                  activeOpacity={0.7}
+                  onPress={handleNotificationPress}
+                  className="w-10 h-10 bg-white/20 rounded-full items-center justify-center"
+                >
+                  <Ionicons name="notifications-outline" size={22} color="white" />
+                  {/* Badge untuk unread notification */}
+                  <View className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                </TouchableOpacity>
+              )}
+              
+              {rightNode && (
+                <View className="justify-center items-end">
+                  {rightNode}
+                </View>
+              )}
+            </>
           )}
         </View>
       </View>

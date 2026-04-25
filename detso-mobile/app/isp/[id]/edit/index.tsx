@@ -21,6 +21,7 @@ import { ImagePickerSheet } from "@/src/components/global/image-picker";
 import { Label } from "@/src/components/global/label";
 import { showToast } from "@/src/components/global/toast";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
+import { FormSkeleton } from "@/src/components/global/form-skeleton";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
@@ -118,15 +119,18 @@ export default function ISPEditScreen() {
     );
   };
 
-    if (isFetching) {
+  if (isFetching) {
     return (
-      <ScreenWrapper headerTitle={t("isp.editTitle")} showBackButton>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
-          <Text className="mt-4 text-muted-foreground">
-            {t("isp.fetchingData")}
-          </Text>
-        </View>
+      <ScreenWrapper 
+        headerTitle={t("isp.editTitle")} 
+        showBackButton
+        isLoading={true}
+      >
+        <FormSkeleton 
+          fieldCount={4} 
+          showAvatar={true} 
+          showMap={true} 
+        />
       </ScreenWrapper>
     );
   }

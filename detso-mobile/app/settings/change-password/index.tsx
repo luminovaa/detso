@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { FormInput } from "@/src/components/global/form-input";
 import { Button } from "@/src/components/global/button";
 import { Text } from "@/src/components/global/text";
 import { showToast } from "@/src/components/global/toast";
+import { FormSkeleton } from "@/src/components/global/form-skeleton";
 
 // --- Store & Logic ---
 import { useT } from "@/src/features/i18n/store";
@@ -22,6 +23,12 @@ export default function ChangePasswordScreen() {
   const { t } = useT();
   const { logout } = useAuthStore();
   const { mutate, isLoading: isSubmitting } = useMutation();
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Initial loading effect
+  useEffect(() => {
+    setTimeout(() => setIsInitializing(false), 500);
+  }, []);
 
   // --- React Hook Form dengan Zod Resolver ---
   const {
@@ -54,6 +61,18 @@ export default function ChangePasswordScreen() {
       },
     );
   };
+
+  if (isInitializing) {
+    return (
+      <ScreenWrapper 
+        headerTitle={t("settings.security.changePassword")} 
+        showBackButton
+        isLoading={true}
+      >
+        <FormSkeleton fieldCount={3} />
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper headerTitle={t("settings.security.changePassword")} showBackButton>

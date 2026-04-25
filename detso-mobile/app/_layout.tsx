@@ -150,8 +150,8 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
 
   // --- RENDER SEMUA PROVIDER ---
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <ErrorBoundary>
           <PortalProvider>
             <BottomSheetModalProvider>
@@ -162,7 +162,7 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
             </BottomSheetModalProvider>
           </PortalProvider>
         </ErrorBoundary>
-      </ThemeProvider>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }

@@ -59,9 +59,12 @@ export default function SettingsScreen() {
 
   const onPullToRefresh = async () => {
     setIsRefreshing(true);
+    // Set isLoading agar skeleton muncul saat refresh
+    setIsLoading(true);
     try {
       await refreshUserData();
     } finally {
+      setIsLoading(false);
       setIsRefreshing(false);
     }
   };
@@ -85,8 +88,11 @@ export default function SettingsScreen() {
     setIsLoading(false);
   };
 
-    if (isLoading) return (
-    <ScreenWrapper headerTitle={t("settings.title")}>
+  if (isLoading) return (
+    <ScreenWrapper 
+      headerTitle={t("settings.title")}
+      isLoading={true}
+    >
       <SettingsSkeleton />
     </ScreenWrapper>
   );

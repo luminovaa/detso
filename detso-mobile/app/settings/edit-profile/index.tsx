@@ -12,6 +12,7 @@ import { FormInput } from "@/src/components/global/form-input";
 import { Button } from "@/src/components/global/button";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
 import { showToast } from "@/src/components/global/toast";
+import { FormSkeleton } from "@/src/components/global/form-skeleton";
 
 import { useAuthStore } from "@/src/features/auth/store";
 import { useT } from "@/src/features/i18n/store";
@@ -20,12 +21,13 @@ import { updateUserSchema, UpdateUserInput } from "@/src/features/user/schema";
 import { useMutation } from "@/src/hooks/use-async";
 
 export default function EditProfileScreen() {
-    const { t } = useT();
+  const { t } = useT();
   const { user, refreshUserData } = useAuthStore();
   
   const { mutate, isLoading: isSubmitting } = useMutation();
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; base64?: string } | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const { control, handleSubmit, reset, formState: { isDirty } } = useForm<UpdateUserInput>({
     resolver: zodResolver(updateUserSchema),
@@ -46,6 +48,8 @@ export default function EditProfileScreen() {
         email: user.email || "",
         phone: user.phone || "",
       });
+      // Set delay untuk skeleton effect
+      setTimeout(() => setIsInitializing(false), 500);
     }
   }, [user, reset]);
 
@@ -92,7 +96,22 @@ export default function EditProfileScreen() {
     );
   };
 
+  if (isInitializing) {
     return (
+      <ScreenWrapper 
+        headerTitle="Edit Profil" 
+        showBackButton
+        isLoading={true}
+      >
+        <FormSkeleton 
+          fieldCount={4} 
+          showAvatar={true} 
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  return (
     <ScreenWrapper headerTitle="Edit Profil" showBackButton>
 
       <ScrollView 

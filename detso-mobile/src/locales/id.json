@@ -246,6 +246,23 @@
     "legendInactive": "ISP Nonaktif"
   },
 
+  "_comment_tenantDashboard": "Tenant Owner/Admin Dashboard (app/(tabs)/dashboards/tenant-owner-dashboard.tsx)",
+  "tenantDashboard": {
+    "totalCustomers": "Total Pelanggan",
+    "activeServices": "Layanan Aktif",
+    "openTickets": "Tiket Terbuka",
+    "totalPackages": "Total Paket",
+    "quickMenu": "Menu Cepat",
+    "services": "Layanan",
+    "customers": "Pelanggan",
+    "packages": "Paket",
+    "tickets": "Tiket",
+    "users": "Tim",
+    "allMenu": "Semua Menu",
+    "recentTickets": "Tiket Terbaru",
+    "recentCustomers": "Pelanggan Terbaru"
+  },
+
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
   "global": {
     "serverError": "Gangguan Server",
@@ -253,5 +270,14 @@
     "sessionExpired": "Sesi Habis",
     "sessionExpiredDesc": "Sesi login Anda telah berakhir. Silakan login kembali.",
     "doubleBackExit": "Tekan sekali lagi untuk keluar"
+  },
+
+  "_comment_tabs": "Tab Navigation Labels (app/(tabs)/_layout.tsx)",
+  "tabs": {
+    "home": "Beranda",
+    "schedule": "Jadwal",
+    "isp": "ISP",
+    "map": "Peta",
+    "settings": "Pengaturan"
   }
 }

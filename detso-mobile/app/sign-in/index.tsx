@@ -6,8 +6,9 @@ import {
   Platform,
   TouchableOpacity,
   Image,
+  StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
@@ -24,6 +25,11 @@ export default function SignInScreen() {
   const { t } = useT();
   const { login } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const statusBarHeight = Platform.OS === "android"
+    ? (StatusBar.currentHeight || 24)
+    : insets.top;
 
   const {
     control,
@@ -50,7 +56,8 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-primary">
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -59,28 +66,36 @@ export default function SignInScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          className="px-8"
+          bounces={false}
         >
-          {/* Header Section: iOS Style Branding */}
-          <View className="mt-20 mb-12 items-center">
-            <View className="w-24 h-24 rounded-[28px] bg-primary/10 items-center justify-center mb-8 shadow-sm">
-                <Image 
-                    source={require("@/assets/images/icon.png")} 
-                    className="w-16 h-16"
-                    resizeMode="contain"
+          {/* Hero Section - sama seperti Header di dashboard */}
+          <View 
+            className="bg-primary px-6 pb-20"
+            style={{ paddingTop: statusBarHeight + 150 }}
+          >
+            <View className="items-center">
+              <View className="w-28 h-28 rounded-[32px] bg-white/15 border border-white/25 items-center justify-center mb-5">
+                <Image
+                  source={require("@/assets/images/icon.png")}
+                  className="w-20 h-20"
+                  resizeMode="contain"
                 />
+              </View>
+              <Text weight="bold" className="text-4xl tracking-tight text-center text-white">
+                {t("auth.welcome")}
+              </Text>
+              <Text className="text-white/85 text-center mt-3 text-base px-4 leading-relaxed">
+                {t("auth.subtitle")}
+              </Text>
             </View>
-            <Text weight="bold" className="text-4xl tracking-tight text-center">
-              {t("auth.welcome")}
-            </Text>
-            <Text className="text-muted-foreground text-center mt-3 text-lg px-4 leading-relaxed">
-              {t("auth.subtitle")}
-            </Text>
           </View>
 
-          {/* Form Section */}
-          <View className="flex-1">
-            <View className="gap-2">
+          {/* Form Section - overlap ke atas seperti content di dashboard */}
+          <View 
+            className="flex-1 bg-background rounded-t-[34px] mt-24 px-6 pt-10"
+            style={{ paddingBottom: insets.bottom + 16 }}
+          >
+            <View className="gap-3 mt-2">
               <Controller
                 control={control}
                 name="identifier"
@@ -93,7 +108,7 @@ export default function SignInScreen() {
                     error={errors.identifier?.message}
                     autoCapitalize="none"
                     keyboardType="email-address"
-                    className="h-16 rounded-2xl"
+                    className="h-[62px] rounded-2xl"
                   />
                 )}
               />
@@ -109,7 +124,7 @@ export default function SignInScreen() {
                     value={value}
                     error={errors.password?.message}
                     isPassword
-                    className="h-16 rounded-2xl"
+                    className="h-[62px] rounded-2xl"
                   />
                 )}
               />
@@ -128,20 +143,20 @@ export default function SignInScreen() {
               size="lg"
               className="w-full shadow-lg shadow-primary/20"
             />
-          </View>
 
-          <View className="mt-auto mb-10 pt-8 pb-4 flex-row justify-center items-center">
-            <Text className="text-muted-foreground mr-1.5 text-base">
-              {t("auth.needHelp")}
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/register" as any)}>
-              <Text weight="bold" className="text-primary text-base">
-                {t("auth.contactAdmin")}
+            <View className="mt-auto pt-8 pb-4 flex-row justify-center items-center">
+              <Text className="text-muted-foreground mr-1.5 text-base">
+                {t("auth.needHelp")}
               </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("/register" as any)}>
+                <Text weight="bold" className="text-primary text-base">
+                  {t("auth.contactAdmin")}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

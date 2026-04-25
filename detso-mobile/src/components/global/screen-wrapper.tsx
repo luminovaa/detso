@@ -29,6 +29,8 @@ interface ScreenWrapperProps {
   avatarSrc?: string | null;
   avatarAlt?: string;
   onAvatarPress?: () => void;
+  // Props untuk Loading State
+  isLoading?: boolean;
 }
 
 export function ScreenWrapper({ 
@@ -46,6 +48,7 @@ export function ScreenWrapper({
   avatarSrc,
   avatarAlt,
   onAvatarPress,
+  isLoading = false,
 }: ScreenWrapperProps) {
   const { colorScheme } = useColorScheme();
   const hasHeader = !!headerTitle;
@@ -65,6 +68,7 @@ export function ScreenWrapper({
           avatarSrc={avatarSrc}
           avatarAlt={avatarAlt}
           onAvatarPress={onAvatarPress}
+          isLoading={isLoading}
         />
       )}
       

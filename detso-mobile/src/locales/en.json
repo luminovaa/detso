@@ -246,6 +246,23 @@
     "legendInactive": "Inactive ISP"
   },
 
+  "_comment_tenantDashboard": "Tenant Owner/Admin Dashboard (app/(tabs)/dashboards/tenant-owner-dashboard.tsx)",
+  "tenantDashboard": {
+    "totalCustomers": "Total Customers",
+    "activeServices": "Active Services",
+    "openTickets": "Open Tickets",
+    "totalPackages": "Total Packages",
+    "quickMenu": "Quick Menu",
+    "services": "Services",
+    "customers": "Customers",
+    "packages": "Packages",
+    "tickets": "Tickets",
+    "users": "Team",
+    "allMenu": "All Menu",
+    "recentTickets": "Recent Tickets",
+    "recentCustomers": "Recent Customers"
+  },
+
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
   "global": {
     "serverError": "Server Issue",
@@ -253,5 +270,14 @@
     "sessionExpired": "Session Expired",
     "sessionExpiredDesc": "Your login session has ended. Please sign in again.",
     "doubleBackExit": "Press again to exit"
+  },
+
+  "_comment_tabs": "Tab Navigation Labels (app/(tabs)/_layout.tsx)",
+  "tabs": {
+    "home": "Home",
+    "schedule": "Schedule",
+    "isp": "ISP",
+    "map": "Map",
+    "settings": "Settings"
   }
 }

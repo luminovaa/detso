@@ -37,6 +37,12 @@ export default function IspScreen() {
 
   const fetchTenants = async (pageToFetch: number, refresh = false) => {
     try {
+      if (refresh) {
+        setIsRefreshing(true);
+        // Set isLoading agar skeleton muncul saat refresh
+        setIsLoading(true);
+      }
+
       const response = await tenantService.getAll({
         page: pageToFetch,
         limit: 10,
@@ -55,7 +61,7 @@ export default function IspScreen() {
       // Gunakan hasNextPage dari pagination backend
       setHasMore(pagination?.hasNextPage || false);
       
-        } catch (error) {
+    } catch (error) {
       showErrorToast(error, "Gagal Memuat");
     } finally {
       setIsLoading(false);
@@ -88,9 +94,12 @@ export default function IspScreen() {
   const isDark = colorScheme === "dark";
   const primaryColor = isDark ? "#66a3ff" : "#102a4d";
 
-    return (
-    <ScreenWrapper headerTitle={t("isp.title")}>
-      {isLoading && page === 1 ? (
+  return (
+    <ScreenWrapper 
+      headerTitle={t("isp.title")}
+      isLoading={isLoading}
+    >
+      {isLoading ? (
         <ISPSkeletonLoading />
       ) : (
         <FlatList
@@ -129,7 +138,7 @@ export default function IspScreen() {
         />
       )}
 
-            {/* FAB untuk tambah ISP */}
+      {/* FAB untuk tambah ISP */}
       <TouchableOpacity 
         activeOpacity={0.9}
         onPress={() => router.push("/isp/create")}

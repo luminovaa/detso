@@ -73,7 +73,7 @@ export const createCustomerSchema = z.object({
   package_name: z.string().optional(),
   package_speed: z.string().optional(),
   package_price: z.number().optional(),
-  ip_address: z.string().ip('Alamat IP tidak valid').optional(),
+  ip_address: z.ipv4('Alamat IP tidak valid').optional(),
   lat: z.string().optional(),
   long: z.string().optional(),
   birth_date: z.preprocess((arg) => {

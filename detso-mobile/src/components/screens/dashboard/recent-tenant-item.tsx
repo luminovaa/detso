@@ -32,10 +32,10 @@ export function RecentTenantItem({ item }: RecentTenantItemProps) {
           <View className="flex-row items-center">
             {/* Logo */}
             <Avatar
-              src={item.logo}
+              src={item.logo || undefined}
               alt={item.name}
               size="lg"
-              className="mr-3"
+              className="mr-3 bg-primary/5 border border-primary/10"
             />
 
             {/* Info */}

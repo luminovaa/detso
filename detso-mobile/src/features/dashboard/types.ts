@@ -37,3 +37,52 @@ export interface SaasDashboardData {
   map_data: TenantMapData[];
   recent_activities: RecentTenant[];
 }
+
+// Tenant Dashboard Types
+export interface TenantDashboardMetrics {
+  total_customers: number;
+  active_services: number;
+  open_tickets: number;
+  total_packages: number;
+}
+
+export interface RecentTicket {
+  id: string;
+  title: string;
+  description: string;
+  type: 'PROBLEM' | 'REQUEST' | 'COMPLAINT';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  created_at: string;
+  customer: {
+    id: string;
+    name: string;
+    phone: string | null;
+  };
+  technician: {
+    id: string;
+    username: string;
+    profile: {
+      full_name: string;
+      avatar: string | null;
+    } | null;
+  } | null;
+}
+
+export interface RecentCustomer {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  created_at: string;
+  _count: {
+    service: number;
+  };
+}
+
+export interface TenantDashboardData {
+  metrics: TenantDashboardMetrics;
+  recent_tickets: RecentTicket[];
+  recent_customers: RecentCustomer[];
+}
