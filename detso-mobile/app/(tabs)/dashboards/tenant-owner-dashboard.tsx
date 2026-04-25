@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { View, FlatList, RefreshControl } from "react-native";
 import { useColorScheme } from "nativewind";
 
