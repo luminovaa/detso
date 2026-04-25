@@ -7,7 +7,7 @@ import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
 import { RecentCustomer } from "@/src/features/dashboard/types";
 import { formatRelativeTime } from "@/src/lib/format-date";
-import { useLanguageStore } from "@/src/features/i18n/store";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
 interface RecentCustomerItemProps {
   item: RecentCustomer;
@@ -15,6 +15,7 @@ interface RecentCustomerItemProps {
 
 export function RecentCustomerItem({ item }: RecentCustomerItemProps) {
   const locale = useLanguageStore((s) => s.locale);
+  const { t } = useT();
   const timeAgo = formatRelativeTime(item.created_at, locale);
 
   const handlePress = () => {
@@ -51,7 +52,7 @@ export function RecentCustomerItem({ item }: RecentCustomerItemProps) {
               <View className="flex-row items-center">
                 <Ionicons name="wifi-outline" size={12} color="hsl(var(--primary))" />
                 <Text className="text-xs text-primary ml-1">
-                  {item._count.service} Layanan
+                  {item._count.service} {t("tenantDashboard.services")}
                 </Text>
                 <Text className="text-xs text-muted-foreground mx-1">•</Text>
                 <Ionicons name="time-outline" size={12} color="hsl(var(--muted-foreground))" />

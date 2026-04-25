@@ -47,7 +47,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
     const validationResult = updateTenantSchema.safeParse(req.body);
     if (!validationResult.success) {
         await cleanupUploadedFile();
-        throw new ValidationError('Validasi Gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi Gagal', validationResult.error.issues);
     }
 
     const { name, address, phone, is_active, lat, long } = validationResult.data;

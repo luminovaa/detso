@@ -23,7 +23,7 @@ export const editPackage = asyncHandler(async (req: Request, res: Response): Pro
     // Gunakan schema validasi (bisa createPackageSchema atau updatePackageSchema tergantung kebutuhan partial update)
     const validationResult = createPackageSchema.safeParse(req.body)
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors)
+        throw new ValidationError('Validasi gagal', validationResult.error.issues)
     }
 
     const { name, speed, price } = validationResult.data

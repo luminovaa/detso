@@ -19,7 +19,7 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response): Pro
   })
 
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors)
+    throw new ValidationError('Validasi gagal', validationResult.error.issues)
   }
 
   const { page, limit, search, role } = validationResult.data

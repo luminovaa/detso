@@ -42,7 +42,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
     const validationResult = loginSchema.safeParse(req.body);
 
     if (!validationResult.success) {
-        throw new ValidationError('Validation error', validationResult.error.errors);
+        throw new ValidationError('Validation error', validationResult.error.issues);
     }
 
     const { identifier, password } = validationResult.data;

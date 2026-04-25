@@ -50,7 +50,7 @@ export default function ChangePasswordScreen() {
         onSuccess: () => {
           showToast.success(
             t("common.success"),
-            "Kata sandi berhasil diubah. Silakan login kembali."
+            t("settings.security.passwordChangeSuccess")
           );
           // Logout otomatis setelah berhasil
           setTimeout(async () => {
@@ -147,4 +147,3 @@ export default function ChangePasswordScreen() {
     </ScreenWrapper>
   );
 }
-

@@ -15,7 +15,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     const validationResult = createTicketSchema.safeParse(req.body);
 
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const created_by = user.id; // Gunakan user.id dari middleware

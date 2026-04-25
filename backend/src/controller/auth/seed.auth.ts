@@ -25,7 +25,7 @@ export const createSuperAdminSeed = asyncHandler(async (req: Request, res: Respo
   // 2. Validasi Input
   const validationResult = seedAdminSchema.safeParse(req.body);
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
   const { email, username, password, full_name } = validationResult.data;

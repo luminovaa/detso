@@ -32,7 +32,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     // Validasi Input (Zod Schema tidak perlu berubah)
     const validationResult = createCustomerSchema.safeParse(requestData);
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const {

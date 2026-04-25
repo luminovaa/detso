@@ -9,7 +9,7 @@ import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalProvider } from "@gorhom/portal";
-import { useLanguageStore } from "@/src/features/i18n/store";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
 // Global & Utils
 import "../global.css";
@@ -30,19 +30,20 @@ SplashScreen.preventAutoHideAsync();
 // ==========================================
 function GlobalLogic() {
   const router = useRouter();
+  const { t } = useT();
 
   useEffect(() => {
     const unsubscribeServerError = authEvents.on("server_error", () => {
      showToast.error(
-        "Gangguan Server", 
-        "Server kami sedang mengalami kendala. Coba lagi dalam beberapa saat."
+        t("global.serverError"),
+        t("global.serverErrorDesc")
       );
     });
 
     const unsubscribeSessionExpired = authEvents.on("session_expired", () => {
       showToast.warning(
-        "Sesi Habis", 
-        "Sesi login Anda telah berakhir. Silakan login kembali."
+        t("global.sessionExpired"),
+        t("global.sessionExpiredDesc")
       );
       router.replace("/sign-in");
     });
@@ -51,7 +52,7 @@ function GlobalLogic() {
       unsubscribeServerError();
       unsubscribeSessionExpired();
     };
-  }, [router]);
+  }, [router, t]);
 
   return null;
 }
@@ -61,6 +62,7 @@ function GlobalLogic() {
 // ==========================================
 export default function RootLayout() {
   const router = useRouter();
+  const { t } = useT();
   const backPressTimeRef = useRef(0);
   const appState = useRef(AppState.currentState);
 const loadLocale = useLanguageStore((s) => s.loadLocale);
@@ -120,14 +122,14 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
 
       backPressTimeRef.current = now;
       if (Platform.OS === "android") {
-        ToastAndroid.show("Tekan sekali lagi untuk keluar", ToastAndroid.SHORT);
+        ToastAndroid.show(t("global.doubleBackExit"), ToastAndroid.SHORT);
       }
       return true; // Tahan agar aplikasi tidak langsung tertutup
     };
 
     const backHandler = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => backHandler.remove();
-  }, [router]);
+  }, [router, t]);
 
   // --- PENGATURAN KESIAPAN APLIKASI ---
   // Aplikasi dianggap "Ready" jika font selesai diunduh DAN token JWT selesai dicek

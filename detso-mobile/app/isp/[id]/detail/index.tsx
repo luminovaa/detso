@@ -35,12 +35,12 @@ export default function ISPDetailScreen() {
       const response = await tenantService.getById(id);
       setTenant(response.data);
     } catch (error) {
-      showErrorToast(error, "Gagal Memuat");
+      showErrorToast(error, t("common.loadFailed"));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchDetail();

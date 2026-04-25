@@ -17,7 +17,7 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
     const validationResult = paginationSchema.safeParse(req.query);
 
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const { page, limit, search, status, package_name } = validationResult.data;

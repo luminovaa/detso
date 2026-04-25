@@ -123,6 +123,37 @@
     "longLabel": "Longitude"
   },
 
+  "_comment_package": "Package Management Screens (app/package/index.tsx, app/package/create/index.tsx, app/package/[id]/detail/index.tsx, app/package/[id]/edit/index.tsx)",
+  "package": {
+    "title": "Paket Layanan",
+    "emptyTitle": "Tidak Ada Paket",
+    "emptyDesc": "Belum ada paket layanan yang terdaftar dalam sistem.",
+    "refresh": "Muat Ulang",
+    "searchPlaceholder": "Cari paket...",
+    "detailTitle": "Detail Paket",
+    "createTitle": "Tambah Paket Baru",
+    "editTitle": "Edit Paket",
+    "nameLabel": "Nama Paket",
+    "namePlaceholder": "Contoh: Paket Premium 100 Mbps",
+    "speedLabel": "Kecepatan",
+    "speedPlaceholder": "Contoh: 100 Mbps",
+    "priceLabel": "Harga",
+    "pricePlaceholder": "Masukkan harga paket",
+    "submitBtn": "Simpan Paket",
+    "saveBtn": "Simpan Perubahan",
+    "creating": "Menyimpan...",
+    "updating": "Memperbarui...",
+    "successCreate": "Paket berhasil ditambahkan",
+    "successUpdate": "Paket berhasil diperbarui",
+    "successDelete": "Paket berhasil dihapus",
+    "createdAt": "Dibuat",
+    "updatedAt": "Diupdate",
+    "deleteConfirm": "Hapus Paket",
+    "deleteMessage": "Apakah Anda yakin ingin menghapus paket ini?",
+    "deleteBtn": "Hapus",
+    "cancelBtn": "Batal"
+  },
+
   "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
   "map": {
     "selectLocation": "Pilih Lokasi",
@@ -231,6 +262,9 @@
   "_comment_dashboard": "Dashboard Screen (app/(tabs)/index.tsx)",
   "dashboard": {
     "title": "Dashboard",
+    "unknownRole": "Role Tidak Dikenali",
+    "roleLabel": "Role",
+    "unknown": "Unknown",
     "totalTenants": "Total ISP",
     "activeTenants": "ISP Aktif",
     "inactiveTenants": "ISP Nonaktif",
@@ -261,6 +295,12 @@
     "allMenu": "Semua Menu",
     "recentTickets": "Tiket Terbaru",
     "recentCustomers": "Pelanggan Terbaru"
+  },
+
+  "teknisiDashboard": {
+    "title": "Dashboard Teknisi",
+    "welcome": "Selamat datang, {{name}}",
+    "comingSoon": "Dashboard untuk teknisi akan segera hadir"
   },
 
   "_comment_global": "Global Messages & Errors (Used throughout the app)",

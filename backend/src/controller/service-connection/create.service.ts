@@ -28,7 +28,7 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
     // Validate input
     const validationResult = createServiceConnectionSchema.safeParse(requestData);
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const {

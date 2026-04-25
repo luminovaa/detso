@@ -17,3 +17,12 @@ export type Tenant = {
   created_at: string;
   stats: TenantStats;
 }
+
+export type  Package = {
+  id: string;
+  name: string;
+  speed: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+}

@@ -2,13 +2,12 @@
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { Card, CardContent } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Badge } from "@/src/components/global/badge";
 import { RecentTicket } from "@/src/features/dashboard/types";
 import { formatRelativeTime } from "@/src/lib/format-date";
-import { useLanguageStore } from "@/src/features/i18n/store";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
 interface RecentTicketItemProps {
   item: RecentTicket;
@@ -30,7 +29,22 @@ const statusVariants = {
 
 export function RecentTicketItem({ item }: RecentTicketItemProps) {
   const locale = useLanguageStore((s) => s.locale);
+  const { t } = useT();
   const timeAgo = formatRelativeTime(item.created_at, locale);
+
+  const statusLabels: Record<string, string> = {
+    OPEN: t("ticket.status.OPEN"),
+    IN_PROGRESS: t("ticket.status.IN_PROGRESS"),
+    RESOLVED: t("ticket.status.RESOLVED"),
+    CLOSED: t("ticket.status.CLOSED"),
+  };
+
+  const priorityLabels: Record<string, string> = {
+    LOW: t("ticket.priority.LOW"),
+    MEDIUM: t("ticket.priority.MEDIUM"),
+    HIGH: t("ticket.priority.HIGH"),
+    URGENT: t("ticket.priority.URGENT"),
+  };
 
   const handlePress = () => {
     // TODO: Navigate to ticket detail
@@ -48,7 +62,7 @@ export function RecentTicketItem({ item }: RecentTicketItemProps) {
               </Text>
             </View>
             <Badge variant={statusVariants[item.status]}>
-              {item.status}
+              {statusLabels[item.status] || item.status}
             </Badge>
           </View>
 
@@ -71,7 +85,7 @@ export function RecentTicketItem({ item }: RecentTicketItemProps) {
                 color={priorityColors[item.priority]} 
               />
               <Text className="text-xs text-muted-foreground ml-1">
-                {item.priority}
+                {priorityLabels[item.priority] || item.priority}
               </Text>
             </View>
 

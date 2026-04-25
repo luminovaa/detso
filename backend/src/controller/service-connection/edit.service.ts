@@ -28,7 +28,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
 
   const validationResult = updateServiceConnectionSchema.safeParse(requestData);
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
   const {

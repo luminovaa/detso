@@ -49,12 +49,12 @@ export default function SettingsScreen() {
 
   const formatRole = (role: string) => {
     const roles: Record<string, string> = {
-      SAAS_SUPER_ADMIN: "Super Admin Detso",
-      TENANT_OWNER: "Pemilik ISP",
-      TENANT_ADMIN: "Admin ISP",
-      TENANT_TEKNISI: "Teknisi Lapangan",
+      SAAS_SUPER_ADMIN: t("roles.SAAS_SUPER_ADMIN"),
+      TENANT_OWNER: t("roles.TENANT_OWNER"),
+      TENANT_ADMIN: t("roles.TENANT_ADMIN"),
+      TENANT_TEKNISI: t("roles.TENANT_TEKNISI"),
     };
-    return roles[role] || role || "User";
+    return roles[role] || role || t("common.user");
   };
 
   const onPullToRefresh = async () => {
@@ -117,7 +117,7 @@ export default function SettingsScreen() {
               
               <View className="flex-1 ml-4 justify-center">
                 <Text weight="bold" className="text-lg text-foreground mb-1">
-                  {user?.profile?.full_name || user?.username || "Pengguna"}
+                  {user?.profile?.full_name || user?.username || t("common.user")}
                 </Text>
                 <View className="px-2 py-0.5 self-start rounded-full bg-primary/10 border border-primary/20">
                   <Text weight="semibold" className="text-[10px] text-primary uppercase">

@@ -17,16 +17,40 @@ export const getAllPackages = asyncHandler(async (req: Request, res: Response): 
   const validationResult = paginationSchema.safeParse(req.query)
 
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
-  const { page, limit } = validationResult.data
+  const { page, limit, search } = validationResult.data
 
-  // [NEW] 2. Buat Where Clause dengan tenant_id
-  const whereClause = {
+  // [NEW] 2. Buat Where Clause dengan tenant_id dan search
+  const whereClause: any = {
       tenant_id: tenant_id, // <--- Filter WAJIB
       deleted_at: null
   };
+
+  // [NEW] 3. Tambahkan search filter jika ada
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
+    
+    // Build OR conditions untuk setiap field yang bisa dicari
+    whereClause.OR = [
+      {
+        name: {
+          contains: searchTerm,
+          mode: 'insensitive' 
+        }
+      },
+      {
+        // Untuk speed: cari yang dimulai dengan angka tersebut
+        // Contoh: "50" akan match "50 Mbps", "50Mbps", "50"
+        // Tapi TIDAK akan match "150 Mbps", "500 Mbps"
+        speed: {
+          startsWith: searchTerm,
+          mode: 'insensitive' 
+        }
+      },
+    ];
+  }
 
   // Hitung total hanya milik tenant ini
   const totalPackages = await prisma.detso_Package.count({

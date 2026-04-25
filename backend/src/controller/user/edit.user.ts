@@ -76,7 +76,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
     const validationResult = updateUserSchema.safeParse({ ...req.body, avatar: uploadedPhoto?.path });
     if (!validationResult.success) {
         await cleanupUploadedFile();
-        throw new ValidationError('Validasi Gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi Gagal', validationResult.error.issues);
     }
     const { email, username, role, full_name, avatar, phone } = validationResult.data;
 
@@ -167,7 +167,7 @@ export const editUserPassword = asyncHandler(async (req: Request, res: Response)
     // 2. Validasi Input
     const validationResult = updatePasswordSchema.safeParse(req.body);
     if (!validationResult.success) {
-        throw new ValidationError('Validasi Gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi Gagal', validationResult.error.issues);
     }
 
     const { oldPassword, password } = validationResult.data;

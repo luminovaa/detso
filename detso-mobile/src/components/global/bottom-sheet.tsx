@@ -16,11 +16,18 @@ export interface BottomSheetProps {
   children: React.ReactNode;
   onDismiss?: () => void;
   enableScroll?: boolean;
+  enableDrag?: boolean;
 }
 
 export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   (
-    { snapPoints = ["50%"], children, onDismiss, enableScroll = false },
+    {
+      snapPoints = ["50%"],
+      children,
+      onDismiss,
+      enableScroll = false,
+      enableDrag = true,
+    },
     ref,
   ) => {
     // 1. Backdrop (Latar Belakang Gelap)
@@ -56,6 +63,9 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         index={0}
         snapPoints={snapPoints}
         onDismiss={onDismiss}
+        enableContentPanningGesture={enableDrag}
+        enableHandlePanningGesture={enableDrag}
+        enableOverDrag={enableDrag}
         backdropComponent={renderBackdrop}
         // Ganti properti backgroundStyle dengan backgroundComponent
         backgroundComponent={renderBackground}

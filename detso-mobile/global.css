@@ -39,36 +39,38 @@
         --radius: 0.5rem;
     }
 
-    .dark {
-        --background: 220 15% 10%;
-        --foreground: 0 0% 98%;
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --background: 220 15% 10%;
+            --foreground: 0 0% 98%;
 
-        --card: 220 12% 15%;
-        --card-foreground: 0 0% 98%;
+            --card: 220 12% 15%;
+            --card-foreground: 0 0% 98%;
 
-        --popover: 220 15% 10%;
-        --popover-foreground: 0 0% 98%;
+            --popover: 220 15% 10%;
+            --popover-foreground: 0 0% 98%;
 
-        --primary: 217 65% 55%;
-        /* Biru lebih soft, saturasi dikurangi */
-        --primary-foreground: 0 0% 100%;
+            --primary: 217 65% 55%;
+            /* Biru lebih soft, saturasi dikurangi */
+            --primary-foreground: 0 0% 100%;
 
-        --secondary: 217 45% 50%;
-        --secondary-foreground: 0 0% 100%;
+            --secondary: 217 45% 50%;
+            --secondary-foreground: 0 0% 100%;
 
-        --muted: 220 10% 20%;
-        --muted-foreground: 215 10% 70%;
+            --muted: 220 10% 20%;
+            --muted-foreground: 215 10% 70%;
 
-        --accent: 46 95% 55%;
-        /* Kuning juga disesuaikan biar ga terlalu terang */
-        --accent-foreground: 220 15% 10%;
+            --accent: 46 95% 55%;
+            /* Kuning juga disesuaikan biar ga terlalu terang */
+            --accent-foreground: 220 15% 10%;
 
-        --destructive: 0 72% 50%;
-        --destructive-foreground: 0 0% 98%;
+            --destructive: 0 72% 50%;
+            --destructive-foreground: 0 0% 98%;
 
-        --border: 220 10% 30%;
-        --input: 220 10% 30%;
-        --ring: 217 65% 55%;
-        /* Sama dengan primary dark */
+            --border: 220 10% 30%;
+            --input: 220 10% 30%;
+            --ring: 217 65% 55%;
+            /* Sama dengan primary dark */
+        }
     }
 }

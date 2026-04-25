@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, Switch, TouchableOpacity } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -154,7 +148,7 @@ export default function ISPEditScreen() {
               <View className="p-1 rounded-[45px] border-2 border-dashed border-primary/30">
                 <Avatar
                   src={selectedLogo?.uri || tenant?.logo}
-                  alt="ISP Logo"
+                  alt={t("isp.logoLabel")}
                   size="2xl"
                   className="bg-primary/5 rounded-[40px]"
                 />

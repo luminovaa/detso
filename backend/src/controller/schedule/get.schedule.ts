@@ -22,7 +22,7 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
     const validationResult = scheduleFilterSchema.safeParse(queryParams);
 
     if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const { month, year, technician_id, status } = validationResult.data;

@@ -27,8 +27,7 @@ export const registerTenant = asyncHandler(async (req: Request, res: Response): 
 
     if (!validationResult.success) {
         await cleanupUploadedFile();
-        responseData(res, 400, 'Validasi Gagal', validationResult.error.format())
-        return
+        throw new ValidationError('Validasi Gagal', validationResult.error.issues);
     }
 
     const { email, password, username, phone, full_name, company_name, address, lat, long } = validationResult.data
@@ -133,7 +132,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response): Prom
     // 3. Validasi Input
     const validationResult = createUserSchema.safeParse(req.body);
     if (!validationResult.success) {
-        throw new ValidationError('Validasi Gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi Gagal', validationResult.error.issues);
     }
 
     const { email, username, password, full_name, phone, role } = validationResult.data;

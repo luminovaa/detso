@@ -89,9 +89,9 @@ export default function EditProfileScreen() {
       },
       {
         onSuccess: () => {
-          showToast.success("Profil Diperbarui", "Data profil Anda berhasil disimpan.");
+          showToast.success(t("profile.updated"), t("profile.updatedDesc"));
         },
-        toastTitle: "Gagal",
+        toastTitle: t("common.failed"),
       },
     );
   };
@@ -99,7 +99,7 @@ export default function EditProfileScreen() {
   if (isInitializing) {
     return (
       <ScreenWrapper 
-        headerTitle="Edit Profil" 
+        headerTitle={t("profile.editTitle")} 
         showBackButton
         isLoading={true}
       >
@@ -112,7 +112,7 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <ScreenWrapper headerTitle="Edit Profil" showBackButton>
+    <ScreenWrapper headerTitle={t("profile.editTitle")} showBackButton>
 
       <ScrollView 
         className="flex-1" 
@@ -139,7 +139,7 @@ export default function EditProfileScreen() {
           </View>
           
           <Text className="text-muted-foreground mt-4 text-sm font-medium">
-            Ketuk ikon kamera untuk mengganti foto
+            {t("profile.cameraHint")}
           </Text>
         </View>
 
@@ -148,23 +148,23 @@ export default function EditProfileScreen() {
           <FormInput
             control={control}
             name="full_name"
-            label="Nama Lengkap"
-            placeholder="Masukkan nama lengkap Anda"
+            label={t("profile.fullNameLabel")}
+            placeholder={t("profile.fullNamePlaceholder")}
           />
           
           <FormInput
             control={control}
             name="username"
-            label="Username"
-            placeholder="Masukkan username"
+            label={t("profile.usernameLabel")}
+            placeholder={t("profile.usernamePlaceholder")}
             autoCapitalize="none"
           />
           
           <FormInput
             control={control}
             name="email"
-            label="Alamat Email"
-            placeholder="nama@email.com"
+            label={t("profile.emailLabel")}
+            placeholder={t("profile.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -172,15 +172,15 @@ export default function EditProfileScreen() {
           <FormInput
             control={control}
             name="phone"
-            label="Nomor Telepon"
-            placeholder="08xxxxxxxx"
+            label={t("profile.phoneLabel")}
+            placeholder={t("profile.phonePlaceholder")}
             keyboardType="phone-pad"
           />
         </View>
 
         <View className="mt-10">
           <Button 
-            title={isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+            title={isSubmitting ? t("profile.saving") : t("profile.saveChanges")}
             size="lg"
             className="w-full shadow-lg shadow-primary/20"
             onPress={handleSubmit(onSubmit)}
@@ -189,7 +189,7 @@ export default function EditProfileScreen() {
           />
           
           <Text className="text-center text-muted-foreground text-xs mt-4 px-6 leading-relaxed">
-            Pastikan data yang Anda masukkan sudah benar sebelum menekan tombol simpan.
+            {t("profile.saveNote")}
           </Text>
         </View>
       </ScrollView>

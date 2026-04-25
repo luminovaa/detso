@@ -17,7 +17,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
   const validationResult = updateScheduleSchema.safeParse(req.body);
 
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
   const {

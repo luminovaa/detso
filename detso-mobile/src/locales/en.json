@@ -123,6 +123,37 @@
     "longLabel": "Longitude"
   },
 
+  "_comment_package": "Package Management Screens (app/package/index.tsx, app/package/create/index.tsx, app/package/[id]/detail/index.tsx, app/package/[id]/edit/index.tsx)",
+  "package": {
+    "title": "Service Packages",
+    "emptyTitle": "No Packages",
+    "emptyDesc": "No service packages registered in the system yet.",
+    "refresh": "Reload",
+    "searchPlaceholder": "Search packages...",
+    "detailTitle": "Package Details",
+    "createTitle": "Add New Package",
+    "editTitle": "Edit Package",
+    "nameLabel": "Package Name",
+    "namePlaceholder": "Example: Premium 100 Mbps Package",
+    "speedLabel": "Speed",
+    "speedPlaceholder": "Example: 100 Mbps",
+    "priceLabel": "Price",
+    "pricePlaceholder": "Enter package price",
+    "submitBtn": "Save Package",
+    "saveBtn": "Save Changes",
+    "creating": "Saving...",
+    "updating": "Updating...",
+    "successCreate": "Package successfully added",
+    "successUpdate": "Package successfully updated",
+    "successDelete": "Package successfully deleted",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "deleteConfirm": "Delete Package",
+    "deleteMessage": "Are you sure you want to delete this package?",
+    "deleteBtn": "Delete",
+    "cancelBtn": "Cancel"
+  },
+
   "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
   "map": {
     "selectLocation": "Select Location",
@@ -231,6 +262,9 @@
   "_comment_dashboard": "Dashboard Screen (app/(tabs)/index.tsx)",
   "dashboard": {
     "title": "Dashboard",
+    "unknownRole": "Unknown Role",
+    "roleLabel": "Role",
+    "unknown": "Unknown",
     "totalTenants": "Total ISP",
     "activeTenants": "Active ISP",
     "inactiveTenants": "Inactive ISP",
@@ -261,6 +295,12 @@
     "allMenu": "All Menu",
     "recentTickets": "Recent Tickets",
     "recentCustomers": "Recent Customers"
+  },
+
+  "teknisiDashboard": {
+    "title": "Technician Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "comingSoon": "Technician dashboard will be available soon"
   },
 
   "_comment_global": "Global Messages & Errors (Used throughout the app)",

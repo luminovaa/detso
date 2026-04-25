@@ -4,9 +4,11 @@ import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Text } from "@/src/components/global/text";
 import { useAuthStore } from "@/src/features/auth/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { useT } from "@/src/features/i18n/store";
 
 export default function TenantTeknisiDashboard() {
   const user = useAuthStore((s) => s.user);
+  const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
 
   return (
@@ -19,13 +21,13 @@ export default function TenantTeknisiDashboard() {
     >
       <View className="flex-1 justify-center items-center px-6" style={{ paddingBottom: contentPaddingBottom }}>
         <Text weight="bold" className="text-2xl text-foreground mb-2">
-          Dashboard TEKNISI
+          {t("teknisiDashboard.title")}
         </Text>
         <Text className="text-muted-foreground text-center">
-          Selamat datang, {user?.profile?.full_name || user?.username}
+          {t("teknisiDashboard.welcome", { name: user?.profile?.full_name || user?.username })}
         </Text>
         <Text className="text-muted-foreground text-center mt-4">
-          Dashboard untuk teknisi akan segera hadir
+          {t("teknisiDashboard.comingSoon")}
         </Text>
       </View>
     </ScreenWrapper>

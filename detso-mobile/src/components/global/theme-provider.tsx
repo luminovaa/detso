@@ -1,25 +1,36 @@
 import React, { useEffect } from 'react';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
-import { useColorScheme as useDeviceColorScheme, View } from 'react-native';
+import { View } from 'react-native';
 import { useThemeStore } from '@/src/features/theme/store';
 
 /**
- * ThemeProvider sync theme store ke NativeWind dan apply dark class ke root View.
- * PENTING: Harus diletakkan di LUAR NavigationContainer / Stack agar tidak
- * trigger "Couldn't find a navigation context" error saat re-render.
+ * ThemeSyncer: komponen internal yang hanya sync Zustand store → NativeWind.
+ * Dipisah agar setColorScheme tidak memicu re-render pada parent View
+ * yang membungkus NavigationContainer / Stack.
  */
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+function ThemeSyncer() {
   const { theme } = useThemeStore();
-  const deviceColorScheme = useDeviceColorScheme();
-  const { setColorScheme, colorScheme } = useNativeWindColorScheme();
+  const { setColorScheme } = useNativeWindColorScheme();
 
   useEffect(() => {
-    const activeScheme = theme === 'system' ? deviceColorScheme : theme;
-    setColorScheme(activeScheme === 'dark' ? 'dark' : 'light');
-  }, [theme, deviceColorScheme, setColorScheme]);
+    // NativeWind's setColorScheme menerima "light" | "dark" | "system".
+    // Passing "system" akan memanggil Appearance.setColorScheme(null)
+    // yang mengembalikan kontrol ke preferensi OS/device.
+    setColorScheme(theme);
+  }, [theme, setColorScheme]);
 
+  return null;
+}
+
+/**
+ * ThemeProvider: wrapper stabil yang tidak re-render saat theme berubah.
+ * setColorScheme dari NativeWind mengupdate global observable secara internal,
+ * jadi tidak perlu className="dark" di wrapper View.
+ */
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <View style={{ flex: 1 }} className={colorScheme === 'dark' ? 'dark' : ''}>
+    <View style={{ flex: 1 }}>
+      <ThemeSyncer />
       {children}
     </View>
   );

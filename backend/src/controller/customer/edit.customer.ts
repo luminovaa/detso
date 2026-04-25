@@ -28,7 +28,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
 
   const validationResult = updateCustomerSchema.safeParse(requestData);
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
   const { name, phone, email, nik, documents } = validationResult.data;

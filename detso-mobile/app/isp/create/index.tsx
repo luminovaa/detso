@@ -21,7 +21,6 @@ import { useT } from "@/src/features/i18n/store";
 import { authService } from "@/src/features/auth/service";
 import { registerSchema, RegisterInput } from "@/src/features/auth/schema";
 import { useMutation } from "@/src/hooks/use-async";
-import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPCreateScreen() {
   const { t } = useT();
@@ -102,12 +101,12 @@ export default function ISPCreateScreen() {
             className="relative"
           >
             <View className="p-1 rounded-[45px] border-2 border-dashed border-primary/30">
-              <Avatar
-                src={selectedLogo?.uri}
-                alt="ISP Logo"
-                size="2xl"
-                className="bg-primary/5 rounded-[40px]"
-              />
+                <Avatar
+                  src={selectedLogo?.uri}
+                  alt={t("isp.logoLabel")}
+                  size="2xl"
+                  className="bg-primary/5 rounded-[40px]"
+                />
             </View>
             <View className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background">
               <Ionicons name="camera" size={20} color="white" />

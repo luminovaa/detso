@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { Animated, StyleSheet } from "react-native";
+import { Animated } from "react-native";
 import { ToastContent } from "./tosat-content";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -185,7 +185,7 @@ function ToastItem({
   return (
     <Animated.View
       style={[
-        styles.itemBase,
+        itemBaseStyle,
         position === "top" ? { top: 52 + offset } : { bottom: 52 + offset },
         { opacity, transform: [{ translateY }] },
       ]}
@@ -199,14 +199,12 @@ function ToastItem({
   );
 }
 
-const styles = StyleSheet.create({
-  itemBase: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    zIndex: 9999,
-  },
-});
+const itemBaseStyle = {
+  position: "absolute",
+  left: 16,
+  right: 16,
+  zIndex: 9999,
+} as const;
 
 /**
  * Custom React hook establishing immediate access to the context-based toast notification controls.

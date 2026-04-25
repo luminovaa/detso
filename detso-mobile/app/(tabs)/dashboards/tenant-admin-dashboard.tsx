@@ -18,6 +18,7 @@ import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
 import { showErrorToast } from "@/src/lib/api-error";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { router } from "expo-router";
 
 export default function TenantAdminDashboard() {
   const { t } = useT();
@@ -43,7 +44,7 @@ export default function TenantAdminDashboard() {
       const response = await dashboardService.getTenantData();
       setData(response.data);
     } catch (error) {
-      showErrorToast(error, "Gagal Memuat Dashboard");
+      showErrorToast(error, t("common.loadFailed"));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -166,7 +167,7 @@ export default function TenantAdminDashboard() {
                 <QuickMenuCard
                   icon="pricetag"
                   label={t("tenantDashboard.packages")}
-                  onPress={() => console.log("Navigate to Packages")}
+                  onPress={() => router.push("/package")}
                 />
               </View>
               <View className="flex-row gap-3">

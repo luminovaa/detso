@@ -15,7 +15,7 @@ export const createWorkSchedule = asyncHandler(async (req: Request, res: Respons
   const validationResult = createWorkScheduleSchema.safeParse(req.body);
 
   if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.errors);
+    throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
   const {

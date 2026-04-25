@@ -36,7 +36,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 
     if (!validationResult.success) {
         await cleanupUploadedFile();
-        throw new ValidationError('Validasi gagal', validationResult.error.errors);
+        throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
     const {
