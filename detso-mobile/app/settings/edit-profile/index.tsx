@@ -18,13 +18,25 @@ import { useAuthStore } from "@/src/features/auth/store";
 import { useT } from "@/src/features/i18n/store";
 import { userService } from "@/src/features/user/service";
 import { updateUserSchema, UpdateUserInput } from "@/src/features/user/schema";
-import { useMutation } from "@/src/hooks/use-async";
+import { useMutation } from "@tanstack/react-query";
+import { showErrorToast } from "@/src/lib/api-error";
 
 export default function EditProfileScreen() {
   const { t } = useT();
   const { user, refreshUserData } = useAuthStore();
   
-  const { mutate, isLoading: isSubmitting } = useMutation();
+  const { mutate, isPending: isSubmitting } = useMutation({
+    mutationFn: async (formData: FormData) => {
+      await userService.update(user!.id, formData);
+      await refreshUserData();
+    },
+    onSuccess: () => {
+      showToast.success(t("profile.updated"), t("profile.updatedDesc"));
+    },
+    onError: (error) => {
+      showErrorToast(error, t("common.failed"));
+    },
+  });
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; base64?: string } | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -82,18 +94,7 @@ export default function EditProfileScreen() {
       } as any);
     }
 
-    await mutate(
-      async () => {
-        await userService.update(user.id, formData);
-        await refreshUserData();
-      },
-      {
-        onSuccess: () => {
-          showToast.success(t("profile.updated"), t("profile.updatedDesc"));
-        },
-        toastTitle: t("common.failed"),
-      },
-    );
+    mutate(formData);
   };
 
   if (isInitializing) {

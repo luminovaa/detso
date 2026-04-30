@@ -20,11 +20,27 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 import { useT } from "@/src/features/i18n/store";
 import { authService } from "@/src/features/auth/service";
 import { registerSchema, RegisterInput } from "@/src/features/auth/schema";
-import { useMutation } from "@/src/hooks/use-async";
+import { useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { tenantKeys } from "@/src/features/tenant/hooks";
+import { dashboardKeys } from "@/src/features/dashboard/hooks";
+import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPCreateScreen() {
   const { t } = useT();
-  const { mutate, isLoading: isSubmitting } = useMutation();
+  const qc = useQueryClient();
+  const { mutate, isPending: isSubmitting } = useMutation({
+    mutationFn: (formData: FormData) => authService.registerTenant(formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: tenantKeys.lists() });
+      qc.invalidateQueries({ queryKey: dashboardKeys.saas() });
+      showToast.success(t("common.success"), t("isp.successCreate"));
+      router.back();
+    },
+    onError: (error) => {
+      showErrorToast(error, t("common.error"));
+    },
+  });
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedLogo, setSelectedLogo] = useState<{
     uri: string;
@@ -73,16 +89,7 @@ export default function ISPCreateScreen() {
       });
     }
 
-    await mutate(
-      () => authService.registerTenant(formData),
-      {
-        onSuccess: () => {
-          showToast.success(t("common.success"), t("isp.successCreate"));
-          router.back();
-        },
-        toastTitle: t("common.error"),
-      },
-    );
+    mutate(formData);
   };
 
   return (

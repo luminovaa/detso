@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { View, ScrollView, RefreshControl, Alert } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,13 +11,10 @@ import { Text } from "@/src/components/global/text";
 import { Badge } from "@/src/components/global/badge";
 import { Skeleton } from "@/src/components/global/skeleton";
 import { Button } from "@/src/components/global/button";
-import { showToast } from "@/src/components/global/toast";
 
 // --- State & Logic ---
-import { packageService } from "@/src/features/package/service";
+import { usePackage, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
-import { useMutation } from "@/src/hooks/use-async";
-import { showErrorToast } from "@/src/lib/api-error";
 
 interface PackageData {
   id: string;
@@ -33,32 +30,15 @@ export default function PackageDetailScreen() {
   const { t } = useT();
   const { colorScheme } = useColorScheme();
 
-  const [packageData, setPackageData] = useState<PackageData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: response, isLoading, refetch, isRefetching } = usePackage(id!);
+  const packageData = response?.data as PackageData | undefined;
+  const isRefreshing = isRefetching;
 
-  const { mutate: mutateDelete, isLoading: isDeleting } = useMutation();
-
-  const fetchDetail = useCallback(async () => {
-    if (!id) return;
-    try {
-      const response = await packageService.getById(id);
-      setPackageData(response.data);
-    } catch (error) {
-      showErrorToast(error, t("common.loadFailed"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
+  const deletePackageMutation = useDeletePackage();
+  const isDeleting = deletePackageMutation.isPending;
 
   const onRefresh = () => {
-    setIsRefreshing(true);
-    fetchDetail();
+    refetch();
   };
 
   const handleEdit = () => {
@@ -77,17 +57,10 @@ export default function PackageDetailScreen() {
         {
           text: t("package.deleteBtn"),
           style: "destructive",
-          onPress: async () => {
-            await mutateDelete(
-              () => packageService.delete(id!),
-              {
-                onSuccess: () => {
-                  showToast.success(t("common.success"), t("package.successDelete"));
-                  router.back();
-                },
-                toastTitle: t("common.error"),
-              },
-            );
+          onPress: () => {
+            deletePackageMutation.mutate(id!, {
+              onSuccess: () => router.back(),
+            });
           },
         },
       ],

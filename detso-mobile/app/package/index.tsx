@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { 
   View, 
   FlatList, 
@@ -17,13 +16,11 @@ import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { EmptyState } from "@/src/components/global/empty-state";
 import { SearchBar } from "@/src/components/global/search-bar";
 
-import { packageService } from "@/src/features/package/service";
+import { usePackages, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { PackageSkeletonLoading } from "@/src/components/screens/package/skeleton-loading";
 import { PackageItem } from "@/src/components/screens/package/package-item";
-import { showErrorToast } from "@/src/lib/api-error";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
-import { showToast } from "@/src/components/global/toast";
 import { Package } from "@/src/lib/types";
 
 export default function PackageScreen() {
@@ -31,17 +28,24 @@ export default function PackageScreen() {
   const { contentPaddingBottom, fabBottom } = useTabBarHeight();
   
   // State
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const { data: response, isLoading, refetch, isRefetching } = usePackages({
+    page,
+    limit: 10,
+    search: debouncedSearch || undefined,
+  });
+  const packages: Package[] = response?.data?.packages || [];
+  const hasMore = response?.data?.pagination?.hasNextPage || false;
+  const isRefreshing = isRefetching;
+
+  const deletePackage = useDeletePackage();
+
   // Debounced search
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearchHandler = useCallback(
     _debounce((text: string) => {
       setDebouncedSearch(text);
@@ -55,43 +59,6 @@ export default function PackageScreen() {
     debouncedSearchHandler(text);
   };
 
-  const fetchPackages = async (pageToFetch: number, refresh = false) => {
-    try {
-      if (refresh) {
-        setIsRefreshing(true);
-        setIsLoading(true);
-      }
-
-      const response = await packageService.getAll({
-        page: pageToFetch,
-        limit: 10,
-        search: debouncedSearch || undefined,
-      });
-
-      const newPackages = response.data.packages || [];
-      const pagination = response.data.pagination;
-
-      if (refresh) {
-        setPackages(newPackages);
-      } else {
-        setPackages((prev) => [...prev, ...newPackages]);
-      }
-
-      setHasMore(pagination?.hasNextPage || false);
-      
-    } catch (error) {
-      showErrorToast(error, t("common.loadFailed"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      setIsLoadingMore(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPackages(1, true);
-  }, [debouncedSearch]);
-
   // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
@@ -100,31 +67,21 @@ export default function PackageScreen() {
   }, [debouncedSearchHandler]);
 
   const handleRefresh = () => {
-    setIsRefreshing(true);
     setPage(1);
-    fetchPackages(1, true);
+    refetch();
   };
 
   const handleLoadMore = () => {
-    if (!isLoadingMore && hasMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchPackages(nextPage);
+    if (hasMore && !isLoading) {
+      setPage((prev) => prev + 1);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     setDeletingId(id);
-    try {
-      await packageService.delete(id);
-      showToast.success(t("common.success"), t("package.successDelete"));
-      fetchPackages(1, true);
-    } catch (error) {
-      showErrorToast(error, t("common.failed"));
-    } finally {
-      setDeletingId(null);
-    }
+    deletePackage.mutate(id, {
+      onSettled: () => setDeletingId(null),
+    });
   };
 
   const { colorScheme } = useColorScheme();
@@ -187,7 +144,7 @@ export default function PackageScreen() {
             />
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            hasMore ? (
               <View className="py-4 items-center">
                 <ActivityIndicator color="hsl(var(--primary))" />
               </View>

@@ -1,27 +1,8 @@
-type Listener = () => void;
-
-class AuthEvents {
-  private listeners: { [key: string]: Listener[] } = {};
-
-  // Mendengarkan event
-  on(event: string, callback: Listener) {
-    if (!this.listeners[event]) {
-      this.listeners[event] = [];
-    }
-    this.listeners[event].push(callback);
-
-    // Fungsi untuk unsubscribe (membersihkan listener)
-    return () => {
-      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
-    };
-  }
-
-  // Mengirimkan event
-  emit(event: string) {
-    if (this.listeners[event]) {
-      this.listeners[event].forEach(callback => callback());
-    }
-  }
-}
-
-export const authEvents = new AuthEvents();
+/**
+ * @deprecated — Migrated to `src/lib/event-bus.ts`.
+ * Use `eventBus` + `EVENTS.AUTH.*` instead.
+ *
+ * This file is kept temporarily so any stale imports produce a clear error.
+ * Safe to delete once all references are confirmed removed.
+ */
+export { eventBus as authEvents } from '@/src/lib/event-bus';

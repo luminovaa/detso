@@ -1,7 +1,7 @@
 // lib/api.ts
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { authEvents } from './auth-events';
+import { eventBus, EVENTS } from './event-bus';
 import { config } from './config';
 
 const api = axios.create({
@@ -69,7 +69,7 @@ api.interceptors.response.use(
                 await SecureStore.setItemAsync('accessToken', newAccessToken);
                 if (newRefreshToken) await SecureStore.setItemAsync('refreshToken', newRefreshToken);
 
-                authEvents.emit('token_refreshed');
+                eventBus.emit(EVENTS.AUTH.TOKEN_REFRESHED);
                 processQueue(null, newAccessToken);
 
                 originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken;
@@ -83,7 +83,7 @@ api.interceptors.response.use(
                 await SecureStore.deleteItemAsync('refreshToken');
 
                 // Pancarkan sinyal bahwa sesi benar-benar habis (waktunya ke layar login)
-                authEvents.emit('session_expired');
+                eventBus.emit(EVENTS.AUTH.SESSION_EXPIRED);
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
@@ -93,7 +93,7 @@ api.interceptors.response.use(
         // Jika error 500 (Internal Server Error)
         if (error.response?.status && error.response.status >= 500) {
             // PANCARKAN SINYAL (Bukan panggil hook)
-            authEvents.emit('server_error');
+            eventBus.emit(EVENTS.AUTH.SERVER_ERROR, { message: error.message });
         }
 
         return Promise.reject(error);

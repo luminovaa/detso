@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { View, FlatList, RefreshControl } from "react-native";
 import { useColorScheme } from "nativewind";
 
@@ -12,11 +12,10 @@ import { RecentCustomerItem } from "@/src/components/screens/dashboard/recent-cu
 import { DashboardSkeletonLoading } from "@/src/components/screens/dashboard/skeleton-loading";
 import { QuickMenuCard } from "@/src/components/screens/dashboard/quick-menu-card";
 
-import { dashboardService } from "@/src/features/dashboard/service";
 import { TenantDashboardData } from "@/src/features/dashboard/types";
+import { useTenantDashboard } from "@/src/features/dashboard/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
-import { showErrorToast } from "@/src/lib/api-error";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { router } from "expo-router";
 
@@ -28,35 +27,12 @@ export default function TenantAdminDashboard() {
   const isDark = colorScheme === "dark";
   const primaryColor = isDark ? "#66a3ff" : "#102a4d";
 
-  const [data, setData] = useState<TenantDashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const fetchDashboardData = async (refresh = false) => {
-    try {
-      if (refresh) {
-        setIsRefreshing(true);
-        setIsLoading(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      const response = await dashboardService.getTenantData();
-      setData(response.data);
-    } catch (error) {
-      showErrorToast(error, t("common.loadFailed"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const { data: response, isLoading, refetch, isRefetching } = useTenantDashboard();
+  const data = response?.data as TenantDashboardData | undefined;
+  const isRefreshing = isRefetching;
 
   const handleRefresh = () => {
-    fetchDashboardData(true);
+    refetch();
   };
 
   if (isLoading) {

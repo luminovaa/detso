@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { View, ScrollView, RefreshControl, Linking } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,43 +12,23 @@ import { Avatar } from "@/src/components/global/avatar";
 import { Badge } from "@/src/components/global/badge";
 import { Skeleton } from "@/src/components/global/skeleton";
 import { Button } from "@/src/components/global/button";
-import { cn } from "@/src/lib/utils";
 
 // --- State & Logic ---
-import { tenantService } from "@/src/features/tenant/service";
+import { useTenant } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
-import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
   const { colorScheme } = useColorScheme();
 
-  const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const fetchDetail = useCallback(async () => {
-    if (!id) return;
-    try {
-      const response = await tenantService.getById(id);
-      setTenant(response.data);
-    } catch (error) {
-      showErrorToast(error, t("common.loadFailed"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [id, t]);
-
-  useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
+  const { data: response, isLoading, refetch, isRefetching } = useTenant(id!);
+  const tenant = response?.data as Tenant | undefined;
+  const isRefreshing = isRefetching;
 
   const onRefresh = () => {
-    setIsRefreshing(true);
-    fetchDetail();
+    refetch();
   };
 
   const handleCall = () => {

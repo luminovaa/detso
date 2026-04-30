@@ -11,10 +11,16 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalProvider } from "@gorhom/portal";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
+// Data Layer
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/src/lib/query-client";
+
 // Global & Utils
 import "../global.css";
 import { ErrorBoundary } from "@/src/components/global/error-boundary";
-import { authEvents } from "@/src/lib/auth-events";
+import { EVENTS } from "@/src/lib/event-bus";
+import { useEventBus } from "@/src/hooks/use-event-bus";
+import { useGlobalEvents } from "@/src/hooks/use-global-events";
 import { ThemeProvider } from "@/src/components/global/theme-provider";
 
 // Auth & Security
@@ -32,27 +38,17 @@ function GlobalLogic() {
   const router = useRouter();
   const { t } = useT();
 
-  useEffect(() => {
-    const unsubscribeServerError = authEvents.on("server_error", () => {
-     showToast.error(
-        t("global.serverError"),
-        t("global.serverErrorDesc")
-      );
-    });
+  // Cross-feature cache invalidation via event bus
+  useGlobalEvents();
 
-    const unsubscribeSessionExpired = authEvents.on("session_expired", () => {
-      showToast.warning(
-        t("global.sessionExpired"),
-        t("global.sessionExpiredDesc")
-      );
-      router.replace("/sign-in");
-    });
+  useEventBus(EVENTS.AUTH.SERVER_ERROR, () => {
+    showToast.error(t("global.serverError"), t("global.serverErrorDesc"));
+  });
 
-    return () => {
-      unsubscribeServerError();
-      unsubscribeSessionExpired();
-    };
-  }, [router, t]);
+  useEventBus(EVENTS.AUTH.SESSION_EXPIRED, () => {
+    showToast.warning(t("global.sessionExpired"), t("global.sessionExpiredDesc"));
+    router.replace("/sign-in");
+  });
 
   return null;
 }
@@ -152,19 +148,21 @@ const loadLocale = useLanguageStore((s) => s.loadLocale);
 
   // --- RENDER SEMUA PROVIDER ---
   return (
-    <ThemeProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ErrorBoundary>
-          <PortalProvider>
-            <BottomSheetModalProvider>
-              <ToastProvider>
-                <GlobalLogic />
-                <Stack screenOptions={{ headerShown: false }} />
-              </ToastProvider>
-            </BottomSheetModalProvider>
-          </PortalProvider>
-        </ErrorBoundary>
-      </GestureHandlerRootView>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ErrorBoundary>
+            <PortalProvider>
+              <BottomSheetModalProvider>
+                <ToastProvider>
+                  <GlobalLogic />
+                  <Stack screenOptions={{ headerShown: false }} />
+                </ToastProvider>
+              </BottomSheetModalProvider>
+            </PortalProvider>
+          </ErrorBoundary>
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

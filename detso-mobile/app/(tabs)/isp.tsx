@@ -1,4 +1,4 @@
-import React, { useState,  useEffect } from "react";
+import React, { useState } from "react";
 import { 
   View, 
   FlatList, 
@@ -12,80 +12,33 @@ import { router } from "expo-router";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Header } from "@/src/components/global/header";
 import { EmptyState } from "@/src/components/global/empty-state";
 
-import { tenantService } from "@/src/features/tenant/service";
+import { useTenants } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
 import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleteon-loading";
 import { ISPItem } from "@/src/components/screens/isp/isp-item";
-import { showErrorToast } from "@/src/lib/api-error";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
 export default function IspScreen() {
   const { t } = useT();
   const { contentPaddingBottom, fabBottom } = useTabBarHeight();
-  
-  // State
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-
-  const fetchTenants = async (pageToFetch: number, refresh = false) => {
-    try {
-      if (refresh) {
-        setIsRefreshing(true);
-        // Set isLoading agar skeleton muncul saat refresh
-        setIsLoading(true);
-      }
-
-      const response = await tenantService.getAll({
-        page: pageToFetch,
-        limit: 10,
-      });
-
-      // Sesuaikan dengan struktur response backend: response.data.tenants
-      const newTenants = response.data.tenants || [];
-      const pagination = response.data.pagination;
-
-      if (refresh) {
-        setTenants(newTenants);
-      } else {
-        setTenants((prev) => [...prev, ...newTenants]);
-      }
-
-      // Gunakan hasNextPage dari pagination backend
-      setHasMore(pagination?.hasNextPage || false);
-      
-    } catch (error) {
-      showErrorToast(error, "Gagal Memuat");
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      setIsLoadingMore(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTenants(1, true);
-  }, []);
+  const { data: response, isLoading, refetch, isRefetching } = useTenants({ page, limit: 10 });
+  const tenants: Tenant[] = response?.data?.tenants || [];
+  const hasMore = response?.data?.pagination?.hasNextPage || false;
+  const isRefreshing = isRefetching;
 
   const handleRefresh = () => {
-    setIsRefreshing(true);
     setPage(1);
-    fetchTenants(1, true);
+    refetch();
   };
 
   const handleLoadMore = () => {
-    if (!isLoadingMore && hasMore) {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchTenants(nextPage);
+    if (hasMore && !isLoading) {
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -129,7 +82,7 @@ export default function IspScreen() {
             />
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            hasMore ? (
               <View className="py-4 items-center">
                 <ActivityIndicator color="hsl(var(--primary))" />
               </View>

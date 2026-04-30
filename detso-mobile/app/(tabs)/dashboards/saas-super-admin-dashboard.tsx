@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { View, FlatList, RefreshControl } from "react-native";
 import { useColorScheme } from "nativewind";
 
@@ -11,11 +11,10 @@ import { RecentTenantItem } from "@/src/components/screens/dashboard/recent-tena
 import { DashboardSkeletonLoading } from "@/src/components/screens/dashboard/skeleton-loading";
 import { TenantMapView } from "@/src/components/screens/dashboard/tenant-map-view";
 
-import { dashboardService } from "@/src/features/dashboard/service";
 import { SaasDashboardData } from "@/src/features/dashboard/types";
+import { useSaasDashboard } from "@/src/features/dashboard/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
-import { showErrorToast } from "@/src/lib/api-error";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
 export default function SaasSuperAdminDashboard() {
@@ -26,40 +25,17 @@ export default function SaasSuperAdminDashboard() {
   const isDark = colorScheme === "dark";
   const primaryColor = isDark ? "#66a3ff" : "#102a4d";
 
-  const [data, setData] = useState<SaasDashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: response, isLoading, refetch, isRefetching } = useSaasDashboard();
+  const data = response?.data as SaasDashboardData | undefined;
+  const isRefreshing = isRefetching;
+
   const [isMapTouched, setIsMapTouched] = useState(false);
 
   const handleMapTouchStart = useCallback(() => setIsMapTouched(true), []);
   const handleMapTouchEnd = useCallback(() => setIsMapTouched(false), []);
 
-  const fetchDashboardData = async (refresh = false) => {
-    try {
-      if (refresh) {
-        setIsRefreshing(true);
-        // Untuk refresh, kita tetap set isLoading agar skeleton muncul
-        setIsLoading(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      const response = await dashboardService.getSaasData();
-      setData(response.data);
-    } catch (error) {
-      showErrorToast(error, "Gagal Memuat Dashboard");
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
   const handleRefresh = () => {
-    fetchDashboardData(true);
+    refetch();
   };
 
   if (isLoading) {

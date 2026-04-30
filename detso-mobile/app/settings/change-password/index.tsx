@@ -15,14 +15,14 @@ import { FormSkeleton } from "@/src/components/global/form-skeleton";
 // --- Store & Logic ---
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
-import { userService } from "@/src/features/user/service";
 import { updatePasswordSchema, UpdatePasswordInput } from "@/src/features/user/schema";
-import { useMutation } from "@/src/hooks/use-async";
+import { useUpdatePassword } from "@/src/features/user/hooks";
 
 export default function ChangePasswordScreen() {
   const { t } = useT();
   const { logout } = useAuthStore();
-  const { mutate, isLoading: isSubmitting } = useMutation();
+  const updatePassword = useUpdatePassword();
+  const isSubmitting = updatePassword.isPending;
   const [isInitializing, setIsInitializing] = useState(true);
 
   // Initial loading effect
@@ -43,23 +43,19 @@ export default function ChangePasswordScreen() {
     },
   });
 
-  const onSubmit = async (data: UpdatePasswordInput) => {
-    await mutate(
-      () => userService.updatePassword(data),
-      {
-        onSuccess: () => {
-          showToast.success(
-            t("common.success"),
-            t("settings.security.passwordChangeSuccess")
-          );
-          // Logout otomatis setelah berhasil
-          setTimeout(async () => {
-            await logout();
-          }, 1500);
-        },
-        toastTitle: t("common.error"),
+  const onSubmit = (data: UpdatePasswordInput) => {
+    updatePassword.mutate(data, {
+      onSuccess: () => {
+        showToast.success(
+          t("common.success"),
+          t("settings.security.passwordChangeSuccess")
+        );
+        // Logout otomatis setelah berhasil
+        setTimeout(async () => {
+          await logout();
+        }, 1500);
       },
-    );
+    });
   };
 
   if (isInitializing) {

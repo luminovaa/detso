@@ -25,16 +25,17 @@ import {
   UpdateTenantInput,
 } from "@/src/features/tenant/schema";
 import { Tenant } from "@/src/lib/types";
-import { useMutation } from "@/src/hooks/use-async";
+import { useTenant, useUpdateTenant } from "@/src/features/tenant/hooks";
 import { showErrorToast } from "@/src/lib/api-error";
 
 export default function ISPEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
 
-    const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [isFetching, setIsFetching] = useState(true);
-  const { mutate, isLoading: isSubmitting } = useMutation();
+  const { data: tenantResponse, isLoading: isFetching } = useTenant(id!);
+  const tenant = tenantResponse?.data as Tenant | undefined;
+  const updateTenant = useUpdateTenant();
+  const isSubmitting = updateTenant.isPending;
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedLogo, setSelectedLogo] = useState<{
     uri: string;
@@ -50,29 +51,17 @@ export default function ISPEditScreen() {
   const isActive = watch("is_active");
 
   useEffect(() => {
-    const fetchDetail = async () => {
-      if (!id) return;
-      try {
-        const response = await tenantService.getById(id);
-        const data = response.data;
-        setTenant(data);
-        reset({
-          name: data.name,
-          address: data.address || "",
-          phone: data.phone || "",
-          is_active: data.is_active,
-          lat: data.lat || "",
-          long: data.long || "",
-        });
-            } catch (error) {
-        showErrorToast(error, t("common.error"));
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    fetchDetail();
-  }, [id, reset, t]);
+    if (tenant) {
+      reset({
+        name: tenant.name,
+        address: tenant.address || "",
+        phone: tenant.phone || "",
+        is_active: tenant.is_active,
+        lat: (tenant as any).lat || "",
+        long: (tenant as any).long || "",
+      });
+    }
+  }, [tenant, reset]);
 
     const onSubmit = async (data: UpdateTenantInput) => {
     if (!id) return;
@@ -101,14 +90,13 @@ export default function ISPEditScreen() {
       });
     }
 
-    await mutate(
-      () => tenantService.update(id, formData),
+    updateTenant.mutate(
+      { id, data: formData },
       {
         onSuccess: () => {
           showToast.success(t("common.success"), t("isp.successUpdate"));
           router.back();
         },
-        toastTitle: t("common.error"),
       },
     );
   };

@@ -13,14 +13,13 @@ import { showToast } from "@/src/components/global/toast";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
-import { packageService } from "@/src/features/package/service";
 import { createPackageSchema, CreatePackageInput } from "@/src/features/package/schema";
-import { useMutation } from "@/src/hooks/use-async";
-import { showErrorToast } from "@/src/lib/api-error";
+import { useCreatePackage } from "@/src/features/package/hooks";
 
 export default function PackageCreateScreen() {
   const { t } = useT();
-  const { mutate, isLoading: isSubmitting } = useMutation();
+  const createPackage = useCreatePackage();
+  const isSubmitting = createPackage.isPending;
 
   const { control, handleSubmit } = useForm<CreatePackageInput>({
     resolver: zodResolver(createPackageSchema),
@@ -31,17 +30,10 @@ export default function PackageCreateScreen() {
     },
   });
 
-  const onSubmit = async (data: CreatePackageInput) => {
-    await mutate(
-      () => packageService.create(data),
-      {
-        onSuccess: () => {
-          showToast.success(t("common.success"), t("package.successCreate"));
-          router.back();
-        },
-        toastTitle: t("common.error"),
-      },
-    );
+  const onSubmit = (data: CreatePackageInput) => {
+    createPackage.mutate(data, {
+      onSuccess: () => router.back(),
+    });
   };
 
   return (

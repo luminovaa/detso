@@ -7,6 +7,7 @@ import { getSecondsUntilExpiry, isTokenExpired } from '@/src/lib/jwt';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
 import { config } from '@/src/lib/config';
+import { eventBus, EVENTS } from '@/src/lib/event-bus';
 
 interface UserProfile {
   id: string;
@@ -83,7 +84,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await SecureStore.deleteItemAsync('accessToken');
       await SecureStore.deleteItemAsync('refreshToken');
       set({ user: null, isLoading: false, isInitialized: true });
-      // router.replace('/auth/login');
+      eventBus.emit(EVENTS.AUTH.LOGOUT);
     }
   },
 
