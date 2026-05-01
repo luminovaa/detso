@@ -511,6 +511,37 @@
     "doubleBackExit": "Tekan sekali lagi untuk keluar"
   },
 
+  "_comment_schedule": "Schedule Calendar Screen (app/(tabs)/schedule.tsx)",
+  "schedule": {
+    "title": "Jadwal Kerja",
+    "calendar": "Kalender",
+    "today": "Hari Ini",
+    "noSchedules": "Tidak ada jadwal",
+    "scheduleCount": "{{count}} jadwal",
+    "scheduleCount_plural": "{{count}} jadwal",
+    "monthNames": {
+      "january": "Januari",
+      "february": "Februari",
+      "march": "Maret",
+      "april": "April",
+      "may": "Mei",
+      "june": "Juni",
+      "july": "Juli",
+      "august": "Agustus",
+      "september": "September",
+      "october": "Oktober",
+      "november": "November",
+      "december": "Desember"
+    },
+    "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+    "dayNamesShort": ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+    "status": {
+      "scheduled": "Terjadwal",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
+    }
+  },
+
   "_comment_tabs": "Tab Navigation Labels (app/(tabs)/_layout.tsx)",
   "tabs": {
     "home": "Beranda",

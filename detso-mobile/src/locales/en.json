@@ -511,6 +511,37 @@
     "doubleBackExit": "Press again to exit"
   },
 
+  "_comment_schedule": "Schedule Calendar Screen (app/(tabs)/schedule.tsx)",
+  "schedule": {
+    "title": "Work Schedule",
+    "calendar": "Calendar",
+    "today": "Today",
+    "noSchedules": "No schedules",
+    "scheduleCount": "{{count}} schedule",
+    "scheduleCount_plural": "{{count}} schedules",
+    "monthNames": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "status": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+
   "_comment_tabs": "Tab Navigation Labels (app/(tabs)/_layout.tsx)",
   "tabs": {
     "home": "Home",
