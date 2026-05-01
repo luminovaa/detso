@@ -21,6 +21,7 @@ import { useInfiniteCustomers } from "@/src/features/customer/hooks";
 import { useDeleteServiceConnection } from "@/src/features/connection-service/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { ServiceItem } from "@/src/components/screens/service/service-item";
+import { ServiceSkeletonLoading } from "@/src/components/screens/service/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { ServiceConnection } from "@/src/lib/types";
 
@@ -111,9 +112,7 @@ export default function ServiceScreen() {
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
-        </View>
+        <ServiceSkeletonLoading />
       ) : (
         <FlatList
           data={services}

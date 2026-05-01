@@ -17,7 +17,7 @@ import { EmptyState } from "@/src/components/global/empty-state";
 import { useInfiniteTenants } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
-import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleteon-loading";
+import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleton-loading";
 import { ISPItem } from "@/src/components/screens/isp/isp-item";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 

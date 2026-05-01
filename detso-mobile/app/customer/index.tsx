@@ -20,6 +20,7 @@ import { SearchBar } from "@/src/components/global/search-bar";
 import { useInfiniteCustomers, useDeleteCustomer } from "@/src/features/customer/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { CustomerItem } from "@/src/components/screens/customer/customer-item";
+import { CustomerSkeletonLoading } from "@/src/components/screens/customer/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { ServiceConnection } from "@/src/lib/types";
 
@@ -110,9 +111,7 @@ export default function CustomerScreen() {
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
-        </View>
+        <CustomerSkeletonLoading />
       ) : (
         <FlatList
           data={customers}

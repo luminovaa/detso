@@ -20,6 +20,7 @@ import { SearchBar } from "@/src/components/global/search-bar";
 import { useInfiniteUsers, useDeleteUser } from "@/src/features/user/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { TeamItem } from "@/src/components/screens/team/team-item";
+import { TeamSkeletonLoading } from "@/src/components/screens/team/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { TeamMember } from "@/src/lib/types";
 
@@ -113,9 +114,7 @@ export default function TeamScreen() {
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
-        </View>
+        <TeamSkeletonLoading />
       ) : (
         <FlatList
           data={members}
