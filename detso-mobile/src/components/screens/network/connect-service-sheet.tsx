@@ -13,6 +13,7 @@ import { Badge } from '@/src/components/global/badge';
 import { Input } from '@/src/components/global/input';
 import { NetworkNode, NetworkTopology } from '@/src/features/network/types';
 import { useCreateLink } from '@/src/features/network/hooks';
+import { useT } from '@/src/features/i18n/store';
 
 interface ConnectServiceSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -29,6 +30,7 @@ export function ConnectServiceSheet({
   allServices,
   onDismiss,
 }: ConnectServiceSheetProps) {
+  const { t } = useT();
   const [search, setSearch] = useState('');
   const createLink = useCreateLink();
 
@@ -75,9 +77,9 @@ export function ConnectServiceSheet({
   return (
     <BottomSheet ref={sheetRef} snapPoints={['70%']} onDismiss={onDismiss} enableScroll={false}>
       <BottomSheetHeader>
-        <BottomSheetTitle>Connect Customer</BottomSheetTitle>
+        <BottomSheetTitle>{t('network.connectService.title')}</BottomSheetTitle>
         <BottomSheetDescription>
-          Hubungkan customer ke {node.name}
+          {t('network.connectService.description', { name: node.name })}
           {node.slot ? ` (${node.used_slot}/${node.slot} slot)` : ''}
         </BottomSheetDescription>
       </BottomSheetHeader>
@@ -85,7 +87,7 @@ export function ConnectServiceSheet({
       {/* Search */}
       <View className="mb-3">
         <Input
-          placeholder="Cari customer..."
+          placeholder={t('network.connectService.searchPlaceholder')}
           value={search}
           onChangeText={setSearch}
         />
@@ -96,7 +98,7 @@ export function ConnectServiceSheet({
         data={unlinkedServices}
         keyExtractor={(item: any) => item.id}
         renderItem={({ item }: { item: any }) => {
-          const customerName = item.customer?.name || item.customer_name || 'Unknown';
+          const customerName = item.customer?.name || item.customer_name || t('network.connectService.unknown');
           const hasLocation = item.lat && item.long;
 
           return (
@@ -113,7 +115,7 @@ export function ConnectServiceSheet({
                   {customerName}
                 </Text>
                 <Text className="text-xs text-muted-foreground">
-                  {item.package_name || item.package?.name || '-'} • {item.address || 'Tanpa alamat'}
+                  {item.package_name || item.package?.name || '-'} • {item.address || t('network.connectService.noAddress')}
                 </Text>
               </View>
               {hasLocation ? (
@@ -122,7 +124,7 @@ export function ConnectServiceSheet({
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="ml-2">
-                  <Text className="text-[10px]">No GPS</Text>
+                  <Text className="text-[10px]">{t('network.connectService.noGps')}</Text>
                 </Badge>
               )}
             </TouchableOpacity>
@@ -133,8 +135,8 @@ export function ConnectServiceSheet({
             <Ionicons name="checkmark-circle" size={40} color="#10b981" />
             <Text className="text-muted-foreground mt-2 text-center">
               {search
-                ? 'Tidak ada customer yang cocok'
-                : 'Semua customer sudah terhubung'}
+                ? t('network.connectService.noMatch')
+                : t('network.connectService.allConnected')}
             </Text>
           </View>
         }

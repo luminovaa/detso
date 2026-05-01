@@ -329,7 +329,7 @@ export default function CustomerCreateScreen() {
                       {watch("lat") && watch("long") ? (
                         <View>
                           <Text className="text-foreground text-xs" numberOfLines={2}>
-                            {watch("address_service") || "Lokasi dipilih"}
+                            {watch("address_service") || t("customer.locationSelected")}
                           </Text>
                           <Text className="text-muted-foreground text-[10px] mt-1">
                             {watch("lat")}, {watch("long")}

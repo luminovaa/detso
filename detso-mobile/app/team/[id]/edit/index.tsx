@@ -51,12 +51,12 @@ export default function TeamEditScreen() {
     {
       value: Detso_Role.TENANT_ADMIN,
       label: t("team.roleAdmin"),
-      description: "Manage team & data",
+      description: t("team.roleAdminDesc"),
     },
     {
       value: Detso_Role.TENANT_TEKNISI,
       label: t("team.roleTechnician"),
-      description: "Field operations",
+      description: t("team.roleTechnicianDesc"),
     },
   ];
 

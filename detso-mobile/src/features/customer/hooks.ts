@@ -4,6 +4,7 @@ import { CreateCustomerInput, GettAllInput, UpdateCustomerInput } from './schema
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const customerKeys = {
@@ -52,16 +53,17 @@ export function useCustomer(id: string) {
 /** Create a new customer. Invalidates list cache & emits event on success. */
 export function useCreateCustomer() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateCustomerInput) => customerService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
       eventBus.emit(EVENTS.CUSTOMER.CREATED, { customerId: res?.data?.id ?? '' });
-      showToast.success('Berhasil', 'Customer berhasil ditambahkan');
+      showToast.success(t('common.success'), t('customer.createSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menambahkan customer');
+      showErrorToast(error, t('customer.createFailed'));
     },
   });
 }
@@ -69,6 +71,7 @@ export function useCreateCustomer() {
 /** Update an existing customer. Invalidates detail + list cache. */
 export function useUpdateCustomer() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateCustomerInput }) =>
@@ -77,10 +80,10 @@ export function useUpdateCustomer() {
       qc.invalidateQueries({ queryKey: customerKeys.detail(id) });
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
       eventBus.emit(EVENTS.CUSTOMER.UPDATED, { customerId: id });
-      showToast.success('Berhasil', 'Customer berhasil diupdate');
+      showToast.success(t('common.success'), t('customer.updateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate customer');
+      showErrorToast(error, t('customer.updateFailed'));
     },
   });
 }
@@ -88,6 +91,7 @@ export function useUpdateCustomer() {
 /** Delete a customer. Removes from cache & emits event. */
 export function useDeleteCustomer() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => customerService.delete(id),
@@ -95,10 +99,10 @@ export function useDeleteCustomer() {
       qc.removeQueries({ queryKey: customerKeys.detail(id) });
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
       eventBus.emit(EVENTS.CUSTOMER.DELETED, { customerId: id });
-      showToast.success('Berhasil', 'Customer berhasil dihapus');
+      showToast.success(t('common.success'), t('customer.deleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus customer');
+      showErrorToast(error, t('customer.deleteFailed'));
     },
   });
 }

@@ -143,12 +143,12 @@ export default function SettingsScreen() {
           {user?.role === "TENANT_OWNER" && (
             <>
               <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
-                Perusahaan
+                {t("settingsCompany.sectionTitle")}
               </Text>
               <Card className="mb-8">
                 <CardContent className="p-0">
                   <SettingRow
-                    label="Edit Profil ISP"
+                    label={t("settingsCompany.editIspProfile")}
                     iconName="business"
                     onPress={() => router.push("/settings/edit-tenant")}
                     isLast

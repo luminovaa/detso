@@ -12,6 +12,7 @@ import { Badge } from '@/src/components/global/badge';
 import { Button } from '@/src/components/global/button';
 import { NetworkService, NetworkTopology } from '@/src/features/network/types';
 import { useDeleteLink } from '@/src/features/network/hooks';
+import { useT } from '@/src/features/i18n/store';
 
 interface ServiceDetailSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -26,6 +27,7 @@ export function ServiceDetailSheet({
   topology,
   onDismiss,
 }: ServiceDetailSheetProps) {
+  const { t } = useT();
   const deleteLink = useDeleteLink();
 
   if (!service) return null;
@@ -46,21 +48,21 @@ export function ServiceDetailSheet({
 
   const statusLabel =
     service.status === 'ACTIVE'
-      ? 'Aktif'
+      ? t('network.serviceDetail.active')
       : service.status === 'INACTIVE'
-      ? 'Nonaktif'
-      : 'Suspended';
+      ? t('network.serviceDetail.inactive')
+      : t('network.serviceDetail.suspended');
 
   const handleDisconnect = () => {
     if (!link) return;
 
     Alert.alert(
-      'Putuskan Koneksi',
-      `Yakin ingin memutuskan "${service.customer_name}" dari ${connectedNode?.name || 'ODP'}?`,
+      t('network.serviceDetail.disconnectTitle'),
+      t('network.serviceDetail.disconnectMessage', { customer: service.customer_name, node: connectedNode?.name || 'ODP' }),
       [
-        { text: 'Batal', style: 'cancel' },
+        { text: t('network.serviceDetail.cancel'), style: 'cancel' },
         {
-          text: 'Putuskan',
+          text: t('network.serviceDetail.disconnect'),
           style: 'destructive',
           onPress: () => {
             deleteLink.mutate(link.id, {
@@ -73,7 +75,7 @@ export function ServiceDetailSheet({
   };
 
   return (
-    <BottomSheet ref={sheetRef} snapPoints={['38%']} onDismiss={onDismiss} enableScroll>
+    <BottomSheet ref={sheetRef} onDismiss={onDismiss}>
       <BottomSheetHeader>
         <View className="flex-row items-center gap-2">
           <View className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center">
@@ -114,7 +116,7 @@ export function ServiceDetailSheet({
           <View className="flex-row items-center gap-2">
             <Ionicons name="cube-outline" size={16} color="#6b7280" />
             <Text className="text-sm text-muted-foreground">
-              Terhubung ke: {connectedNode.name}
+              {t('network.serviceDetail.connectedTo', { name: connectedNode.name })}
             </Text>
           </View>
         )}
@@ -132,7 +134,7 @@ export function ServiceDetailSheet({
         <Button variant="destructive" onPress={handleDisconnect}>
           <View className="flex-row items-center gap-1">
             <Ionicons name="unlink" size={14} color="white" />
-            <Text className="text-sm text-white">Putuskan dari {connectedNode?.name || 'ODP'}</Text>
+            <Text className="text-sm text-white">{t('network.serviceDetail.disconnectBtn', { name: connectedNode?.name || 'ODP' })}</Text>
           </View>
         </Button>
       )}

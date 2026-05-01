@@ -15,6 +15,7 @@ import _debounce from "lodash.debounce";
 import { cn } from "../../lib/utils";
 import { Text } from "./text";
 import { Label } from "./label";
+import { useT } from "@/src/features/i18n/store";
 
 export interface SelectOption {
   label: string;
@@ -71,12 +72,14 @@ export const AsyncSelect = <T extends FieldValues>({
   label,
   required,
   hint,
-  placeholder = "Pilih opsi...",
+  placeholder,
   fetchOptions,
   initialLabel = "",
   highlightSearch = false,
   onSelectFullObject,
 }: AsyncSelectProps<T>) => {
+  const { t } = useT();
+  const resolvedPlaceholder = placeholder || t("components.select.placeholder");
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState("");
   const [options, setOptions] = useState<SelectOption[]>([]);
@@ -158,7 +161,7 @@ export const AsyncSelect = <T extends FieldValues>({
     <Controller
       control={control}
       name={name}
-      rules={{ required: required ? `${label} wajib diisi` : false }}
+      rules={{ required: required ? t("components.select.required", { label }) : false }}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <View className="mb-4">
           <Label>
@@ -187,7 +190,7 @@ export const AsyncSelect = <T extends FieldValues>({
               )}
               numberOfLines={1}
             >
-              {selectedDisplayLabel || placeholder}
+              {selectedDisplayLabel || resolvedPlaceholder}
             </Text>
             <Ionicons
               name="chevron-down-outline"
@@ -215,7 +218,7 @@ export const AsyncSelect = <T extends FieldValues>({
                 {/* Modal Header */}
                 <View className="flex-row items-center justify-between px-6 pt-5 pb-4 border-b border-border">
                   <Text weight="bold" className="text-xl text-foreground">
-                    Pilih {label}
+                    {t("components.select.modalTitle", { label })}
                   </Text>
                   <TouchableOpacity
                     onPress={handleCloseModal}
@@ -236,7 +239,7 @@ export const AsyncSelect = <T extends FieldValues>({
                     />
                     <TextInput
                       className="flex-1 text-base text-foreground ml-3"
-                      placeholder="Cari data..."
+                      placeholder={t("components.select.searchPlaceholder")}
                       placeholderTextColor="#94a3b8"
                       value={search}
                       onChangeText={handleSearchChange}
@@ -316,7 +319,7 @@ export const AsyncSelect = <T extends FieldValues>({
                             <ActivityIndicator size="small" color="#1d4ed8" />
                           </View>
                           <Text className="text-muted-foreground">
-                            Memuat data...
+                            {t("components.select.loading")}
                           </Text>
                         </View>
                       ) : (
@@ -330,8 +333,8 @@ export const AsyncSelect = <T extends FieldValues>({
                           </View>
                           <Text className="text-muted-foreground text-center px-8">
                             {search
-                              ? `Tidak ada hasil untuk "${search}"`
-                              : "Tidak ada data tersedia"}
+                              ? t("components.select.noResults", { search })
+                              : t("components.select.empty")}
                           </Text>
                         </View>
                       )}
@@ -345,7 +348,7 @@ export const AsyncSelect = <T extends FieldValues>({
                         <View className="py-6 items-center">
                           <ActivityIndicator size="small" color="#1d4ed8" />
                           <Text className="text-muted-foreground text-xs mt-2">
-                            Memuat lebih banyak...
+                            {t("components.select.loadingMore")}
                           </Text>
                         </View>
                       );
@@ -355,7 +358,7 @@ export const AsyncSelect = <T extends FieldValues>({
                         <View className="py-4 items-center">
                           <View className="h-[2px] w-16 bg-border mb-2 rounded-full" />
                           <Text className="text-muted-foreground text-xs">
-                            Semua data ditampilkan
+                            {t("components.select.allShown")}
                           </Text>
                         </View>
                       );

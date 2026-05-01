@@ -21,7 +21,10 @@
     "forgotPassword": "Forgot Password?",
     "loginBtn": "Sign In",
     "needHelp": "Don't have an account?",
-    "contactAdmin": "Contact Admin"
+    "contactAdmin": "Contact Admin",
+    "loginSuccessTitle": "Authorization Successful",
+    "loginSuccessDesc": "Welcome back to Detso!",
+    "loginFailedTitle": "Login Failed"
   },
 
   "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
@@ -146,6 +149,9 @@
     "successCreate": "Package successfully added",
     "successUpdate": "Package successfully updated",
     "successDelete": "Package successfully deleted",
+    "createFailed": "Failed to add package",
+    "updateFailed": "Failed to update package",
+    "deleteFailed": "Failed to delete package",
     "createdAt": "Created",
     "updatedAt": "Updated",
     "deleteConfirm": "Delete Package",
@@ -178,6 +184,8 @@
     "rolePlaceholder": "Select role",
     "roleAdmin": "Admin",
     "roleTechnician": "Technician",
+    "roleAdminDesc": "Manage team & data",
+    "roleTechnicianDesc": "Field operations",
     "submitBtn": "Save Member",
     "saveBtn": "Save Changes",
     "creating": "Saving...",
@@ -185,7 +193,15 @@
     "deleteConfirm": "Remove Member",
     "deleteMessage": "Are you sure you want to remove this team member?",
     "deleteBtn": "Remove",
-    "cancelBtn": "Cancel"
+    "cancelBtn": "Cancel",
+    "updateSuccess": "Member updated successfully",
+    "updateFailed": "Failed to update member",
+    "passwordChangeSuccess": "Password changed successfully",
+    "passwordChangeFailed": "Failed to change password",
+    "createSuccess": "Team member added successfully",
+    "createFailed": "Failed to add team member",
+    "deleteSuccess": "Member deleted successfully",
+    "deleteFailed": "Failed to delete member"
   },
 
   "_comment_customer": "Customer Management Screens (app/customer/)",
@@ -201,6 +217,12 @@
     "deleteMessage": "Are you sure you want to delete this customer?",
     "deleteBtn": "Delete",
     "cancelBtn": "Cancel",
+    "createSuccess": "Customer added successfully",
+    "createFailed": "Failed to add customer",
+    "updateSuccess": "Customer updated successfully",
+    "updateFailed": "Failed to update customer",
+    "deleteSuccess": "Customer deleted successfully",
+    "deleteFailed": "Failed to delete customer",
     "step": "Step",
     "of": "of",
     "next": "Next",
@@ -236,6 +258,7 @@
     "addressServiceLabel": "Installation Address",
     "addressServicePlaceholder": "Enter installation address",
     "selectOnMap": "Select location on map",
+    "locationSelected": "Location selected",
     "notesLabel": "Notes",
     "notesPlaceholder": "Additional notes (optional)",
     "ipLabel": "IP Address",
@@ -268,6 +291,12 @@
     "saveBtn": "Save Changes",
     "creating": "Saving...",
     "updating": "Updating...",
+    "createSuccess": "Service connection created successfully",
+    "createFailed": "Failed to create service connection",
+    "updateSuccess": "Service connection updated successfully",
+    "updateFailed": "Failed to update service connection",
+    "deleteSuccess": "Service connection deleted successfully",
+    "deleteFailed": "Failed to delete service connection",
     "customerLabel": "Customer",
     "customerPlaceholder": "Select customer",
     "packageLabel": "Service Package",
@@ -499,7 +528,12 @@
     "confirmStatusUpdate": "Update Status",
     "statusUpdated": "Status updated successfully",
     "ticketCreated": "Ticket created successfully",
-    "ticketUpdated": "Ticket updated successfully"
+    "ticketUpdated": "Ticket updated successfully",
+    "createFailed": "Failed to create ticket",
+    "updateFailed": "Failed to update ticket",
+    "statusUpdateFailed": "Failed to update ticket status",
+    "deleteSuccess": "Ticket deleted successfully",
+    "deleteFailed": "Failed to delete ticket"
   },
 
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
@@ -511,34 +545,34 @@
     "doubleBackExit": "Press again to exit"
   },
 
-  "_comment_schedule": "Schedule Calendar Screen (app/(tabs)/schedule.tsx)",
+  "_comment_schedule": "Schedule Day View Screen (app/(tabs)/schedule.tsx)",
   "schedule": {
     "title": "Work Schedule",
-    "calendar": "Calendar",
     "today": "Today",
-    "noSchedules": "No schedules",
-    "scheduleCount": "{{count}} schedule",
-    "scheduleCount_plural": "{{count}} schedules",
-    "monthNames": {
-      "january": "January",
-      "february": "February",
-      "march": "March",
-      "april": "April",
-      "may": "May",
-      "june": "June",
-      "july": "July",
-      "august": "August",
-      "september": "September",
-      "october": "October",
-      "november": "November",
-      "december": "December"
-    },
-    "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "noSchedules": "No schedules for this day",
+    "allDay": "All Day",
+    "createTitle": "Create New Schedule",
+    "createSuccess": "Schedule created successfully",
+    "createFailed": "Failed to create schedule",
+    "updateSuccess": "Schedule updated successfully",
+    "updateFailed": "Failed to update schedule",
     "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     "status": {
       "scheduled": "Scheduled",
       "completed": "Completed",
       "cancelled": "Cancelled"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. WiFi Installation",
+      "technician": "Technician",
+      "technicianPlaceholder": "Select technician",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "endTimePlaceholder": "Optional",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "submit": "Create Schedule"
     }
   },
 
@@ -549,5 +583,239 @@
     "isp": "ISP",
     "map": "Map",
     "settings": "Settings"
+  },
+
+  "_comment_errorBoundary": "Error Boundary Component (src/components/global/error-boundary.tsx)",
+  "errorBoundary": {
+    "title": "Oops, Something Went Wrong!",
+    "desc": "The app encountered an unexpected system error. We have logged this issue.",
+    "reloadBtn": "Reload App"
+  },
+
+  "_comment_network": "Network Map Components (src/components/screens/network/)",
+  "network": {
+    "addNode": {
+      "title": "Add Node",
+      "selectType": "Select the type of node to add:",
+      "editServer": "Edit Server",
+      "editODP": "Edit ODP",
+      "addServer": "Add Server",
+      "addODP": "Add ODP",
+      "coordinate": "Coordinate:",
+      "nameLabel": "Name *",
+      "namePlaceholderODP": "ODP-01",
+      "namePlaceholderServer": "Main Server",
+      "addressLabel": "Address (optional)",
+      "addressPlaceholder": "Jl. Merdeka Pole 5",
+      "slotLabel": "Slot/Port Count",
+      "slotPlaceholder": "8",
+      "parentServerLabel": "Parent Server *",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Additional notes...",
+      "saving": "Saving...",
+      "save": "Save",
+      "nameRequired": "Name is required"
+    },
+    "connectService": {
+      "title": "Connect Customer",
+      "description": "Connect customer to {{name}}",
+      "searchPlaceholder": "Search customer...",
+      "unknown": "Unknown",
+      "noAddress": "No address",
+      "noGps": "No GPS",
+      "noMatch": "No matching customer",
+      "allConnected": "All customers are already connected"
+    },
+    "nodeDetail": {
+      "server": "Server",
+      "odp": "ODP",
+      "deleteTitle": "Delete {{type}}",
+      "deleteMessage": "Are you sure you want to delete \"{{name}}\"?",
+      "deleteWarningServer": "\n\nConnected ODPs will lose their parent server.",
+      "deleteWarningODP": "\n\nAll connections to customers will be removed.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "slotUsed": "Slot: {{used}}/{{total}} used",
+      "parent": "Parent: {{name}}",
+      "odpConnected": "{{count}} ODP connected",
+      "edit": "Edit",
+      "connect": "Connect",
+      "remove": "Delete"
+    },
+    "serviceDetail": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "disconnectTitle": "Disconnect",
+      "disconnectMessage": "Are you sure you want to disconnect \"{{customer}}\" from {{node}}?",
+      "cancel": "Cancel",
+      "disconnect": "Disconnect",
+      "connectedTo": "Connected to: {{name}}",
+      "disconnectBtn": "Disconnect from {{name}}"
+    },
+    "filter": {
+      "all": "All",
+      "server": "Server",
+      "odp": "ODP",
+      "customer": "Customer"
+    },
+    "legend": {
+      "server": "Server",
+      "odp": "ODP",
+      "ont": "ONT",
+      "fiber": "Fiber",
+      "drop": "Drop"
+    },
+    "banner": {
+      "tapToPlace": "Tap on the map to place {{type}}"
+    },
+    "nodeCreateSuccess": "Node added successfully",
+    "nodeCreateFailed": "Failed to add node",
+    "nodeUpdateSuccess": "Node updated successfully",
+    "nodeUpdateFailed": "Failed to update node",
+    "nodeDeleteSuccess": "Node deleted successfully",
+    "nodeDeleteFailed": "Failed to delete node",
+    "linkCreateSuccess": "Connection created successfully",
+    "linkCreateFailed": "Failed to create connection",
+    "linkUpdateSuccess": "Link updated successfully",
+    "linkUpdateFailed": "Failed to update link",
+    "linkDeleteSuccess": "Connection deleted successfully",
+    "linkDeleteFailed": "Failed to delete connection",
+    "mapScreen": {
+      "loading": "Loading network map...",
+      "preparing": "Preparing network map...",
+      "creatingServer": "Creating server at {{name}} location",
+      "loadFailed": "Failed to Load",
+      "loadFailedDesc": "Unable to load network data. Check your internet connection.",
+      "retry": "Try Again",
+      "locationNotSet": "ISP Location Not Set",
+      "locationNotSetDesc": "Set your ISP location first to start the network map. The first server will be automatically created at that location.",
+      "setLocation": "Set ISP Location"
+    }
+  },
+
+  "_comment_editTenant": "Edit Tenant Screen (app/settings/edit-tenant/index.tsx)",
+  "editTenant": {
+    "title": "Edit ISP Profile",
+    "notFound": "Tenant not found",
+    "logoLabel": "Company Logo",
+    "infoSection": "Company Information",
+    "nameLabel": "Company Name",
+    "namePlaceholder": "PT Internet Cepat",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "08123456789",
+    "locationLabel": "Location",
+    "selectOnMap": "Select location on map",
+    "saving": "Saving...",
+    "save": "Save",
+    "successTitle": "Success",
+    "successDesc": "ISP profile successfully updated"
+  },
+
+  "_comment_tenant": "Tenant Management (src/features/tenant/hooks.ts)",
+  "tenant": {
+    "createSuccess": "Tenant added successfully",
+    "createFailed": "Failed to add tenant",
+    "updateSuccess": "Tenant updated successfully",
+    "updateFailed": "Failed to update tenant",
+    "deleteSuccess": "Tenant deleted successfully",
+    "deleteFailed": "Failed to delete tenant"
+  },
+
+  "_comment_settingsCompany": "Settings Company Section (app/(tabs)/settings.tsx)",
+  "settingsCompany": {
+    "sectionTitle": "Company",
+    "editIspProfile": "Edit ISP Profile"
+  },
+
+  "_comment_components": "Global Reusable Components",
+  "components": {
+    "select": {
+      "placeholder": "Select option...",
+      "required": "{{label}} is required",
+      "modalTitle": "Select {{label}}",
+      "searchPlaceholder": "Search data...",
+      "loading": "Loading data...",
+      "noResults": "No results for \"{{search}}\"",
+      "empty": "No data available",
+      "loadingMore": "Loading more...",
+      "allShown": "All data shown"
+    },
+    "datePicker": {
+      "placeholder": "Select date...",
+      "required": "{{label}} is required",
+      "confirm": "Select",
+      "cancel": "Cancel"
+    },
+    "searchBar": {
+      "placeholder": "Search..."
+    },
+    "titleHeader": {
+      "placeholder": "Search...",
+      "filter": "Filter"
+    },
+    "actionSheet": {
+      "cancel": "Cancel"
+    }
+  },
+
+  "_comment_validation": "Form Validation Messages (schemas)",
+  "validation": {
+    "required": "{{field}} is required",
+    "nameRequired": "Name is required",
+    "nameMin3": "Name must be at least 3 characters",
+    "nameMax100": "Name must not exceed 100 characters",
+    "phoneRequired": "Phone number is required",
+    "phoneInvalid": "Phone number is not valid",
+    "phoneMin10": "Phone number must be at least 10 characters",
+    "emailInvalid": "Email is not valid",
+    "nikLength": "NIK must be exactly 16 digits",
+    "nikOnlyNumbers": "NIK must contain only numbers",
+    "maxDocuments": "Maximum 5 documents",
+    "duplicateDocType": "Duplicate document types are not allowed (e.g. two KTP)",
+    "photoTypeRequired": "Photo type is required",
+    "docTypeRequired": "Document type is required",
+    "passwordOldRequired": "Old password is required",
+    "passwordNewMin": "New password must be at least 6 characters",
+    "passwordConfirmRequired": "Password confirmation is required",
+    "passwordMismatch": "New password and confirmation do not match",
+    "usernameMin3": "Username must be at least 3 characters",
+    "macInvalid": "MAC address format is not valid",
+    "customerIdRequired": "Customer ID is required",
+    "packageIdRequired": "Package ID is required",
+    "addressRequired": "Address is required",
+    "packageNameRequired": "Package name is required",
+    "packageSpeedRequired": "Package speed is required",
+    "ipInvalid": "IP address is not valid",
+    "macMin12": "MAC address must be at least 12 characters",
+    "packageRequired": "Package must be selected",
+    "addressServiceMin": "Installation address must be at least 10 characters",
+    "addressKtpMin": "KTP address must be at least 10 characters",
+    "identifierMin3": "Username/email must be at least 3 characters",
+    "passwordMin3": "Password must be at least 3 characters",
+    "addressMin3": "Address must be at least 3 characters",
+    "fullNameMin3": "Full name must be at least 3 characters",
+    "companyNameMin3": "Company name must be at least 3 characters",
+    "fullNameRequired": "Full name is required",
+    "packageNameMin3": "Package name must be at least 3 characters",
+    "priceNonNegative": "Price must not be negative",
+    "idInvalid": "ID is not valid",
+    "technicianRequired": "Technician must be selected",
+    "technicianIdRequired": "Technician ID is required",
+    "timeFormatInvalid": "Time format is not valid"
+  },
+
+  "_comment_apiError": "API Error Messages (src/lib/api-error.ts)",
+  "apiError": {
+    "timeout": "Connection timed out. Check your network and try again.",
+    "network": "Unable to connect to server. Check your internet connection.",
+    "validation": "The data sent is not valid.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "The requested data was not found.",
+    "conflict": "Data already exists or a conflict occurred.",
+    "server": "A server error occurred. Please try again later.",
+    "unknown": "An unexpected error occurred.",
+    "unexpected": "An unexpected error occurred."
   }
 }

@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import { useLanguageStore } from '@/src/features/i18n/store';
+
+const t = (key: string) => {
+  const { locale, i18n } = useLanguageStore.getState();
+  return i18n.t(key, { locale });
+};
 
 export enum Detso_Role {
   SAAS_SUPER_ADMIN = 'SAAS_SUPER_ADMIN',
@@ -8,31 +14,31 @@ export enum Detso_Role {
 }
 
 export const loginSchema = z.object({
-  identifier: z.string().min(3, 'Username/email harus minimal 3 karakter'),
-  password: z.string().min(3, 'Kata sandi harus minimal 6 karakter'),
+  identifier: z.string().min(3, t('validation.identifierMin3')),
+  password: z.string().min(3, t('validation.passwordMin3')),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-  phone: z.string().min(10, 'Nomor telepon minimal 10 karakter'),
-  username: z.string().min(3, 'Username minimal 3 karakter'),
-  address: z.string().min(3, 'Alamat minimal 3 karakter'),
+  email: z.string().email(t('validation.emailInvalid')),
+  password: z.string().min(6, t('validation.passwordNewMin')),
+  phone: z.string().min(10, t('validation.phoneMin10')),
+  username: z.string().min(3, t('validation.usernameMin3')),
+  address: z.string().min(3, t('validation.addressMin3')),
   lat: z.string().optional().or(z.literal('')),
   long: z.string().optional().or(z.literal('')),
-  full_name: z.string().min(3, 'Nama lengkap minimal 3 karakter'),
-  company_name: z.string().min(3, 'Nama perusahaan minimal 3 karakter'),
+  full_name: z.string().min(3, t('validation.fullNameMin3')),
+  company_name: z.string().min(3, t('validation.companyNameMin3')),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const createUserSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  username: z.string().min(3, 'Username minimal 3 karakter'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-  full_name: z.string().min(1, 'Nama lengkap wajib diisi'),
+  email: z.string().email(t('validation.emailInvalid')),
+  username: z.string().min(3, t('validation.usernameMin3')),
+  password: z.string().min(6, t('validation.passwordNewMin')),
+  full_name: z.string().min(1, t('validation.fullNameRequired')),
   phone: z.string().optional().or(z.literal('')),
   // Hanya boleh pilih role level Tenant
   role: z.enum([Detso_Role.TENANT_ADMIN, Detso_Role.TENANT_TEKNISI]).optional(),

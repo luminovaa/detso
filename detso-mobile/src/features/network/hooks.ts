@@ -3,6 +3,7 @@ import { networkService } from './service';
 import { CreateNodeInput, EditNodeInput, CreateLinkInput, EditLinkInput } from './types';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 
@@ -49,17 +50,17 @@ export function useNetworkNode(id: string) {
 /** Create a new network node (Server/ODP). */
 export function useCreateNode() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateNodeInput) => networkService.createNode(data),
     onSuccess: (_res, variables) => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
       qc.invalidateQueries({ queryKey: networkKeys.nodes() });
-      const label = variables.type === 'SERVER' ? 'Server' : 'ODP';
-      showToast.success('Berhasil', `${label} "${variables.name}" berhasil ditambahkan`);
+      showToast.success(t('common.success'), t('network.nodeCreateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menambahkan node');
+      showErrorToast(error, t('network.nodeCreateFailed'));
     },
   });
 }
@@ -67,6 +68,7 @@ export function useCreateNode() {
 /** Update an existing network node. */
 export function useEditNode() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: EditNodeInput }) =>
@@ -74,10 +76,10 @@ export function useEditNode() {
     onSuccess: (_res, { id }) => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
       qc.invalidateQueries({ queryKey: networkKeys.node(id) });
-      showToast.success('Berhasil', 'Node berhasil diperbarui');
+      showToast.success(t('common.success'), t('network.nodeUpdateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal memperbarui node');
+      showErrorToast(error, t('network.nodeUpdateFailed'));
     },
   });
 }
@@ -85,16 +87,17 @@ export function useEditNode() {
 /** Delete a network node. */
 export function useDeleteNode() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => networkService.deleteNode(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
       qc.invalidateQueries({ queryKey: networkKeys.nodes() });
-      showToast.success('Berhasil', 'Node berhasil dihapus');
+      showToast.success(t('common.success'), t('network.nodeDeleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus node');
+      showErrorToast(error, t('network.nodeDeleteFailed'));
     },
   });
 }
@@ -102,15 +105,16 @@ export function useDeleteNode() {
 /** Create a link between nodes or node-to-service. */
 export function useCreateLink() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateLinkInput) => networkService.createLink(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
-      showToast.success('Berhasil', 'Koneksi berhasil dibuat');
+      showToast.success(t('common.success'), t('network.linkCreateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal membuat koneksi');
+      showErrorToast(error, t('network.linkCreateFailed'));
     },
   });
 }
@@ -118,16 +122,17 @@ export function useCreateLink() {
 /** Update a link (waypoints, notes, type). */
 export function useEditLink() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: EditLinkInput }) =>
       networkService.editLink(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
-      showToast.success('Berhasil', 'Jalur berhasil diperbarui');
+      showToast.success(t('common.success'), t('network.linkUpdateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal memperbarui jalur');
+      showErrorToast(error, t('network.linkUpdateFailed'));
     },
   });
 }
@@ -135,15 +140,16 @@ export function useEditLink() {
 /** Delete a link. */
 export function useDeleteLink() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => networkService.deleteLink(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: networkKeys.topology() });
-      showToast.success('Berhasil', 'Koneksi berhasil dihapus');
+      showToast.success(t('common.success'), t('network.linkDeleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus koneksi');
+      showErrorToast(error, t('network.linkDeleteFailed'));
     },
   });
 }

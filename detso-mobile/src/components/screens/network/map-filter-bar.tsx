@@ -3,16 +3,18 @@ import { View, TouchableOpacity, ScrollView } from 'react-native';
 import { Text } from '@/src/components/global/text';
 import { MapFilterType } from '@/src/features/network/types';
 import { useNetworkMapStore } from '@/src/features/network/store';
-
-const FILTERS: { key: MapFilterType; label: string }[] = [
-  { key: 'ALL', label: 'Semua' },
-  { key: 'SERVER', label: 'Server' },
-  { key: 'ODP', label: 'ODP' },
-  { key: 'ONT', label: 'Customer' },
-];
+import { useT } from '@/src/features/i18n/store';
 
 export function MapFilterBar() {
+  const { t } = useT();
   const { filterType, setFilter } = useNetworkMapStore();
+
+  const FILTERS: { key: MapFilterType; label: string }[] = [
+    { key: 'ALL', label: t('network.filter.all') },
+    { key: 'SERVER', label: t('network.filter.server') },
+    { key: 'ODP', label: t('network.filter.odp') },
+    { key: 'ONT', label: t('network.filter.customer') },
+  ];
 
   return (
     <View className="absolute top-14 left-0 right-0 z-10 px-4">

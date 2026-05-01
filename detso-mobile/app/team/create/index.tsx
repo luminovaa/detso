@@ -47,13 +47,13 @@ export default function TeamCreateScreen() {
       value: Detso_Role.TENANT_ADMIN,
       label: t("team.roleAdmin"),
       icon: "shield",
-      description: "Manage team & data",
+      description: t("team.roleAdminDesc"),
     },
     {
       value: Detso_Role.TENANT_TEKNISI,
       label: t("team.roleTechnician"),
       icon: "construct",
-      description: "Field operations",
+      description: t("team.roleTechnicianDesc"),
     },
   ];
 

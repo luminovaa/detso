@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cn } from "../../lib/utils";
+import { useT } from "@/src/features/i18n/store";
 
 export interface SearchBarProps {
   value: string;
@@ -26,7 +27,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
     {
       value,
       onChangeText,
-      placeholder = "Cari...",
+      placeholder,
       onClear,
       onFocus,
       onBlur,
@@ -36,6 +37,8 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
     },
     ref
   ) => {
+    const { t } = useT();
+    const resolvedPlaceholder = placeholder || t("components.searchBar.placeholder");
     const [isFocused, setIsFocused] = useState(false);
 
     const handleClear = () => {
@@ -76,7 +79,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
           ref={ref}
           value={value}
           onChangeText={onChangeText}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           placeholderTextColor="#94a3b8"
           className="flex-1 h-full text-base text-foreground"
           onFocus={handleFocus}

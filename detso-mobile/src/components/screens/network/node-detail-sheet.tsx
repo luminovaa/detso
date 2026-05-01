@@ -12,6 +12,7 @@ import { Badge } from '@/src/components/global/badge';
 import { Button } from '@/src/components/global/button';
 import { NetworkNode } from '@/src/features/network/types';
 import { useDeleteNode } from '@/src/features/network/hooks';
+import { useT } from '@/src/features/i18n/store';
 
 interface NodeDetailSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -28,26 +29,27 @@ export function NodeDetailSheet({
   onConnect,
   onDismiss,
 }: NodeDetailSheetProps) {
+  const { t } = useT();
   const deleteNode = useDeleteNode();
 
   if (!node) return null;
 
   const isServer = node.type === 'SERVER';
   const iconColor = isServer ? '#8b5cf6' : '#3b82f6';
-  const typeLabel = isServer ? 'Server' : 'ODP';
+  const typeLabel = isServer ? t('network.nodeDetail.server') : t('network.nodeDetail.odp');
 
   const handleDelete = () => {
     Alert.alert(
-      `Hapus ${typeLabel}`,
-      `Yakin ingin menghapus "${node.name}"?${
+      t('network.nodeDetail.deleteTitle', { type: typeLabel }),
+      `${t('network.nodeDetail.deleteMessage', { name: node.name })}${
         isServer
-          ? '\n\nODP yang terhubung akan kehilangan parent server.'
-          : '\n\nSemua koneksi ke customer akan dihapus.'
+          ? t('network.nodeDetail.deleteWarningServer')
+          : t('network.nodeDetail.deleteWarningODP')
       }`,
       [
-        { text: 'Batal', style: 'cancel' },
+        { text: t('network.nodeDetail.cancel'), style: 'cancel' },
         {
-          text: 'Hapus',
+          text: t('network.nodeDetail.delete'),
           style: 'destructive',
           onPress: () => {
             deleteNode.mutate(node.id, {
@@ -62,7 +64,7 @@ export function NodeDetailSheet({
   };
 
   return (
-    <BottomSheet ref={sheetRef} snapPoints={['42%']} onDismiss={onDismiss} enableScroll>
+    <BottomSheet ref={sheetRef} onDismiss={onDismiss}>
       <BottomSheetHeader>
         {/* Type badge + Name */}
         <View className="flex-row items-center gap-2 mb-1">
@@ -98,7 +100,7 @@ export function NodeDetailSheet({
           <View className="flex-row items-center gap-2">
             <Ionicons name="git-branch-outline" size={16} color="#6b7280" />
             <Text className="text-sm text-muted-foreground">
-              Slot: {node.used_slot}/{node.slot} terpakai
+              {t('network.nodeDetail.slotUsed', { used: node.used_slot, total: node.slot })}
             </Text>
           </View>
         )}
@@ -107,7 +109,7 @@ export function NodeDetailSheet({
           <View className="flex-row items-center gap-2">
             <Ionicons name="server-outline" size={16} color="#6b7280" />
             <Text className="text-sm text-muted-foreground">
-              Parent: {node.parent_name}
+              {t('network.nodeDetail.parent', { name: node.parent_name })}
             </Text>
           </View>
         )}
@@ -116,7 +118,7 @@ export function NodeDetailSheet({
           <View className="flex-row items-center gap-2">
             <Ionicons name="cube-outline" size={16} color="#6b7280" />
             <Text className="text-sm text-muted-foreground">
-              {node.children_count} ODP terhubung
+              {t('network.nodeDetail.odpConnected', { count: node.children_count })}
             </Text>
           </View>
         )}
@@ -134,7 +136,7 @@ export function NodeDetailSheet({
         <Button variant="outline" className="flex-1" onPress={onEdit}>
           <View className="flex-row items-center gap-1">
             <Ionicons name="pencil" size={14} color="#6b7280" />
-            <Text className="text-sm">Edit</Text>
+            <Text className="text-sm">{t('network.nodeDetail.edit')}</Text>
           </View>
         </Button>
 
@@ -142,7 +144,7 @@ export function NodeDetailSheet({
           <Button variant="outline" className="flex-1" onPress={onConnect}>
             <View className="flex-row items-center gap-1">
               <Ionicons name="link" size={14} color="#3b82f6" />
-              <Text className="text-sm text-blue-500">Connect</Text>
+              <Text className="text-sm text-blue-500">{t('network.nodeDetail.connect')}</Text>
             </View>
           </Button>
         )}
@@ -150,7 +152,7 @@ export function NodeDetailSheet({
         <Button variant="destructive" className="flex-1" onPress={handleDelete}>
           <View className="flex-row items-center gap-1">
             <Ionicons name="trash" size={14} color="white" />
-            <Text className="text-sm text-white">Hapus</Text>
+            <Text className="text-sm text-white">{t('network.nodeDetail.remove')}</Text>
           </View>
         </Button>
       </View>

@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { Text } from "./text";
 import { cn } from "../../lib/utils";
+import { useT } from "@/src/features/i18n/store";
 
 export interface TitleHeaderProps {
   type: "sticky" | "large" | "fixed";
@@ -33,9 +34,11 @@ export function TitleHeader({
   onSearchChange,
   onFilterPress,
   onBackPress,
-  placeholder = "Cari...",
+  placeholder,
   rightElement,
 }: TitleHeaderProps) {
+  const { t } = useT();
+  const resolvedPlaceholder = placeholder || t("components.titleHeader.placeholder");
   // --- ANIMASI REANIMATED ---
   const stickyStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [50, 90], [0, 1], Extrapolation.CLAMP),
@@ -82,7 +85,7 @@ export function TitleHeader({
             className="mr-2"
           />
           <TextInput
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 text-foreground text-base h-full"
@@ -102,7 +105,7 @@ export function TitleHeader({
               weight="semibold"
               className="text-primary-foreground ml-2 text-sm"
             >
-              Filter
+              {t("components.titleHeader.filter")}
             </Text>
           </TouchableOpacity>
         )}
@@ -144,7 +147,7 @@ export function TitleHeader({
                     weight="semibold"
                     className="text-primary-foreground ml-2 text-sm"
                   >
-                    Filter
+                    {t("components.titleHeader.filter")}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -164,7 +167,7 @@ export function TitleHeader({
               className="mr-2"
             />
             <TextInput
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               value={searchQuery}
               onChangeText={onSearchChange}
               className="flex-1 text-foreground text-base h-full"
@@ -225,7 +228,7 @@ export function TitleHeader({
                     weight="semibold"
                     className="text-primary-foreground ml-2 text-sm"
                   >
-                    Filter
+                    {t("components.titleHeader.filter")}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -252,7 +255,7 @@ export function TitleHeader({
               className="mr-2"
             />
             <TextInput
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               value={searchQuery}
               onChangeText={onSearchChange}
               className="flex-1 text-foreground text-base h-full"

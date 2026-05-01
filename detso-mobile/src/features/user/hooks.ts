@@ -6,6 +6,7 @@ import { CreateUserInput } from '@/src/features/auth/schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const userKeys = {
@@ -54,6 +55,7 @@ export function useUser(id: string) {
 /** Update user info (supports FormData for avatar). */
 export function useUpdateUser() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateUserInput | FormData }) =>
@@ -62,24 +64,26 @@ export function useUpdateUser() {
       qc.invalidateQueries({ queryKey: userKeys.detail(id) });
       qc.invalidateQueries({ queryKey: userKeys.lists() });
       eventBus.emit(EVENTS.USER.UPDATED, { userId: id });
-      showToast.success('Berhasil', 'User berhasil diupdate');
+      showToast.success(t('common.success'), t('team.updateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate user');
+      showErrorToast(error, t('team.updateFailed'));
     },
   });
 }
 
 /** Change current user's password. */
 export function useUpdatePassword() {
+  const { t } = useT();
+
   return useMutation({
     mutationFn: (data: UpdatePasswordInput) => userService.updatePassword(data),
     onSuccess: () => {
       eventBus.emit(EVENTS.USER.PASSWORD_CHANGED);
-      showToast.success('Berhasil', 'Password berhasil diubah');
+      showToast.success(t('common.success'), t('team.passwordChangeSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengubah password');
+      showErrorToast(error, t('team.passwordChangeFailed'));
     },
   });
 }
@@ -87,16 +91,17 @@ export function useUpdatePassword() {
 /** Create a new user (team member). */
 export function useCreateUser() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateUserInput) => authService.register(data as any),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: userKeys.lists() });
       eventBus.emit(EVENTS.USER.CREATED, { userId: res?.data?.id ?? '' });
-      showToast.success('Berhasil', 'Anggota tim berhasil ditambahkan');
+      showToast.success(t('common.success'), t('team.createSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menambahkan anggota tim');
+      showErrorToast(error, t('team.createFailed'));
     },
   });
 }
@@ -104,6 +109,7 @@ export function useCreateUser() {
 /** Delete a user. */
 export function useDeleteUser() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => userService.delete(id),
@@ -111,10 +117,10 @@ export function useDeleteUser() {
       qc.removeQueries({ queryKey: userKeys.detail(id) });
       qc.invalidateQueries({ queryKey: userKeys.lists() });
       eventBus.emit(EVENTS.USER.DELETED, { userId: id });
-      showToast.success('Berhasil', 'User berhasil dihapus');
+      showToast.success(t('common.success'), t('team.deleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus user');
+      showErrorToast(error, t('team.deleteFailed'));
     },
   });
 }

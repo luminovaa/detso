@@ -8,6 +8,7 @@ import { formatDate, formatTime, formatDateTime } from "@/src/lib/format-date";
 import { cn } from "@/src/lib/utils";
 import { Text } from "@/src/components/global/text";
 import { Label } from "@/src/components/global/label";
+import { useT } from "@/src/features/i18n/store";
 
 interface FormDatePickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -27,11 +28,13 @@ export function FormDatePicker<T extends FieldValues>({
   label,
   required,
   hint,
-  placeholder = "Pilih tanggal...",
+  placeholder,
   mode = "date",
   minimumDate,
   maximumDate,
 }: FormDatePickerProps<T>) {
+  const { t } = useT();
+  const resolvedPlaceholder = placeholder || t("components.datePicker.placeholder");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const showDatePicker = () => setDatePickerVisibility(true);
@@ -41,7 +44,7 @@ export function FormDatePicker<T extends FieldValues>({
     <Controller
       control={control}
       name={name}
-      rules={{ required: required ? `${label} wajib diisi` : false }}
+      rules={{ required: required ? t("components.datePicker.required", { label }) : false }}
       render={({ field: { onChange, value }, fieldState: { error } }) => {
         // Fungsi saat user memencet tombol "OK" / "Confirm" di kalender
         const handleConfirm = (date: Date) => {
@@ -89,7 +92,7 @@ export function FormDatePicker<T extends FieldValues>({
                     : mode === "datetime"
                       ? formatDateTime(new Date(value))
                       : formatDate(new Date(value))
-                  : placeholder}{" "}
+                  : resolvedPlaceholder}{" "}
               </Text>
             </TouchableOpacity>
 
@@ -109,8 +112,8 @@ export function FormDatePicker<T extends FieldValues>({
               minimumDate={minimumDate}
               maximumDate={maximumDate}
               // Konfigurasi khusus iOS agar tombolnya berbahasa Indonesia/Custom
-              confirmTextIOS="Pilih"
-              cancelTextIOS="Batal"
+              confirmTextIOS={t("components.datePicker.confirm")}
+              cancelTextIOS={t("components.datePicker.cancel")}
               // Biarkan OS menentukan tema (Dark/Light) agar tidak bentrok
               themeVariant={Platform.OS === "ios" ? undefined : "light"}
               is24Hour={true}

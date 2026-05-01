@@ -12,6 +12,7 @@ import {
 import { Text } from "./text";
 import { cn } from "@/src/lib/utils";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { useT } from "@/src/features/i18n/store";
 
 export interface ActionSheetItem {
   key: string;
@@ -33,7 +34,9 @@ interface ActionSheetProps {
 }
 
 export const ActionSheet = forwardRef<BottomSheetModal, ActionSheetProps>(
-  ({ title, description, actions, snapPoints = ["45%"], cancelLabel = "Batal", onCancel }, ref) => {
+  ({ title, description, actions, snapPoints = ["45%"], cancelLabel, onCancel }, ref) => {
+    const { t } = useT();
+    const resolvedCancelLabel = cancelLabel || t("components.actionSheet.cancel");
     const { insets } = useTabBarHeight();
 
     const handleCancel = () => {
@@ -107,7 +110,7 @@ export const ActionSheet = forwardRef<BottomSheetModal, ActionSheetProps>(
             className="flex-row items-center justify-center px-6 py-4 rounded-2xl bg-card border border-border"
           >
             <Text weight="semibold" className="text-base text-muted-foreground">
-              {cancelLabel}
+              {resolvedCancelLabel}
             </Text>
           </TouchableOpacity>
         </View>

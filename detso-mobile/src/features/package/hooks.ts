@@ -4,6 +4,7 @@ import { CreatePackageInput, GetAllPackageInput, UpdatePackageInput } from './sc
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const packageKeys = {
@@ -52,16 +53,17 @@ export function usePackage(id: string) {
 /** Create a new package. */
 export function useCreatePackage() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreatePackageInput) => packageService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: packageKeys.lists() });
       eventBus.emit(EVENTS.PACKAGE.CREATED, { packageId: res?.data?.id ?? '' });
-      showToast.success('Berhasil', 'Paket berhasil ditambahkan');
+      showToast.success(t('common.success'), t('package.successCreate'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menambahkan paket');
+      showErrorToast(error, t('package.createFailed'));
     },
   });
 }
@@ -69,6 +71,7 @@ export function useCreatePackage() {
 /** Update an existing package. */
 export function useUpdatePackage() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdatePackageInput }) =>
@@ -77,10 +80,10 @@ export function useUpdatePackage() {
       qc.invalidateQueries({ queryKey: packageKeys.detail(id) });
       qc.invalidateQueries({ queryKey: packageKeys.lists() });
       eventBus.emit(EVENTS.PACKAGE.UPDATED, { packageId: id });
-      showToast.success('Berhasil', 'Paket berhasil diupdate');
+      showToast.success(t('common.success'), t('package.successUpdate'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate paket');
+      showErrorToast(error, t('package.updateFailed'));
     },
   });
 }
@@ -88,6 +91,7 @@ export function useUpdatePackage() {
 /** Delete a package. */
 export function useDeletePackage() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => packageService.delete(id),
@@ -95,10 +99,10 @@ export function useDeletePackage() {
       qc.removeQueries({ queryKey: packageKeys.detail(id) });
       qc.invalidateQueries({ queryKey: packageKeys.lists() });
       eventBus.emit(EVENTS.PACKAGE.DELETED, { packageId: id });
-      showToast.success('Berhasil', 'Paket berhasil dihapus');
+      showToast.success(t('common.success'), t('package.successDelete'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus paket');
+      showErrorToast(error, t('package.deleteFailed'));
     },
   });
 }

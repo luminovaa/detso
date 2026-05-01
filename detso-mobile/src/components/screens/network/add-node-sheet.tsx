@@ -17,18 +17,7 @@ import { Text } from '@/src/components/global/text';
 import { useCreateNode, useEditNode, useNetworkNodes } from '@/src/features/network/hooks';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { NetworkNode } from '@/src/features/network/types';
-
-// ─── Schema ──────────────────────────────────────────────────────
-
-const addNodeSchema = z.object({
-  name: z.string().min(1, 'Nama harus diisi'),
-  address: z.string().optional(),
-  slot: z.string().optional(),
-  parent_id: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type AddNodeForm = z.infer<typeof addNodeSchema>;
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Component ───────────────────────────────────────────────────
 
@@ -39,6 +28,7 @@ interface AddNodeSheetProps {
 }
 
 export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProps) {
+  const { t } = useT();
   const { addNodeType, placedCoordinate, cancelAdd } = useNetworkMapStore();
   const createNode = useCreateNode();
   const editNodeMutation = useEditNode();
@@ -47,6 +37,17 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
   const isEditing = !!editNode;
   const nodeType = isEditing ? editNode.type : addNodeType;
   const isODP = nodeType === 'ODP';
+
+  // ─── Schema ──────────────────────────────────────────────────────
+  const addNodeSchema = z.object({
+    name: z.string().min(1, t('network.addNode.nameRequired')),
+    address: z.string().optional(),
+    slot: z.string().optional(),
+    parent_id: z.string().optional(),
+    notes: z.string().optional(),
+  });
+
+  type AddNodeForm = z.infer<typeof addNodeSchema>;
 
   const {
     control,
@@ -126,8 +127,8 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
   };
 
   const title = isEditing
-    ? `Edit ${nodeType === 'SERVER' ? 'Server' : 'ODP'}`
-    : `Tambah ${nodeType === 'SERVER' ? 'Server' : 'ODP'}`;
+    ? nodeType === 'SERVER' ? t('network.addNode.editServer') : t('network.addNode.editODP')
+    : nodeType === 'SERVER' ? t('network.addNode.addServer') : t('network.addNode.addODP');
 
   const coordText = isEditing
     ? `${editNode.lat}, ${editNode.long}`
@@ -140,20 +141,20 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
       <BottomSheetHeader>
         <BottomSheetTitle>{title}</BottomSheetTitle>
         <BottomSheetDescription>
-          Koordinat: {coordText}
+          {t('network.addNode.coordinate')} {coordText}
         </BottomSheetDescription>
       </BottomSheetHeader>
 
       <View className="gap-4">
         {/* Name */}
         <View>
-          <Label>Nama *</Label>
+          <Label>{t('network.addNode.nameLabel')}</Label>
           <Controller
             control={control}
             name="name"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder={isODP ? 'ODP-01' : 'Server Utama'}
+                placeholder={isODP ? t('network.addNode.namePlaceholderODP') : t('network.addNode.namePlaceholderServer')}
                 value={value}
                 onChangeText={onChange}
                 error={errors.name?.message}
@@ -164,13 +165,13 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
 
         {/* Address */}
         <View>
-          <Label>Alamat (opsional)</Label>
+          <Label>{t('network.addNode.addressLabel')}</Label>
           <Controller
             control={control}
             name="address"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Jl. Merdeka Tiang 5"
+                placeholder={t('network.addNode.addressPlaceholder')}
                 value={value}
                 onChangeText={onChange}
               />
@@ -181,13 +182,13 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
         {/* Slot (ODP only) */}
         {isODP && (
           <View>
-            <Label>Jumlah Slot/Port</Label>
+            <Label>{t('network.addNode.slotLabel')}</Label>
             <Controller
               control={control}
               name="slot"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  placeholder="8"
+                  placeholder={t('network.addNode.slotPlaceholder')}
                   value={value}
                   onChangeText={onChange}
                   keyboardType="numeric"
@@ -200,7 +201,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
         {/* Parent Server (ODP only) - simple picker */}
         {isODP && servers.length > 0 && (
           <View>
-            <Label>Parent Server *</Label>
+            <Label>{t('network.addNode.parentServerLabel')}</Label>
             <Controller
               control={control}
               name="parent_id"
@@ -230,13 +231,13 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
 
         {/* Notes */}
         <View>
-          <Label>Catatan (opsional)</Label>
+          <Label>{t('network.addNode.notesLabel')}</Label>
           <Controller
             control={control}
             name="notes"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Catatan tambahan..."
+                placeholder={t('network.addNode.notesPlaceholder')}
                 value={value}
                 onChangeText={onChange}
                 multiline
@@ -251,7 +252,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
           disabled={createNode.isPending || editNodeMutation.isPending}
         >
           <Text weight="bold" className="text-primary-foreground">
-            {createNode.isPending || editNodeMutation.isPending ? 'Menyimpan...' : 'Simpan'}
+            {createNode.isPending || editNodeMutation.isPending ? t('network.addNode.saving') : t('network.addNode.save')}
           </Text>
         </Button>
       </View>

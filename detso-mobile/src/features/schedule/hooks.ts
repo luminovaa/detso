@@ -4,6 +4,7 @@ import { CreateWorkScheduleInput, ScheduleFilterInput, UpdateScheduleInput } fro
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const scheduleKeys = {
@@ -38,16 +39,17 @@ export function useSchedule(id: string) {
 /** Create a new work schedule. */
 export function useCreateSchedule() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateWorkScheduleInput) => scheduleService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: scheduleKeys.lists() });
       eventBus.emit(EVENTS.SCHEDULE.CREATED, { scheduleId: res?.data?.id ?? '' });
-      showToast.success('Berhasil', 'Jadwal berhasil dibuat');
+      showToast.success(t('common.success'), t('schedule.createSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal membuat jadwal');
+      showErrorToast(error, t('schedule.createFailed'));
     },
   });
 }
@@ -55,6 +57,7 @@ export function useCreateSchedule() {
 /** Update an existing work schedule. */
 export function useUpdateSchedule() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateScheduleInput }) =>
@@ -63,10 +66,10 @@ export function useUpdateSchedule() {
       qc.invalidateQueries({ queryKey: scheduleKeys.detail(id) });
       qc.invalidateQueries({ queryKey: scheduleKeys.lists() });
       eventBus.emit(EVENTS.SCHEDULE.UPDATED, { scheduleId: id });
-      showToast.success('Berhasil', 'Jadwal berhasil diupdate');
+      showToast.success(t('common.success'), t('schedule.updateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate jadwal');
+      showErrorToast(error, t('schedule.updateFailed'));
     },
   });
 }

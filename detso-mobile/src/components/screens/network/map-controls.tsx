@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Text } from '@/src/components/global/text';
 import { useNetworkMapStore } from '@/src/features/network/store';
+import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
+import { useT } from '@/src/features/i18n/store';
 
 interface MapControlsProps {
   onLocateMe: (lat: number, lng: number) => void;
@@ -11,8 +13,9 @@ interface MapControlsProps {
 }
 
 export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
-  const { mode, cancelAdd } = useNetworkMapStore();
+  const { mode, cancelAdd, mapStyle, toggleMapStyle } = useNetworkMapStore();
   const [isLocating, setIsLocating] = useState(false);
+  const { fabBottom } = useTabBarHeight();
 
   const handleLocateMe = async () => {
     try {
@@ -34,7 +37,7 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
   // Show cancel button when in add_node mode
   if (mode === 'add_node') {
     return (
-      <View className="absolute bottom-28 right-3 gap-3">
+      <View style={{ position: 'absolute', bottom: fabBottom, right: 12 }} className="gap-3">
         <TouchableOpacity
           onPress={cancelAdd}
           className="w-12 h-12 rounded-full bg-red-500 items-center justify-center"
@@ -47,7 +50,20 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
   }
 
   return (
-    <View className="absolute bottom-28 right-3 gap-3">
+    <View style={{ position: 'absolute', bottom: fabBottom, right: 12 }} className="gap-3">
+      {/* Toggle Map Style */}
+      <TouchableOpacity
+        onPress={toggleMapStyle}
+        className="w-12 h-12 rounded-full bg-white dark:bg-neutral-800 items-center justify-center"
+        style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+      >
+        <Ionicons
+          name={mapStyle === 'satellite' ? 'map-outline' : 'earth'}
+          size={22}
+          color="#6b7280"
+        />
+      </TouchableOpacity>
+
       {/* Locate Me */}
       <TouchableOpacity
         onPress={handleLocateMe}
@@ -76,11 +92,12 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
 
 /** Banner shown when in add_node mode */
 export function AddNodeBanner() {
+  const { t } = useT();
   const { mode, addNodeType } = useNetworkMapStore();
 
   if (mode !== 'add_node') return null;
 
-  const label = addNodeType === 'SERVER' ? 'Server' : 'ODP';
+  const label = addNodeType === 'SERVER' ? t('network.legend.server') : t('network.legend.odp');
 
   return (
     <View className="absolute top-28 left-4 right-4 z-20">
@@ -90,7 +107,7 @@ export function AddNodeBanner() {
       >
         <Ionicons name="pin" size={18} color="white" />
         <Text weight="medium" className="text-white ml-2 text-sm">
-          Tap pada peta untuk menempatkan {label}
+          {t('network.banner.tapToPlace', { type: label })}
         </Text>
       </View>
     </View>

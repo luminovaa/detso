@@ -1,5 +1,11 @@
 import { AxiosError } from "axios";
 import { showToast } from "@/src/components/global/toast";
+import { useLanguageStore } from '@/src/features/i18n/store';
+
+const t = (key: string) => {
+  const { locale, i18n } = useLanguageStore.getState();
+  return i18n.t(key, { locale });
+};
 
 // ==========================================
 // 1. ERROR CODES & CLASS
@@ -41,7 +47,7 @@ export function handleApiError(error: unknown): AppError {
     if (error.code === 'ECONNABORTED') {
       return new AppError(
         'TIMEOUT_ERROR',
-        'Koneksi timeout. Periksa jaringan Anda dan coba lagi.',
+        t('apiError.timeout'),
         undefined,
         error,
       );
@@ -51,7 +57,7 @@ export function handleApiError(error: unknown): AppError {
     if (!error.response) {
       return new AppError(
         'NETWORK_ERROR',
-        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+        t('apiError.network'),
         undefined,
         error,
       );
@@ -60,20 +66,20 @@ export function handleApiError(error: unknown): AppError {
     // Handle berdasarkan HTTP status code
     switch (status) {
       case 400:
-        return new AppError('VALIDATION_ERROR', backendMessage || 'Data yang dikirim tidak valid.', 400, error);
+        return new AppError('VALIDATION_ERROR', backendMessage || t('apiError.validation'), 400, error);
       case 401:
-        return new AppError('UNAUTHORIZED', backendMessage || 'Sesi Anda telah berakhir. Silakan login kembali.', 401, error);
+        return new AppError('UNAUTHORIZED', backendMessage || t('apiError.unauthorized'), 401, error);
       case 403:
-        return new AppError('FORBIDDEN', backendMessage || 'Anda tidak memiliki akses untuk melakukan ini.', 403, error);
+        return new AppError('FORBIDDEN', backendMessage || t('apiError.forbidden'), 403, error);
       case 404:
-        return new AppError('NOT_FOUND', backendMessage || 'Data yang dicari tidak ditemukan.', 404, error);
+        return new AppError('NOT_FOUND', backendMessage || t('apiError.notFound'), 404, error);
       case 409:
-        return new AppError('CONFLICT', backendMessage || 'Data sudah ada atau terjadi konflik.', 409, error);
+        return new AppError('CONFLICT', backendMessage || t('apiError.conflict'), 409, error);
       default:
         if (status && status >= 500) {
-          return new AppError('SERVER_ERROR', backendMessage || 'Terjadi kesalahan pada server. Coba lagi nanti.', status, error);
+          return new AppError('SERVER_ERROR', backendMessage || t('apiError.server'), status, error);
         }
-        return new AppError('UNKNOWN_ERROR', backendMessage || `Kesalahan tidak terduga (${status}).`, status, error);
+        return new AppError('UNKNOWN_ERROR', backendMessage || t('apiError.unknown'), status, error);
     }
   }
 
@@ -88,7 +94,7 @@ export function handleApiError(error: unknown): AppError {
   }
 
   // --- Fallback ---
-  return new AppError('UNKNOWN_ERROR', 'Terjadi kesalahan yang tidak terduga.', undefined, error);
+  return new AppError('UNKNOWN_ERROR', t('apiError.unexpected'), undefined, error);
 }
 
 // ==========================================
@@ -103,6 +109,6 @@ export function getErrorMessage(error: unknown): string {
 // ==========================================
 export function showErrorToast(error: unknown, title?: string): AppError {
   const appError = handleApiError(error);
-  showToast.error(title || 'Gagal', appError.message);
+  showToast.error(title || t('common.failed'), appError.message);
   return appError;
 }

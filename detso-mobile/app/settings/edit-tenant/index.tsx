@@ -23,8 +23,10 @@ import {
 } from "@/src/features/tenant/schema";
 import { Tenant } from "@/src/lib/types";
 import { useTenant, useUpdateTenant } from "@/src/features/tenant/hooks";
+import { useT } from "@/src/features/i18n/store";
 
 export default function EditTenantScreen() {
+  const { t } = useT();
   const { user } = useAuthStore();
   const tenantId = user?.tenant_id;
 
@@ -85,7 +87,7 @@ export default function EditTenantScreen() {
       { id: tenantId, data: formData },
       {
         onSuccess: () => {
-          showToast.success("Berhasil", "Profil ISP berhasil diperbarui");
+          showToast.success(t("editTenant.successTitle"), t("editTenant.successDesc"));
           router.back();
         },
       },
@@ -94,9 +96,9 @@ export default function EditTenantScreen() {
 
   if (!tenantId) {
     return (
-      <ScreenWrapper headerTitle="Edit Profil ISP" showBackButton>
+      <ScreenWrapper headerTitle={t("editTenant.title")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-muted-foreground">Tenant tidak ditemukan</Text>
+          <Text className="text-muted-foreground">{t("editTenant.notFound")}</Text>
         </View>
       </ScreenWrapper>
     );
@@ -104,14 +106,14 @@ export default function EditTenantScreen() {
 
   if (isFetching) {
     return (
-      <ScreenWrapper headerTitle="Edit Profil ISP" showBackButton isLoading>
+      <ScreenWrapper headerTitle={t("editTenant.title")} showBackButton isLoading>
         <FormSkeleton fieldCount={4} showAvatar showMap />
       </ScreenWrapper>
     );
   }
 
   return (
-    <ScreenWrapper headerTitle="Edit Profil ISP" showBackButton>
+    <ScreenWrapper headerTitle={t("editTenant.title")} showBackButton>
       <View className="flex-1">
         <ScrollView
           className="flex-1"
@@ -138,34 +140,34 @@ export default function EditTenantScreen() {
               </View>
             </TouchableOpacity>
             <Text weight="semibold" className="text-foreground mt-4 text-sm">
-              Logo Perusahaan
+              {t("editTenant.logoLabel")}
             </Text>
           </View>
 
           {/* Form Fields */}
           <View className="gap-y-3">
             <Text weight="bold" className="text-lg mb-1">
-              Informasi Perusahaan
+              {t("editTenant.infoSection")}
             </Text>
 
             <FormInput
               control={control}
               name="name"
-              label="Nama Perusahaan"
-              placeholder="PT Internet Cepat"
+              label={t("editTenant.nameLabel")}
+              placeholder={t("editTenant.namePlaceholder")}
             />
 
             <FormInput
               control={control}
               name="phone"
-              label="Telepon"
-              placeholder="08123456789"
+              label={t("editTenant.phoneLabel")}
+              placeholder={t("editTenant.phonePlaceholder")}
               keyboardType="phone-pad"
             />
 
             {/* Location Picker */}
             <View>
-              <Label>Lokasi</Label>
+              <Label>{t("editTenant.locationLabel")}</Label>
               <TouchableOpacity
                 onPress={() => setShowMap(true)}
                 activeOpacity={0.7}
@@ -185,7 +187,7 @@ export default function EditTenantScreen() {
                       </View>
                     ) : (
                       <Text className="text-muted-foreground">
-                        Pilih lokasi di peta
+                        {t("editTenant.selectOnMap")}
                       </Text>
                     )}
                   </View>
@@ -201,7 +203,7 @@ export default function EditTenantScreen() {
         {/* Fixed Bottom Button */}
         <View className="px-4 py-3 border-t border-border/10 bg-background">
           <Button
-            title={isSubmitting ? "Menyimpan..." : "Simpan"}
+            title={isSubmitting ? t("editTenant.saving") : t("editTenant.save")}
             size="lg"
             className="w-full shadow-lg shadow-primary/20"
             onPress={handleSubmit(onSubmit)}

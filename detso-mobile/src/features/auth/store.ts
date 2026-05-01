@@ -9,6 +9,7 @@ import { showErrorToast } from '@/src/lib/api-error';
 import { config } from '@/src/lib/config';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { refreshTokenWithLock, isRefreshInProgress } from '@/src/lib/token-refresh';
+import { useLanguageStore } from '@/src/features/i18n/store';
 
 interface UserProfile {
   id: string;
@@ -64,10 +65,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('Login successful:', user);
 
       get().setupAutoRefresh();
-      showToast.success("Otorisasi Berhasil", "Selamat datang kembali di Detso!");
+      const _t = (key: string) => {
+        const { locale, i18n } = useLanguageStore.getState();
+        return i18n.t(key, { locale });
+      };
+      showToast.success(_t("auth.loginSuccessTitle"), _t("auth.loginSuccessDesc"));
     } catch (error: any) {
       set({ isLoading: false });
-      showErrorToast(error, 'Login Gagal');
+      const _t = (key: string) => {
+        const { locale, i18n } = useLanguageStore.getState();
+        return i18n.t(key, { locale });
+      };
+      showErrorToast(error, _t('auth.loginFailedTitle'));
       throw error;
     }
   },

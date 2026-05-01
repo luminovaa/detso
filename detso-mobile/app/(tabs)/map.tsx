@@ -23,8 +23,10 @@ import { NetworkNode, NetworkService } from '@/src/features/network/types';
 import { useAuthStore } from '@/src/features/auth/store';
 import { useTenant } from '@/src/features/tenant/hooks';
 import { Tenant } from '@/src/lib/types';
+import { useT } from '@/src/features/i18n/store';
 
 export default function NetworkMap() {
+  const { t } = useT();
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   // ─── Data ──────────────────────────────────────────────────────
@@ -143,18 +145,18 @@ export default function NetworkMap() {
   );
 
   const handleAddNode = useCallback(() => {
-    Alert.alert('Tambah Node', 'Pilih tipe node yang ingin ditambahkan:', [
+    Alert.alert(t('network.addNode.title'), t('network.addNode.selectType'), [
       {
-        text: 'Server',
+        text: t('network.legend.server'),
         onPress: () => startAddNode('SERVER'),
       },
       {
-        text: 'ODP',
+        text: t('network.legend.odp'),
         onPress: () => startAddNode('ODP'),
       },
-      { text: 'Batal', style: 'cancel' },
+      { text: t('common.cancel'), style: 'cancel' },
     ]);
-  }, [startAddNode]);
+  }, [startAddNode, t]);
 
   const handleEditNode = useCallback(() => {
     nodeDetailRef.current?.dismiss();
@@ -195,7 +197,7 @@ export default function NetworkMap() {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-muted-foreground mt-3">Memuat peta jaringan...</Text>
+        <Text className="text-muted-foreground mt-3">{t('network.mapScreen.loading')}</Text>
       </View>
     );
   }
@@ -205,9 +207,9 @@ export default function NetworkMap() {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text weight="medium" className="text-foreground mt-3">Menyiapkan peta jaringan...</Text>
+        <Text weight="medium" className="text-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         <Text className="text-muted-foreground mt-1 text-sm">
-          Membuat server di lokasi {tenant?.name || 'ISP'}
+          {t('network.mapScreen.creatingServer', { name: tenant?.name || 'ISP' })}
         </Text>
       </View>
     );
@@ -218,12 +220,12 @@ export default function NetworkMap() {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
         <Ionicons name="cloud-offline" size={48} color="#ef4444" />
-        <Text weight="bold" className="text-foreground mt-3 text-lg">Gagal Memuat</Text>
+        <Text weight="bold" className="text-foreground mt-3 text-lg">{t('network.mapScreen.loadFailed')}</Text>
         <Text className="text-muted-foreground mt-1 text-center">
-          Tidak dapat memuat data jaringan. Periksa koneksi internet Anda.
+          {t('network.mapScreen.loadFailedDesc')}
         </Text>
         <Button className="mt-4" onPress={() => refetch()}>
-          <Text className="text-primary-foreground">Coba Lagi</Text>
+          <Text className="text-primary-foreground">{t('network.mapScreen.retry')}</Text>
         </Button>
       </View>
     );
@@ -238,7 +240,7 @@ export default function NetworkMap() {
       return (
         <View className="flex-1 items-center justify-center bg-background">
           <ActivityIndicator size="large" color="#3b82f6" />
-          <Text className="text-muted-foreground mt-3">Menyiapkan peta jaringan...</Text>
+          <Text className="text-muted-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         </View>
       );
     }
@@ -250,15 +252,15 @@ export default function NetworkMap() {
           <Ionicons name="location" size={40} color="#f59e0b" />
         </View>
         <Text weight="bold" className="text-foreground text-xl text-center">
-          Lokasi ISP Belum Diatur
+          {t('network.mapScreen.locationNotSet')}
         </Text>
         <Text className="text-muted-foreground mt-2 text-center">
-          Atur lokasi ISP Anda terlebih dahulu untuk memulai peta jaringan. Server pertama akan otomatis dibuat di lokasi tersebut.
+          {t('network.mapScreen.locationNotSetDesc')}
         </Text>
         <Button className="mt-6" onPress={() => router.push('/settings/edit-tenant')}>
           <View className="flex-row items-center gap-2">
             <Ionicons name="location" size={18} color="white" />
-            <Text weight="bold" className="text-primary-foreground">Atur Lokasi ISP</Text>
+            <Text weight="bold" className="text-primary-foreground">{t('network.mapScreen.setLocation')}</Text>
           </View>
         </Button>
       </View>

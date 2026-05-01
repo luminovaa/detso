@@ -4,6 +4,7 @@ import { CreateTenantInput, GetAllTenantInput, UpdateTenantInput } from './schem
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const tenantKeys = {
@@ -52,6 +53,7 @@ export function useTenant(id: string) {
 /** Create a new tenant (supports FormData for logo). */
 export function useCreateTenant() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateTenantInput | FormData) => tenantService.create(data),
@@ -59,10 +61,10 @@ export function useCreateTenant() {
       qc.invalidateQueries({ queryKey: tenantKeys.lists() });
       eventBus.emit(EVENTS.TENANT.CREATED, { tenantId: res?.data?.id ?? '' });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'tenant_created' });
-      showToast.success('Berhasil', 'Tenant berhasil ditambahkan');
+      showToast.success(t('common.success'), t('tenant.createSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menambahkan tenant');
+      showErrorToast(error, t('tenant.createFailed'));
     },
   });
 }
@@ -70,6 +72,7 @@ export function useCreateTenant() {
 /** Update an existing tenant (supports FormData for logo). */
 export function useUpdateTenant() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTenantInput | FormData }) =>
@@ -78,10 +81,10 @@ export function useUpdateTenant() {
       qc.invalidateQueries({ queryKey: tenantKeys.detail(id) });
       qc.invalidateQueries({ queryKey: tenantKeys.lists() });
       eventBus.emit(EVENTS.TENANT.UPDATED, { tenantId: id });
-      showToast.success('Berhasil', 'Tenant berhasil diupdate');
+      showToast.success(t('common.success'), t('tenant.updateSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate tenant');
+      showErrorToast(error, t('tenant.updateFailed'));
     },
   });
 }
@@ -89,6 +92,7 @@ export function useUpdateTenant() {
 /** Delete a tenant. */
 export function useDeleteTenant() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => tenantService.delete(id),
@@ -97,10 +101,10 @@ export function useDeleteTenant() {
       qc.invalidateQueries({ queryKey: tenantKeys.lists() });
       eventBus.emit(EVENTS.TENANT.DELETED, { tenantId: id });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'tenant_deleted' });
-      showToast.success('Berhasil', 'Tenant berhasil dihapus');
+      showToast.success(t('common.success'), t('tenant.deleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus tenant');
+      showErrorToast(error, t('tenant.deleteFailed'));
     },
   });
 }

@@ -4,6 +4,7 @@ import { CreateTicketInput, GetAllTicketInput, UpdateTicketInput } from './schem
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { useT } from '@/src/features/i18n/store';
 
 // ─── Query Keys ──────────────────────────────────────────────────
 export const ticketKeys = {
@@ -63,6 +64,7 @@ export function useTicketHistory(id: string) {
 /** Create a new ticket. */
 export function useCreateTicket() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (data: CreateTicketInput) => ticketService.create(data),
@@ -70,10 +72,10 @@ export function useCreateTicket() {
       qc.invalidateQueries({ queryKey: ticketKeys.lists() });
       eventBus.emit(EVENTS.TICKET.CREATED, { ticketId: res?.data?.id ?? '' });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'ticket_created' });
-      showToast.success('Berhasil', 'Ticket berhasil dibuat');
+      showToast.success(t('common.success'), t('ticket.ticketCreated'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal membuat ticket');
+      showErrorToast(error, t('ticket.createFailed'));
     },
   });
 }
@@ -81,6 +83,7 @@ export function useCreateTicket() {
 /** Update ticket details (supports FormData for image). */
 export function useUpdateTicket() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTicketInput | FormData }) =>
@@ -90,10 +93,10 @@ export function useUpdateTicket() {
       qc.invalidateQueries({ queryKey: ticketKeys.lists() });
       qc.invalidateQueries({ queryKey: ticketKeys.history(id) });
       eventBus.emit(EVENTS.TICKET.UPDATED, { ticketId: id });
-      showToast.success('Berhasil', 'Ticket berhasil diupdate');
+      showToast.success(t('common.success'), t('ticket.ticketUpdated'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengupdate ticket');
+      showErrorToast(error, t('ticket.updateFailed'));
     },
   });
 }
@@ -101,6 +104,7 @@ export function useUpdateTicket() {
 /** Update ticket status (with optional image via FormData). */
 export function useUpdateTicketStatus() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
@@ -111,10 +115,10 @@ export function useUpdateTicketStatus() {
       qc.invalidateQueries({ queryKey: ticketKeys.history(id) });
       eventBus.emit(EVENTS.TICKET.STATUS_CHANGED, { ticketId: id, status: 'updated' });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'ticket_status_changed' });
-      showToast.success('Berhasil', 'Status ticket berhasil diubah');
+      showToast.success(t('common.success'), t('ticket.statusUpdated'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal mengubah status ticket');
+      showErrorToast(error, t('ticket.statusUpdateFailed'));
     },
   });
 }
@@ -122,6 +126,7 @@ export function useUpdateTicketStatus() {
 /** Delete a ticket. */
 export function useDeleteTicket() {
   const qc = useQueryClient();
+  const { t } = useT();
 
   return useMutation({
     mutationFn: (id: string) => ticketService.delete(id),
@@ -130,10 +135,10 @@ export function useDeleteTicket() {
       qc.invalidateQueries({ queryKey: ticketKeys.lists() });
       eventBus.emit(EVENTS.TICKET.DELETED, { ticketId: id });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'ticket_deleted' });
-      showToast.success('Berhasil', 'Ticket berhasil dihapus');
+      showToast.success(t('common.success'), t('ticket.deleteSuccess'));
     },
     onError: (error) => {
-      showErrorToast(error, 'Gagal menghapus ticket');
+      showErrorToast(error, t('ticket.deleteFailed'));
     },
   });
 }

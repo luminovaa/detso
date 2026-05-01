@@ -21,7 +21,10 @@
     "forgotPassword": "Lupa Sandi?",
     "loginBtn": "Masuk",
     "needHelp": "Belum punya akun?",
-    "contactAdmin": "Hubungi Admin"
+    "contactAdmin": "Hubungi Admin",
+    "loginSuccessTitle": "Otorisasi Berhasil",
+    "loginSuccessDesc": "Selamat datang kembali di Detso!",
+    "loginFailedTitle": "Login Gagal"
   },
 
   "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
@@ -146,6 +149,9 @@
     "successCreate": "Paket berhasil ditambahkan",
     "successUpdate": "Paket berhasil diperbarui",
     "successDelete": "Paket berhasil dihapus",
+    "createFailed": "Gagal menambahkan paket",
+    "updateFailed": "Gagal mengupdate paket",
+    "deleteFailed": "Gagal menghapus paket",
     "createdAt": "Dibuat",
     "updatedAt": "Diupdate",
     "deleteConfirm": "Hapus Paket",
@@ -178,6 +184,8 @@
     "rolePlaceholder": "Pilih peran",
     "roleAdmin": "Admin",
     "roleTechnician": "Teknisi",
+    "roleAdminDesc": "Kelola tim & data",
+    "roleTechnicianDesc": "Operasi lapangan",
     "submitBtn": "Simpan Anggota",
     "saveBtn": "Simpan Perubahan",
     "creating": "Menyimpan...",
@@ -185,7 +193,15 @@
     "deleteConfirm": "Hapus Anggota",
     "deleteMessage": "Apakah Anda yakin ingin menghapus anggota tim ini?",
     "deleteBtn": "Hapus",
-    "cancelBtn": "Batal"
+    "cancelBtn": "Batal",
+    "updateSuccess": "Anggota berhasil diupdate",
+    "updateFailed": "Gagal mengupdate anggota",
+    "passwordChangeSuccess": "Password berhasil diubah",
+    "passwordChangeFailed": "Gagal mengubah password",
+    "createSuccess": "Anggota tim berhasil ditambahkan",
+    "createFailed": "Gagal menambahkan anggota tim",
+    "deleteSuccess": "Anggota berhasil dihapus",
+    "deleteFailed": "Gagal menghapus anggota"
   },
 
   "_comment_customer": "Customer Management Screens (app/customer/)",
@@ -201,6 +217,12 @@
     "deleteMessage": "Apakah Anda yakin ingin menghapus pelanggan ini?",
     "deleteBtn": "Hapus",
     "cancelBtn": "Batal",
+    "createSuccess": "Customer berhasil ditambahkan",
+    "createFailed": "Gagal menambahkan customer",
+    "updateSuccess": "Customer berhasil diupdate",
+    "updateFailed": "Gagal mengupdate customer",
+    "deleteSuccess": "Customer berhasil dihapus",
+    "deleteFailed": "Gagal menghapus customer",
     "step": "Langkah",
     "of": "dari",
     "next": "Lanjut",
@@ -236,6 +258,7 @@
     "addressServiceLabel": "Alamat Instalasi",
     "addressServicePlaceholder": "Masukkan alamat instalasi",
     "selectOnMap": "Pilih lokasi di peta",
+    "locationSelected": "Lokasi dipilih",
     "notesLabel": "Catatan",
     "notesPlaceholder": "Catatan tambahan (opsional)",
     "ipLabel": "Alamat IP",
@@ -268,6 +291,12 @@
     "saveBtn": "Simpan Perubahan",
     "creating": "Menyimpan...",
     "updating": "Memperbarui...",
+    "createSuccess": "Koneksi layanan berhasil dibuat",
+    "createFailed": "Gagal membuat koneksi layanan",
+    "updateSuccess": "Koneksi layanan berhasil diupdate",
+    "updateFailed": "Gagal mengupdate koneksi layanan",
+    "deleteSuccess": "Koneksi layanan berhasil dihapus",
+    "deleteFailed": "Gagal menghapus koneksi layanan",
     "customerLabel": "Pelanggan",
     "customerPlaceholder": "Pilih pelanggan",
     "packageLabel": "Paket Layanan",
@@ -499,7 +528,12 @@
     "confirmStatusUpdate": "Ubah Status",
     "statusUpdated": "Status berhasil diperbarui",
     "ticketCreated": "Tiket berhasil dibuat",
-    "ticketUpdated": "Tiket berhasil diperbarui"
+    "ticketUpdated": "Tiket berhasil diperbarui",
+    "createFailed": "Gagal membuat tiket",
+    "updateFailed": "Gagal mengupdate tiket",
+    "statusUpdateFailed": "Gagal mengubah status tiket",
+    "deleteSuccess": "Tiket berhasil dihapus",
+    "deleteFailed": "Gagal menghapus tiket"
   },
 
   "_comment_global": "Global Messages & Errors (Used throughout the app)",
@@ -511,34 +545,34 @@
     "doubleBackExit": "Tekan sekali lagi untuk keluar"
   },
 
-  "_comment_schedule": "Schedule Calendar Screen (app/(tabs)/schedule.tsx)",
+  "_comment_schedule": "Schedule Day View Screen (app/(tabs)/schedule.tsx)",
   "schedule": {
     "title": "Jadwal Kerja",
-    "calendar": "Kalender",
     "today": "Hari Ini",
-    "noSchedules": "Tidak ada jadwal",
-    "scheduleCount": "{{count}} jadwal",
-    "scheduleCount_plural": "{{count}} jadwal",
-    "monthNames": {
-      "january": "Januari",
-      "february": "Februari",
-      "march": "Maret",
-      "april": "April",
-      "may": "Mei",
-      "june": "Juni",
-      "july": "Juli",
-      "august": "Agustus",
-      "september": "September",
-      "october": "Oktober",
-      "november": "November",
-      "december": "Desember"
-    },
-    "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+    "noSchedules": "Tidak ada jadwal hari ini",
+    "allDay": "Seharian",
+    "createTitle": "Buat Jadwal Baru",
+    "createSuccess": "Jadwal berhasil dibuat",
+    "createFailed": "Gagal membuat jadwal",
+    "updateSuccess": "Jadwal berhasil diupdate",
+    "updateFailed": "Gagal mengupdate jadwal",
     "dayNamesShort": ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
     "status": {
       "scheduled": "Terjadwal",
       "completed": "Selesai",
       "cancelled": "Dibatalkan"
+    },
+    "form": {
+      "title": "Judul",
+      "titlePlaceholder": "Contoh: Instalasi WiFi",
+      "technician": "Teknisi",
+      "technicianPlaceholder": "Pilih teknisi",
+      "startTime": "Waktu Mulai",
+      "endTime": "Waktu Selesai",
+      "endTimePlaceholder": "Opsional",
+      "notes": "Catatan",
+      "notesPlaceholder": "Catatan tambahan...",
+      "submit": "Buat Jadwal"
     }
   },
 
@@ -549,5 +583,239 @@
     "isp": "ISP",
     "map": "Peta",
     "settings": "Pengaturan"
+  },
+
+  "_comment_errorBoundary": "Error Boundary Component (src/components/global/error-boundary.tsx)",
+  "errorBoundary": {
+    "title": "Aduh, Ada Sistem yang Rusak!",
+    "desc": "Aplikasi mengalami kesalahan sistem yang tidak terduga. Kami telah mencatat masalah ini.",
+    "reloadBtn": "Muat Ulang Aplikasi"
+  },
+
+  "_comment_network": "Network Map Components (src/components/screens/network/)",
+  "network": {
+    "addNode": {
+      "title": "Tambah Node",
+      "selectType": "Pilih tipe node yang ingin ditambahkan:",
+      "editServer": "Edit Server",
+      "editODP": "Edit ODP",
+      "addServer": "Tambah Server",
+      "addODP": "Tambah ODP",
+      "coordinate": "Koordinat:",
+      "nameLabel": "Nama *",
+      "namePlaceholderODP": "ODP-01",
+      "namePlaceholderServer": "Server Utama",
+      "addressLabel": "Alamat (opsional)",
+      "addressPlaceholder": "Jl. Merdeka Tiang 5",
+      "slotLabel": "Jumlah Slot/Port",
+      "slotPlaceholder": "8",
+      "parentServerLabel": "Parent Server *",
+      "notesLabel": "Catatan (opsional)",
+      "notesPlaceholder": "Catatan tambahan...",
+      "saving": "Menyimpan...",
+      "save": "Simpan",
+      "nameRequired": "Nama harus diisi"
+    },
+    "connectService": {
+      "title": "Connect Customer",
+      "description": "Hubungkan customer ke {{name}}",
+      "searchPlaceholder": "Cari customer...",
+      "unknown": "Unknown",
+      "noAddress": "Tanpa alamat",
+      "noGps": "No GPS",
+      "noMatch": "Tidak ada customer yang cocok",
+      "allConnected": "Semua customer sudah terhubung"
+    },
+    "nodeDetail": {
+      "server": "Server",
+      "odp": "ODP",
+      "deleteTitle": "Hapus {{type}}",
+      "deleteMessage": "Yakin ingin menghapus \"{{name}}\"?",
+      "deleteWarningServer": "\n\nODP yang terhubung akan kehilangan parent server.",
+      "deleteWarningODP": "\n\nSemua koneksi ke customer akan dihapus.",
+      "cancel": "Batal",
+      "delete": "Hapus",
+      "slotUsed": "Slot: {{used}}/{{total}} terpakai",
+      "parent": "Parent: {{name}}",
+      "odpConnected": "{{count}} ODP terhubung",
+      "edit": "Edit",
+      "connect": "Connect",
+      "remove": "Hapus"
+    },
+    "serviceDetail": {
+      "active": "Aktif",
+      "inactive": "Nonaktif",
+      "suspended": "Suspended",
+      "disconnectTitle": "Putuskan Koneksi",
+      "disconnectMessage": "Yakin ingin memutuskan \"{{customer}}\" dari {{node}}?",
+      "cancel": "Batal",
+      "disconnect": "Putuskan",
+      "connectedTo": "Terhubung ke: {{name}}",
+      "disconnectBtn": "Putuskan dari {{name}}"
+    },
+    "filter": {
+      "all": "Semua",
+      "server": "Server",
+      "odp": "ODP",
+      "customer": "Customer"
+    },
+    "legend": {
+      "server": "Server",
+      "odp": "ODP",
+      "ont": "ONT",
+      "fiber": "Fiber",
+      "drop": "Drop"
+    },
+    "banner": {
+      "tapToPlace": "Tap pada peta untuk menempatkan {{type}}"
+    },
+    "nodeCreateSuccess": "Node berhasil ditambahkan",
+    "nodeCreateFailed": "Gagal menambahkan node",
+    "nodeUpdateSuccess": "Node berhasil diperbarui",
+    "nodeUpdateFailed": "Gagal memperbarui node",
+    "nodeDeleteSuccess": "Node berhasil dihapus",
+    "nodeDeleteFailed": "Gagal menghapus node",
+    "linkCreateSuccess": "Koneksi berhasil dibuat",
+    "linkCreateFailed": "Gagal membuat koneksi",
+    "linkUpdateSuccess": "Jalur berhasil diperbarui",
+    "linkUpdateFailed": "Gagal memperbarui jalur",
+    "linkDeleteSuccess": "Koneksi berhasil dihapus",
+    "linkDeleteFailed": "Gagal menghapus koneksi",
+    "mapScreen": {
+      "loading": "Memuat peta jaringan...",
+      "preparing": "Menyiapkan peta jaringan...",
+      "creatingServer": "Membuat server di lokasi {{name}}",
+      "loadFailed": "Gagal Memuat",
+      "loadFailedDesc": "Tidak dapat memuat data jaringan. Periksa koneksi internet Anda.",
+      "retry": "Coba Lagi",
+      "locationNotSet": "Lokasi ISP Belum Diatur",
+      "locationNotSetDesc": "Atur lokasi ISP Anda terlebih dahulu untuk memulai peta jaringan. Server pertama akan otomatis dibuat di lokasi tersebut.",
+      "setLocation": "Atur Lokasi ISP"
+    }
+  },
+
+  "_comment_editTenant": "Edit Tenant Screen (app/settings/edit-tenant/index.tsx)",
+  "editTenant": {
+    "title": "Edit Profil ISP",
+    "notFound": "Tenant tidak ditemukan",
+    "logoLabel": "Logo Perusahaan",
+    "infoSection": "Informasi Perusahaan",
+    "nameLabel": "Nama Perusahaan",
+    "namePlaceholder": "PT Internet Cepat",
+    "phoneLabel": "Telepon",
+    "phonePlaceholder": "08123456789",
+    "locationLabel": "Lokasi",
+    "selectOnMap": "Pilih lokasi di peta",
+    "saving": "Menyimpan...",
+    "save": "Simpan",
+    "successTitle": "Berhasil",
+    "successDesc": "Profil ISP berhasil diperbarui"
+  },
+
+  "_comment_tenant": "Tenant Management (src/features/tenant/hooks.ts)",
+  "tenant": {
+    "createSuccess": "Tenant berhasil ditambahkan",
+    "createFailed": "Gagal menambahkan tenant",
+    "updateSuccess": "Tenant berhasil diupdate",
+    "updateFailed": "Gagal mengupdate tenant",
+    "deleteSuccess": "Tenant berhasil dihapus",
+    "deleteFailed": "Gagal menghapus tenant"
+  },
+
+  "_comment_settingsCompany": "Settings Company Section (app/(tabs)/settings.tsx)",
+  "settingsCompany": {
+    "sectionTitle": "Perusahaan",
+    "editIspProfile": "Edit Profil ISP"
+  },
+
+  "_comment_components": "Global Reusable Components",
+  "components": {
+    "select": {
+      "placeholder": "Pilih opsi...",
+      "required": "{{label}} wajib diisi",
+      "modalTitle": "Pilih {{label}}",
+      "searchPlaceholder": "Cari data...",
+      "loading": "Memuat data...",
+      "noResults": "Tidak ada hasil untuk \"{{search}}\"",
+      "empty": "Tidak ada data tersedia",
+      "loadingMore": "Memuat lebih banyak...",
+      "allShown": "Semua data ditampilkan"
+    },
+    "datePicker": {
+      "placeholder": "Pilih tanggal...",
+      "required": "{{label}} wajib diisi",
+      "confirm": "Pilih",
+      "cancel": "Batal"
+    },
+    "searchBar": {
+      "placeholder": "Cari..."
+    },
+    "titleHeader": {
+      "placeholder": "Cari...",
+      "filter": "Filter"
+    },
+    "actionSheet": {
+      "cancel": "Batal"
+    }
+  },
+
+  "_comment_validation": "Form Validation Messages (schemas)",
+  "validation": {
+    "required": "{{field}} wajib diisi",
+    "nameRequired": "Nama wajib diisi",
+    "nameMin3": "Nama minimal 3 karakter",
+    "nameMax100": "Nama maksimal 100 karakter",
+    "phoneRequired": "Nomor telepon wajib diisi",
+    "phoneInvalid": "Nomor telepon tidak valid",
+    "phoneMin10": "Nomor telepon minimal 10 karakter",
+    "emailInvalid": "Email tidak valid",
+    "nikLength": "NIK harus tepat 16 digit",
+    "nikOnlyNumbers": "NIK hanya boleh angka",
+    "maxDocuments": "Maksimal 5 dokumen",
+    "duplicateDocType": "Tidak boleh ada jenis dokumen yang duplikat (misal: dua KTP)",
+    "photoTypeRequired": "Jenis foto harus diisi",
+    "docTypeRequired": "Jenis dokumen wajib diisi",
+    "passwordOldRequired": "Password lama wajib diisi",
+    "passwordNewMin": "Password baru minimal 6 karakter",
+    "passwordConfirmRequired": "Konfirmasi password wajib diisi",
+    "passwordMismatch": "Password baru dan konfirmasi tidak cocok",
+    "usernameMin3": "Username minimal 3 karakter",
+    "macInvalid": "Format MAC address tidak valid",
+    "customerIdRequired": "Customer ID harus diisi",
+    "packageIdRequired": "Package ID harus diisi",
+    "addressRequired": "Alamat harus diisi",
+    "packageNameRequired": "Nama paket harus diisi",
+    "packageSpeedRequired": "Kecepatan paket harus diisi",
+    "ipInvalid": "Alamat IP tidak valid",
+    "macMin12": "MAC address minimal 12 karakter",
+    "packageRequired": "Paket harus dipilih",
+    "addressServiceMin": "Alamat instalasi minimal 10 karakter",
+    "addressKtpMin": "Alamat KTP minimal 10 karakter",
+    "identifierMin3": "Username/email harus minimal 3 karakter",
+    "passwordMin3": "Kata sandi harus minimal 3 karakter",
+    "addressMin3": "Alamat minimal 3 karakter",
+    "fullNameMin3": "Nama lengkap minimal 3 karakter",
+    "companyNameMin3": "Nama perusahaan minimal 3 karakter",
+    "fullNameRequired": "Nama lengkap wajib diisi",
+    "packageNameMin3": "Nama paket harus minimal 3 karakter",
+    "priceNonNegative": "Harga tidak boleh negatif",
+    "idInvalid": "ID tidak valid",
+    "technicianRequired": "Teknisi harus dipilih",
+    "technicianIdRequired": "ID teknisi harus diisi",
+    "timeFormatInvalid": "Format waktu tidak valid"
+  },
+
+  "_comment_apiError": "API Error Messages (src/lib/api-error.ts)",
+  "apiError": {
+    "timeout": "Koneksi timeout. Periksa jaringan Anda dan coba lagi.",
+    "network": "Tidak dapat terhubung ke server. Periksa koneksi internet Anda.",
+    "validation": "Data yang dikirim tidak valid.",
+    "unauthorized": "Sesi Anda telah berakhir. Silakan login kembali.",
+    "forbidden": "Anda tidak memiliki akses untuk melakukan ini.",
+    "notFound": "Data yang dicari tidak ditemukan.",
+    "conflict": "Data sudah ada atau terjadi konflik.",
+    "server": "Terjadi kesalahan pada server. Coba lagi nanti.",
+    "unknown": "Terjadi kesalahan yang tidak terduga.",
+    "unexpected": "Terjadi kesalahan yang tidak terduga."
   }
 }

@@ -1,7 +1,14 @@
 import { z } from 'zod';
+import { useLanguageStore } from '@/src/features/i18n/store';
+
+// Helper to get translation outside React components
+const t = (key: string) => {
+  const { locale, i18n } = useLanguageStore.getState();
+  return i18n.t(key, { locale });
+};
 
 const documentSchema = z.object({
-  type: z.string().min(1, { message: 'Jenis dokumen wajib diisi' }),
+  type: z.string().min(1, { message: t('validation.docTypeRequired') }),
   id: z.string().optional(),
 });
 
@@ -9,18 +16,18 @@ const documentSchema = z.object({
 export const updateCustomerSchema = z.object({
   name: z
     .string()
-    .min(1, { message: 'Nama wajib diisi' })
-    .max(100, { message: 'Nama maksimal 100 karakter' })
+    .min(1, { message: t('validation.nameRequired') })
+    .max(100, { message: t('validation.nameMax100') })
     .optional(),
 
   phone: z
     .string()
-    .min(1, { message: 'Nomor telepon wajib diisi' })
-    .regex(/^[\d+][\d\s\-()]{6,15}$/, { message: 'Nomor telepon tidak valid' })
+    .min(1, { message: t('validation.phoneRequired') })
+    .regex(/^[\d+][\d\s\-()]{6,15}$/, { message: t('validation.phoneInvalid') })
     .optional(),
 
   email: z
-    .email({ message: 'Email tidak valid' })
+    .email({ message: t('validation.emailInvalid') })
     .optional()
     .nullable()
     .or(z.literal('')),
@@ -35,17 +42,16 @@ export const updateCustomerSchema = z.object({
   
   nik: z
     .string()
-    .length(16, { message: 'NIK harus tepat 16 digit' })
-    .regex(/^\d{16}$/, { message: 'NIK hanya boleh angka' })
+    .length(16, { message: t('validation.nikLength') })
+    .regex(/^\d{16}$/, { message: t('validation.nikOnlyNumbers') })
     .optional(),
 
   documents: z
     .array(documentSchema)
-    .max(5, { message: 'Maksimal 5 dokumen' })
+    .max(5, { message: t('validation.maxDocuments') })
     .optional()
     .default([]),
 }).refine(data => {
-  // Jika ada documents, pastikan tidak ada duplikat type
   const types = data.documents?.map(d => d.type);
   const uniqueTypes = new Set(types);
   if (types && types.length !== uniqueTypes.size) {
@@ -53,7 +59,7 @@ export const updateCustomerSchema = z.object({
   }
   return true;
 }, {
-  message: 'Tidak boleh ada jenis dokumen yang duplikat (misal: dua KTP)',
+  message: t('validation.duplicateDocType'),
   path: ['documents']
 });
 
@@ -61,21 +67,21 @@ export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
 
 // Schema untuk foto
 const photoSchema = z.object({
-  type: z.string().min(1, 'Jenis foto harus diisi'),
+  type: z.string().min(1, t('validation.photoTypeRequired')),
 });
 
 export const createCustomerSchema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter'),
-  phone: z.string().min(10, 'Nomor telepon minimal 10 karakter').optional(),
-  email: z.email('Email tidak valid').optional().or(z.literal('')),
-  nik: z.string().length(16, 'NIK harus 16 karakter').regex(/^\d+$/, 'NIK hanya boleh angka').optional().or(z.literal('')),
-  package_id: z.string().min(1, 'Paket harus dipilih'),
-  address_service: z.string().min(10, 'Alamat instalasi minimal 10 karakter'),
-  address: z.string().min(10, 'Alamat KTP minimal 10 karakter'),
+  name: z.string().min(3, t('validation.nameMin3')),
+  phone: z.string().min(10, t('validation.phoneMin10')).optional(),
+  email: z.email(t('validation.emailInvalid')).optional().or(z.literal('')),
+  nik: z.string().length(16, t('validation.nikLength')).regex(/^\d+$/, t('validation.nikOnlyNumbers')).optional().or(z.literal('')),
+  package_id: z.string().min(1, t('validation.packageRequired')),
+  address_service: z.string().min(10, t('validation.addressServiceMin')),
+  address: z.string().min(10, t('validation.addressKtpMin')),
   package_name: z.string().optional(),
   package_speed: z.string().optional(),
   package_price: z.number().optional(),
-  ip_address: z.ipv4('Alamat IP tidak valid').optional().or(z.literal('')),
+  ip_address: z.ipv4(t('validation.ipInvalid')).optional().or(z.literal('')),
   lat: z.string().optional(),
   long: z.string().optional(),
   birth_date: z.preprocess((arg) => {
@@ -84,7 +90,7 @@ export const createCustomerSchema = z.object({
     return isNaN(date.getTime()) ? undefined : date;
   }, z.date().optional()),
   birth_place: z.string().optional(),
-  mac_address: z.string().min(12, 'MAC address minimal 12 karakter').optional().or(z.literal('')),
+  mac_address: z.string().min(12, t('validation.macMin12')).optional().or(z.literal('')),
   notes: z.string().optional(),
   documents: z.array(documentSchema).optional(),
   photos: z.array(photoSchema).optional(),
