@@ -25,7 +25,6 @@ model Detso_Tenant {
   services          Detso_Service_Connection[]
   tickets           Detso_Ticket[]
   users             Detso_User[]
-  detsoWhatsAppLogs Detso_WhatsApp_Log[]
   schedules         Detso_Work_Schedule[]
 
   @@index([deleted_at])
@@ -70,21 +69,24 @@ model Detso_Profile {
 }
 
 model Detso_Refresh_Token {
-  id          String     @id @default(cuid())
-  user_id     String
-  token       String     @unique
-  device_info String?
-  ip_address  String?
-  user_agent  String?
-  expires_at  DateTime
-  created_at  DateTime   @default(now())
-  updated_at  DateTime   @updatedAt
-  revoked_at  DateTime?
-  is_active   Boolean    @default(true)
-  user        Detso_User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  user_id      String
+  token        String     @unique
+  device_info  String?
+  ip_address   String?
+  user_agent   String?
+  expires_at   DateTime
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  revoked_at   DateTime?
+  is_active    Boolean    @default(true)
+  last_used_at DateTime?
+  rotated_from String?
+  user         Detso_User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([token])
+  @@index([last_used_at])
   @@map("detso_refresh_tokens")
 }
 
@@ -106,42 +108,12 @@ model Detso_Customer {
   tenant       Detso_Tenant               @relation(fields: [tenant_id], references: [id])
   service      Detso_Service_Connection[]
   ticket       Detso_Ticket[]
-  whatsApp_Log Detso_WhatsApp_Log[]
 
   @@index([tenant_id])
   @@index([deleted_at])
   @@index([phone])
   @@index([nik])
   @@map("detso_customers")
-}
-
-model Detso_Whatsapp_Session {
-  id         String   @id @default(cuid())
-  sessionId  String
-  id_key     String
-  data       Json
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@unique([sessionId, id_key])
-  @@map("detso_whatsapp_sessions")
-}
-
-model Detso_WhatsApp_Log {
-  id            String          @id @default(cuid())
-  customer_id   String?
-  phone_number  String
-  tenant_id     String
-  message_type  String
-  status        String
-  error_message String?
-  sent_at       DateTime        @default(now())
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  customer      Detso_Customer? @relation(fields: [customer_id], references: [id])
-  tenant        Detso_Tenant    @relation(fields: [tenant_id], references: [id])
-
-  @@map("detso_whatsapp_logs")
 }
 
 model Detso_Customer_Document {

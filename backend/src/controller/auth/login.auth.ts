@@ -95,20 +95,25 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
             device_info: deviceInfo.device_info,
             user_agent: deviceInfo.user_agent,
             ip_address: deviceInfo.ip_address,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            last_used_at: null // Fresh token, belum pernah digunakan untuk refresh
         }
     })
 
     // Set Cookies (Tetap sama)
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "strict" : "lax",
         maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "strict" : "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
