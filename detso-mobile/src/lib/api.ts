@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { eventBus, EVENTS } from './event-bus';
 import { config } from './config';
+import { refreshTokenWithLock } from './token-refresh';
 
 const api = axios.create({
     baseURL: config.API_URL,
@@ -10,8 +11,8 @@ const api = axios.create({
     timeout: config.API_TIMEOUT,
 });
 
-let isRefreshing = false;
 let failedQueue: any[] = [];
+let isHandlingRefresh = false;
 
 const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach(prom => {
@@ -44,7 +45,8 @@ api.interceptors.response.use(
 
         // Jika 401 (Unauthorized) dan bukan dari endpoint auth itu sendiri
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
-            if (isRefreshing) {
+            if (isHandlingRefresh) {
+                // Another 401 came in while we're already refreshing - queue it
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then(token => {
@@ -54,25 +56,17 @@ api.interceptors.response.use(
             }
 
             originalRequest._retry = true;
-            isRefreshing = true;
+            isHandlingRefresh = true;
 
             try {
-                const refreshToken = await SecureStore.getItemAsync('refreshToken');
-                if (!refreshToken) throw new Error('No refresh token');
-
-                // Gunakan axios murni (bukan api) agar tidak terjadi infinite loop interceptor
-                const response = await axios.post(`${config.API_URL}/auth/refresh`, { refreshToken });
-
-                // Sesuaikan dengan response body dari backend-mu
-                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
-
-                await SecureStore.setItemAsync('accessToken', newAccessToken);
-                if (newRefreshToken) await SecureStore.setItemAsync('refreshToken', newRefreshToken);
+                // Use the shared lock - if store.ts is already refreshing,
+                // this will piggyback on that request instead of making a new one
+                const { accessToken } = await refreshTokenWithLock();
 
                 eventBus.emit(EVENTS.AUTH.TOKEN_REFRESHED);
-                processQueue(null, newAccessToken);
+                processQueue(null, accessToken);
 
-                originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken;
+                originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
                 return api(originalRequest);
 
             } catch (refreshError) {
@@ -82,17 +76,16 @@ api.interceptors.response.use(
                 await SecureStore.deleteItemAsync('accessToken');
                 await SecureStore.deleteItemAsync('refreshToken');
 
-                // Pancarkan sinyal bahwa sesi benar-benar habis (waktunya ke layar login)
+                // Pancarkan sinyal bahwa sesi benar-benar habis
                 eventBus.emit(EVENTS.AUTH.SESSION_EXPIRED);
                 return Promise.reject(refreshError);
             } finally {
-                isRefreshing = false;
+                isHandlingRefresh = false;
             }
         }
 
         // Jika error 500 (Internal Server Error)
         if (error.response?.status && error.response.status >= 500) {
-            // PANCARKAN SINYAL (Bukan panggil hook)
             eventBus.emit(EVENTS.AUTH.SERVER_ERROR, { message: error.message });
         }
 

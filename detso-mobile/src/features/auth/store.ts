@@ -8,6 +8,7 @@ import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
 import { config } from '@/src/lib/config';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
+import { refreshTokenWithLock, isRefreshInProgress } from '@/src/lib/token-refresh';
 
 interface UserProfile {
   id: string;
@@ -30,13 +31,13 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isInitialized: boolean;
-  refreshTimer: any | null; // ← TAMBAHKAN INI
+  refreshTimer: any | null;
   login: (data: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   refreshUserData: () => Promise<void>;
-  setupAutoRefresh: () => Promise<void>; // ← TAMBAHKAN INI
-  clearAutoRefresh: () => void; // ← TAMBAHKAN INI
+  setupAutoRefresh: () => Promise<void>;
+  clearAutoRefresh: () => void;
 }
 
 const REFRESH_BEFORE_EXPIRY = config.REFRESH_BEFORE_EXPIRY;
@@ -52,7 +53,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await authService.login(data);
-      // response is { success, message, data: { accessToken, refreshToken, ...userFields } }
       const { accessToken, refreshToken, ...user } = response.data;
 
       await SecureStore.setItemAsync('accessToken', accessToken);
@@ -62,11 +62,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({ user, isLoading: false, isInitialized: true });
       console.log('Login successful:', user);
-      // ← SETUP AUTO REFRESH SETELAH LOGIN
+
       get().setupAutoRefresh();
       showToast.success("Otorisasi Berhasil", "Selamat datang kembali di Detso!");
-      // router.replace('/(tabs)');
-        } catch (error: any) {
+    } catch (error: any) {
       set({ isLoading: false });
       showErrorToast(error, 'Login Gagal');
       throw error;
@@ -74,7 +73,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    // ← CLEAR TIMER SEBELUM LOGOUT
     get().clearAutoRefresh();
 
     set({ isLoading: true });
@@ -95,17 +93,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Cek apakah token sudah expire
         if (isTokenExpired(token)) {
           console.log('Token expired, trying to refresh...');
-          await get().setupAutoRefresh(); // Coba refresh dulu
+          await get().setupAutoRefresh();
           return;
         }
 
         const response = await authService.getMe();
         set({ user: response.data, isInitialized: true });
 
-        // ← SETUP AUTO REFRESH SETELAH CHECK AUTH
         get().setupAutoRefresh();
-
-        // router.replace('/(tabs)');
       } else {
         set({ isInitialized: true });
       }
@@ -126,7 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ← FUNGSI AUTO REFRESH TOKEN
+  // Auto-refresh token sebelum expire
   setupAutoRefresh: async () => {
     try {
       console.log('🔄 [AUTO-REFRESH] Starting setup...');
@@ -147,28 +142,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (secondsUntilExpiry <= 0) {
         console.log('⚠️ [AUTO-REFRESH] Token already expired, refreshing NOW...');
 
+        // Skip if interceptor is already handling a refresh
+        if (isRefreshInProgress()) {
+          console.log('🔒 [AUTO-REFRESH] Refresh already in progress (interceptor), skipping...');
+          // Re-schedule check in 3 seconds
+          const retryTimer = setTimeout(() => get().setupAutoRefresh(), 3000);
+          set({ refreshTimer: retryTimer });
+          return;
+        }
+
         try {
-          const response = await authService.refreshToken(refreshToken);
-
-          // ✅ PERBAIKAN: Cek apakah ada refreshToken baru atau pakai yang lama
-          const newAccessToken = response.data.accessToken;
-
-          if (!newAccessToken) {
-            throw new Error('No access token in response');
-          }
-
-          await SecureStore.setItemAsync('accessToken', newAccessToken);
-
-          // Hanya update refreshToken jika ada yang baru
-          if (response.data.refreshToken) {
-            await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
-            console.log('✅ [AUTO-REFRESH] Both tokens refreshed');
-          } else {
-            console.log('✅ [AUTO-REFRESH] Access token refreshed (using existing refresh token)');
-          }
-
+          await refreshTokenWithLock();
           await get().refreshUserData();
-          get().setupAutoRefresh();
+          get().setupAutoRefresh(); // Schedule next cycle
         } catch (error) {
           console.error('❌ [AUTO-REFRESH] Refresh failed:', error);
           get().logout();
@@ -176,61 +162,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
 
+      // Schedule refresh N seconds before expiry
       const refreshIn = Math.max(5, secondsUntilExpiry - REFRESH_BEFORE_EXPIRY);
       const refreshInMs = refreshIn * 1000;
 
       console.log(`⏰ [AUTO-REFRESH] Will refresh in ${(refreshIn / 60).toFixed(1)} minutes`);
-      console.log(`🕐 [AUTO-REFRESH] Refresh scheduled at: ${new Date(Date.now() + refreshInMs).toLocaleTimeString()}`);
 
       const timer = setTimeout(async () => {
         console.log('🔄 [AUTO-REFRESH] Timer triggered! Refreshing token...');
 
+        // Skip if interceptor is already handling a refresh
+        if (isRefreshInProgress()) {
+          console.log('🔒 [AUTO-REFRESH] Refresh already in progress (interceptor), rescheduling...');
+          get().setupAutoRefresh();
+          return;
+        }
+
         try {
-          const currentRefreshToken = await SecureStore.getItemAsync('refreshToken');
+          await refreshTokenWithLock();
 
-          if (!currentRefreshToken) {
-            console.log('❌ [AUTO-REFRESH] No refresh token found, logging out...');
-            get().logout();
-            return;
-          }
-
-          console.log('📡 [AUTO-REFRESH] Calling refresh API...');
-          const response = await authService.refreshToken(currentRefreshToken);
-
-          console.log('📦 [AUTO-REFRESH] Response received:', {
-            hasAccessToken: !!response.data?.accessToken,
-            hasRefreshToken: !!response.data?.refreshToken
-          });
-
-          // ✅ PERBAIKAN: Handle refreshToken yang optional
-          const newAccessToken = response.data.accessToken;
-
-          if (!newAccessToken) {
-            throw new Error('Invalid refresh response - no access token');
-          }
-
-          await SecureStore.setItemAsync('accessToken', newAccessToken);
-
-          // Update refreshToken hanya jika ada yang baru
-          if (response.data.refreshToken) {
-            await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
-            console.log('✅ [AUTO-REFRESH] Both tokens saved');
-          } else {
-            console.log('✅ [AUTO-REFRESH] Access token saved (refresh token unchanged)');
-          }
-
+          console.log('✅ [AUTO-REFRESH] Token refreshed successfully');
           await get().refreshUserData();
 
           console.log('🔁 [AUTO-REFRESH] Setting up next cycle...');
           get().setupAutoRefresh();
 
         } catch (error: any) {
-          console.error('❌ [AUTO-REFRESH] Failed:', error);
-          console.error('❌ [AUTO-REFRESH] Error details:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-          });
+          console.error('❌ [AUTO-REFRESH] Failed:', error?.message || error);
           get().logout();
         }
       }, refreshInMs);
@@ -242,6 +200,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error('❌ [AUTO-REFRESH] Setup failed:', error);
     }
   },
+
   clearAutoRefresh: () => {
     const { refreshTimer } = get();
     if (refreshTimer) {

@@ -50,11 +50,88 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
     // Jika token sudah pernah digunakan (last_used_at terisi) atau sudah revoked,
     // berarti ada yang mencoba menggunakan token lama → kemungkinan token dicuri
     if (tokenRecord.last_used_at || !tokenRecord.is_active || tokenRecord.revoked_at) {
+        // Grace period: jika token baru saja di-rotate (< 10 detik),
+        // kemungkinan besar ini race condition dari client (bukan pencurian token).
+        // Contoh: auto-refresh timer dan interceptor fire bersamaan.
+        const GRACE_PERIOD_MS = 10 * 1000; // 10 seconds
+        const timeSinceRotation = tokenRecord.revoked_at
+            ? Date.now() - tokenRecord.revoked_at.getTime()
+            : Infinity;
+
+        if (timeSinceRotation < GRACE_PERIOD_MS) {
+            // Race condition - cari token successor (yang menggantikan token ini)
+            const successorToken = await prisma.detso_Refresh_Token.findFirst({
+                where: {
+                    rotated_from: tokenRecord.id,
+                    is_active: true,
+                    revoked_at: null,
+                    expires_at: { gt: new Date() }
+                }
+            });
+
+            if (successorToken) {
+                log.info('Token race condition detected - returning latest token', {
+                    userId: tokenRecord.user_id,
+                    oldTokenId: tokenRecord.id,
+                    successorTokenId: successorToken.id,
+                    timeSinceRotationMs: timeSinceRotation
+                });
+
+                // Return the current active token pair tanpa rotate lagi
+                const accessToken = generateAccessToken({
+                    id: tokenRecord.user.id,
+                    email: tokenRecord.user.email,
+                    role: tokenRecord.user.role,
+                    tenant_id: tokenRecord.user.tenant_id
+                });
+
+                const isProduction = process.env.NODE_ENV === 'production';
+
+                res.cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: isProduction ? "strict" : "lax",
+                    maxAge: 15 * 60 * 1000,
+                });
+
+                res.cookie("refreshToken", successorToken.token, {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: isProduction ? "strict" : "lax",
+                    maxAge: REFRESH_TOKEN_EXPIRY,
+                });
+
+                const result = {
+                    accessToken,
+                    refreshToken: successorToken.token,
+                    expiresIn: '15m',
+                    user: {
+                        id: tokenRecord.user.id,
+                        email: tokenRecord.user.email,
+                        username: tokenRecord.user.username,
+                        role: tokenRecord.user.role,
+                        phone: tokenRecord.user.phone,
+                        profile: tokenRecord.user.profile ? {
+                            ...tokenRecord.user.profile,
+                            avatar: generateFullUrl(tokenRecord.user.profile.avatar)
+                        } : null,
+                        tenant_id: tokenRecord.user.tenant_id,
+                        exp: (jwt.decode(accessToken) as any).exp
+                    }
+                };
+
+                responseData(res, 200, 'Token berhasil diperbarui', result);
+                return;
+            }
+        }
+
+        // Di luar grace period atau tidak ada successor → real token reuse (pencurian)
         log.warn('Token reuse detected - revoking all user sessions', {
             userId: tokenRecord.user_id,
             tokenId: tokenRecord.id,
             ipAddress: req.ip,
-            userAgent: req.headers['user-agent']
+            userAgent: req.headers['user-agent'],
+            timeSinceRotationMs: timeSinceRotation
         });
 
         // Revoke ALL sessions milik user ini
