@@ -26,6 +26,8 @@ model Detso_Tenant {
   tickets           Detso_Ticket[]
   users             Detso_User[]
   schedules         Detso_Work_Schedule[]
+  network_nodes     Detso_Network_Node[]
+  network_links     Detso_Network_Link[]
 
   @@index([deleted_at])
   @@map("detso_tenants")
@@ -153,6 +155,7 @@ model Detso_Service_Connection {
   tenant        Detso_Tenant          @relation(fields: [tenant_id], references: [id])
   photos        Detso_Service_Photo[]
   ticket        Detso_Ticket[]
+  network_link  Detso_Network_Link?
 
   @@index([tenant_id])
   @@index([deleted_at])
@@ -315,4 +318,68 @@ enum TicketType {
   UPGRADE
   DOWNGRADE
   PROBLEM
+}
+
+// ─── Network Topology ────────────────────────────────────────────
+
+enum Detso_Network_Node_Type {
+  SERVER
+  ODP
+}
+
+enum Detso_Link_Type {
+  FIBER
+  DROP_CABLE
+}
+
+model Detso_Network_Node {
+  id         String                  @id @default(cuid())
+  tenant_id  String
+  type       Detso_Network_Node_Type
+  name       String
+  lat        String
+  long       String
+  address    String?
+  slot       Int?
+  notes      String?
+  parent_id  String?
+  created_at DateTime                @default(now())
+  updated_at DateTime                @updatedAt
+  deleted_at DateTime?
+
+  tenant     Detso_Tenant            @relation(fields: [tenant_id], references: [id])
+  parent     Detso_Network_Node?     @relation("NodeHierarchy", fields: [parent_id], references: [id])
+  children   Detso_Network_Node[]    @relation("NodeHierarchy")
+  links_from Detso_Network_Link[]    @relation("LinkFrom")
+  links_to   Detso_Network_Link[]    @relation("LinkTo")
+
+  @@index([tenant_id])
+  @@index([type])
+  @@index([parent_id])
+  @@index([deleted_at])
+  @@map("detso_network_nodes")
+}
+
+model Detso_Network_Link {
+  id            String                    @id @default(cuid())
+  tenant_id     String
+  from_node_id  String
+  to_node_id    String?
+  to_service_id String?                   @unique
+  type          Detso_Link_Type
+  waypoints     Json?
+  notes         String?
+  created_at    DateTime                  @default(now())
+  updated_at    DateTime                  @updatedAt
+
+  tenant        Detso_Tenant              @relation(fields: [tenant_id], references: [id])
+  from_node     Detso_Network_Node        @relation("LinkFrom", fields: [from_node_id], references: [id])
+  to_node       Detso_Network_Node?       @relation("LinkTo", fields: [to_node_id], references: [id])
+  to_service    Detso_Service_Connection? @relation(fields: [to_service_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([from_node_id])
+  @@index([to_node_id])
+  @@index([to_service_id])
+  @@map("detso_network_links")
 }

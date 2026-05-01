@@ -8,6 +8,7 @@ import ticketRouter from '../controller/ticket';
 import scheduleRouter from '../controller/schedule';
 import tenantRouter from '../controller/tenant';
 import dashboardRouter from '../controller/dashboard';
+import networkRouter from '../controller/network';
 import { authLimiter } from '../middleware/rate-limit.middleware';
 
 export default (app: Express) => {
@@ -33,6 +34,9 @@ export default (app: Express) => {
     
     // Dashboard (read-only)
     apiRouter.use('/dashboard', dashboardRouter);
+
+    // Network topology (owner only)
+    apiRouter.use('/network', networkRouter);
 
     apiRouter.use('*', (req, res) => {
         res.status(404).send('Not found!!!');
