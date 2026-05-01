@@ -6,6 +6,7 @@ import { prisma } from "../../utils/prisma";
 import { getPagination } from "../../utils/pagination";
 import { tenantPaginationSchema } from "./validation/validation.tenant";
 import { generateFullUrl } from "../../utils/generate-full-url";
+import { getParam } from "../../utils/request.utils";
 
 
 export const getAllTenants = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -102,7 +103,7 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenant_idParam = req.params.id;
+    const tenant_idParam = getParam(req.params.id);
 
     // 1. Security Check (IDOR Protection)
     // Hanya SAAS_SUPER_ADMIN yang bisa melihat tenant lain.
@@ -166,7 +167,7 @@ export const getTenantLogo = asyncHandler(async (req: Request, res: Response): P
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenant_idParam = req.params.id;
+    const tenant_idParam = getParam(req.params.id);
     const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN;
 
     // 2. Security Check: Isolasi Data

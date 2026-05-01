@@ -3,6 +3,7 @@ import { asyncHandler, AuthorizationError, NotFoundError, AuthenticationError } 
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { Detso_Role } from '@prisma/client';
+import { getParam } from '../../utils/request.utils';
 
 export const deletePackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dan Validasi Session
@@ -12,7 +13,7 @@ export const deletePackage = asyncHandler(async (req: Request, res: Response): P
   }
   const tenant_id = user.tenant_id;
 
-  const packageId = req.params.id;
+  const packageId = getParam(req.params.id);
 
   // [NEW] 3. Cari paket dengan filter tenant_id
   // Gunakan findFirst untuk kombinasi ID + TenantID

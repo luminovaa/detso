@@ -5,6 +5,7 @@ import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { responseData } from '../../utils/response-handler';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { getParam } from '../../utils/request.utils';
 
 interface UpdateServiceFiles {
   photos?: Express.Multer.File[];
@@ -18,7 +19,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
   }
   const tenant_id = user.tenant_id;
 
-  const serviceId = req.params.id;
+  const serviceId = getParam(req.params.id);
   const files = req.files as UpdateServiceFiles;
 
   const requestData = {

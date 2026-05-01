@@ -5,6 +5,7 @@ import { scheduleFilterSchema } from "./validation/validation.schedule";
 import { prisma } from "../../utils/prisma";
 import { formatWIB } from "../../utils/time-fromat";
 import { responseData } from "../../utils/response-handler";
+import { getParam } from '../../utils/request.utils';
 
 export const getAllSchedules = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -164,7 +165,7 @@ export const getScheduleById = asyncHandler(async (req: Request, res: Response):
     }
     const tenant_id = user.tenant_id;
 
-    const { id } = req.params;
+    const id = getParam(req.params.id);
 
     if (!id) {
         throw new NotFoundError("ID jadwal tidak diberikan");

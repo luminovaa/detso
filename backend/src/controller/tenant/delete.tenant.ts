@@ -3,6 +3,7 @@ import { Detso_Role } from '@prisma/client';
 import { asyncHandler, AuthenticationError, AuthorizationError, NotFoundError, ValidationError } from '../../utils/error-handler'; // Pastikan ValidationError diimport
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
+import { getParam } from '../../utils/request.utils';
 
 export const deleteTenant = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // 1. Ambil Context User
@@ -14,7 +15,7 @@ export const deleteTenant = asyncHandler(async (req: Request, res: Response): Pr
         throw new AuthorizationError('Hanya Super Admin yang dapat menghapus Tenant.');
     }
 
-    const tenant_idToDelete = req.params.id;
+    const tenant_idToDelete = getParam(req.params.id);
 
     // 3. Cek Keberadaan Tenant
     const tenant = await prisma.detso_Tenant.findUnique({

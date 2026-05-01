@@ -4,6 +4,7 @@ import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
 import { Detso_Role } from '@prisma/client';
+import { getParam } from '../../utils/request.utils';
 
 export const deleteServiceConnection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
@@ -18,7 +19,7 @@ export const deleteServiceConnection = asyncHandler(async (req: Request, res: Re
       throw new AuthorizationError('Anda tidak memiliki izin untuk menghapus layanan ini');
   }
 
-  const serviceId = req.params.id;
+  const serviceId = getParam(req.params.id);
 
   // [NEW] 3. Cari Service dengan Filter Tenant (Mencegah Hapus Punya Orang Lain)
   const serviceConnection = await prisma.detso_Service_Connection.findFirst({

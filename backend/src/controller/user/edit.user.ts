@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { prisma } from '../../utils/prisma';
 import { Detso_Role } from '@prisma/client';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const editUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // 1. Ambil Context User Login
@@ -13,7 +14,7 @@ export const editUser = asyncHandler(async (req: Request, res: Response): Promis
     const myRole = currentUser?.role as Detso_Role;
     const isSuperAdmin = myRole === Detso_Role.SAAS_SUPER_ADMIN;
     
-    const targetUserId = req.params.id;
+    const targetUserId = req.params.id as string;
 
     const cleanupUploadedFile = async () => {
         if (req.file) {

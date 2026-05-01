@@ -5,6 +5,7 @@ import { updateCustomerSchema } from './validation/validation.customer';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { getParam } from '../../utils/request.utils';
 
 interface UpdateCustomerFiles {
   documents?: Express.Multer.File[];
@@ -18,7 +19,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   }
   const tenant_id = user.tenant_id;
 
-  const customerId = req.params.id;
+  const customerId = getParam(req.params.id);
   const files = req.files as UpdateCustomerFiles;
 
   const requestData = {

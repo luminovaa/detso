@@ -3,6 +3,7 @@ import { asyncHandler, AuthorizationError, NotFoundError, AuthenticationError } 
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { Detso_Role } from '@prisma/client';
+import { getParam } from '../../utils/request.utils';
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dan Role User yang login
@@ -16,7 +17,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response): Prom
       throw new AuthorizationError('Anda tidak memiliki izin untuk menghapus pengguna');
   }
 
-  const { id } = req.params;
+  const id = getParam(req.params.id);
 
   // [NEW] 3. Cari Target User dengan Filter Tenant
   const targetUser = await prisma.detso_User.findFirst({

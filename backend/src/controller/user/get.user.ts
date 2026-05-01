@@ -6,6 +6,7 @@ import { getPagination } from '../../utils/pagination'
 import { prisma } from '../../utils/prisma'
 import { Detso_Role } from '@prisma/client' // [NEW] Import Enum
 import { generateFullUrl } from '../../utils/generate-full-url'
+import { getParam } from '../../utils/request.utils'
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const currentUser = req.user;
@@ -124,7 +125,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
   // [NEW] 1. Ambil tenant_id
   const currentUser = req.user;
  
-  const { id } = req.params;
+  const id = getParam(req.params.id);
 
   // [NEW] 2. Cari User dengan ID + Tenant ID
   // Menggunakan findFirst untuk memastikan user target berada di tenant yang sama
@@ -176,7 +177,7 @@ export const getPhotoUserById = asyncHandler(async (req: Request, res: Response)
   }
   const tenant_id = currentUser.tenant_id;
 
-  const { id } = req.params;
+  const id = getParam(req.params.id);
 
   // [NEW] 2. Validasi Kepemilikan User
   const user = await prisma.detso_User.findFirst({

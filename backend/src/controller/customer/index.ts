@@ -7,6 +7,8 @@ import { checkCustomerByNik, getAllServices, getCustomerById } from "./get.custo
 import { deleteCustomer } from "./delete.customer";
 import { editCustomer } from "./edit.customer";
 import { downloadInstallationReport, viewInstallationReport } from "./pdf.customer";
+import { validateFileUpload, sanitizeUploadedFiles } from "../../middleware/file-validation.middleware";
+import { uploadLimiter } from "../../middleware/rate-limit.middleware";
 
 const customerRouter = express.Router();
 
@@ -15,7 +17,10 @@ const customerRouter = express.Router();
 customerRouter.post(
   '/',
   authMiddleware,
+  uploadLimiter, // Rate limit untuk upload
   uploadCustomerFiles,
+  sanitizeUploadedFiles, // Sanitize filenames
+  validateFileUpload({ allowedTypes: 'all', maxSize: 5 * 1024 * 1024 }), // Validate files
   requireRole(ALL_STAFF), 
   createCustomer
 );
@@ -39,9 +44,12 @@ customerRouter.get(
 // Edit Customer: Semua staff boleh (Teknisi mungkin perlu update foto/dokumen)
 customerRouter.put(
   '/:id', 
-  authMiddleware, 
+  authMiddleware,
+  uploadLimiter, // Rate limit untuk upload
+  uploadCustomerFiles,
+  sanitizeUploadedFiles, // Sanitize filenames
+  validateFileUpload({ allowedTypes: 'all', maxSize: 5 * 1024 * 1024 }), // Validate files
   requireRole(ALL_STAFF), 
-  uploadCustomerFiles, 
   editCustomer
 );
 

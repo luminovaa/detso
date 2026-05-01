@@ -4,6 +4,7 @@ import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
 import { Detso_Role } from '@prisma/client';
+import { getParam } from '../../utils/request.utils';
 
 export const deleteTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -13,7 +14,7 @@ export const deleteTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
     const tenant_id = user.tenant_id;
 
-    const ticketId = req.params.id;
+    const ticketId = getParam(req.params.id);
 
     // [NEW] 2. Cek Role (Hanya Owner & Admin)
     if (user.role !== Detso_Role.TENANT_OWNER && user.role !== Detso_Role.TENANT_ADMIN) {

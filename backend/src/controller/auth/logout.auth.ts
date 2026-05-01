@@ -3,6 +3,7 @@ import { asyncHandler, AuthenticationError, ValidationError } from '../../utils/
 import { responseData } from '../../utils/response-handler'
 import { loginSchema,  } from './validation/validation.auth'
 import { prisma } from '../../utils/prisma'
+import { getParam } from '../../utils/request.utils'
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -48,8 +49,8 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response): Prom
 })
 
 export const revokeSession = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { sessionId } = req.params;
-    const userId = req.user?.id;
+    const sessionId = getParam(req.params.sessionId);
+    const userId = req.user?.id as string;
 
     await prisma.detso_Refresh_Token.updateMany({
         where: {

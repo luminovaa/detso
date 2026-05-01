@@ -6,6 +6,7 @@ import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { updateTenantSchema } from './validation/validation.tenant';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { getParam } from '../../utils/request.utils';
 
 // Helper slug sederhana
 const createSlug = (name: string) => name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
@@ -15,7 +16,7 @@ export const editTenant = asyncHandler(async (req: Request, res: Response): Prom
     const user = req.user;
     if (!user) throw new AuthenticationError('Sesi tidak valid');
 
-    const tenant_idToEdit = req.params.id;
+    const tenant_idToEdit = getParam(req.params.id);
     const isSuperAdmin = user.role === Detso_Role.SAAS_SUPER_ADMIN;
     const isOwner = user.role === Detso_Role.TENANT_OWNER;
 

@@ -6,7 +6,6 @@ import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateUniqueIdPel } from '../../helper/random.idpel';
 import { PDFGeneratorService } from '../../services/generate.service.pdf';
-// import { whatsappService } from '../../services/whatsapp.service';
 
 interface CustomerUploadedFiles {
     documents?: Express.Multer.File[];

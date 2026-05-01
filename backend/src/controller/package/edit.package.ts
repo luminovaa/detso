@@ -4,6 +4,7 @@ import { responseData } from '../../utils/response-handler'
 import { createPackageSchema } from './validation/validation.package' 
 import { prisma } from '../../utils/prisma'
 import { Detso_Role } from '@prisma/client'
+import { getParam } from '../../utils/request.utils'
 
 export const editPackage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dan Validasi Session
@@ -18,7 +19,7 @@ export const editPackage = asyncHandler(async (req: Request, res: Response): Pro
         throw new AuthorizationError('Anda tidak memiliki izin untuk mengedit paket');
     }
 
-    const packageId  = req.params.id;
+    const packageId  = getParam(req.params.id);
  
     // Gunakan schema validasi (bisa createPackageSchema atau updatePackageSchema tergantung kebutuhan partial update)
     const validationResult = createPackageSchema.safeParse(req.body)

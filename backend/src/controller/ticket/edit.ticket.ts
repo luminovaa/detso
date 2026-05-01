@@ -5,6 +5,7 @@ import { updateTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
 import { TicketAction } from '@prisma/client';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
+import { getParam } from '../../utils/request.utils';
 
 export const editTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -14,7 +15,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     }
     const tenant_id = user.tenant_id;
 
-    const { id } = req.params;
+    const id = getParam(req.params.id);
 
     const cleanupUploadedFile = async () => {
         if (req.file) {
@@ -290,7 +291,7 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
     }
     const tenant_id = user.tenant_id;
 
-    const { id } = req.params;
+    const id = getParam(req.params.id);
     const { status } = req.body;
     const updated_by = user.id;
 
@@ -407,7 +408,7 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
     }
     const tenant_id = user.tenant_id;
     
-    const { id } = req.params;
+    const id = getParam(req.params.id);
     const { notes } = req.body;
     const created_by = user.id;
 

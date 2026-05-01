@@ -3,6 +3,7 @@ import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } fro
 import { updateScheduleSchema } from './validation/validation.schedule';
 import { prisma } from '../../utils/prisma';
 import { responseData } from '../../utils/response-handler';
+import { getParam } from '../../utils/request.utils';
 
 export const editSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
@@ -12,7 +13,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
   }
   const tenant_id = user.tenant_id;
 
-  const scheduleId = req.params.id;
+  const scheduleId = getParam(req.params.id);
 
   const validationResult = updateScheduleSchema.safeParse(req.body);
 

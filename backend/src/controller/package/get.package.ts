@@ -5,6 +5,7 @@ import { paginationSchema } from './validation/validation.package'
 import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } from '../../utils/error-handler'
 import { responseData } from '../../utils/response-handler'
 import { getPagination } from '../../utils/pagination'
+import { getParam } from '../../utils/request.utils'
 
 export const getAllPackages = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id untuk filter
@@ -86,7 +87,7 @@ export const getPackageById = asyncHandler(async (req: Request, res: Response): 
   }
   const tenant_id = user.tenant_id;
 
-  const packageId = req.params.id;
+  const packageId = getParam(req.params.id);
 
   // [NEW] 2. Cari paket dengan ID tersebut DAN tenant_id tersebut
   const packageData = await prisma.detso_Package.findFirst({

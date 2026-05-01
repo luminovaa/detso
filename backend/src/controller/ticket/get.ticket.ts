@@ -6,6 +6,7 @@ import { getPagination } from "../../utils/pagination";
 import { responseData } from "../../utils/response-handler";
 import { Detso_Role } from "@prisma/client";
 import { generateFullUrl } from "../../utils/generate-full-url";
+import { getParam } from '../../utils/request.utils';
 
 export const getAllTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -174,7 +175,7 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
     }
     const tenant_id = user.tenant_id;
 
-    const ticketId = req.params.id;
+    const ticketId = getParam(req.params.id);
 
     // [NEW] 2. Cari Tiket dengan Filter Tenant
     const ticket = await prisma.detso_Ticket.findFirst({
@@ -269,7 +270,7 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
     }
     const tenant_id = user.tenant_id;
 
-    const ticketId = req.params.id;
+    const ticketId = getParam(req.params.id);
 
     // [NEW] 2. Pastikan Tiket Milik Tenant Ini sebelum ambil history
     const ticketExists = await prisma.detso_Ticket.findFirst({
@@ -381,7 +382,7 @@ export const getTicketImageById = asyncHandler(async (req: Request, res: Respons
     }
     const tenant_id = user.tenant_id;
 
-    const { historyId } = req.params;
+    const historyId = getParam(req.params.historyId);
 
     // [NEW] 2. Validasi Relasi sampai ke Ticket Parent
     const history = await prisma.detso_Ticket_History.findFirst({
