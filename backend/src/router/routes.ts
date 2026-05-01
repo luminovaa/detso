@@ -4,11 +4,11 @@ import authRouter from '../controller/auth';
 import packageRouter from '../controller/package';
 import customerRouter from '../controller/customer';
 import serviceRouter from '../controller/service-connection';
-// import whatsappRouter from '../controller/whatsapp';
 import ticketRouter from '../controller/ticket';
 import scheduleRouter from '../controller/schedule';
 import tenantRouter from '../controller/tenant';
 import dashboardRouter from '../controller/dashboard';
+import { authLimiter } from '../middleware/rate-limit.middleware';
 
 export default (app: Express) => {
     app.use(express.json({ limit: '10mb' }));
@@ -19,15 +19,19 @@ export default (app: Express) => {
 
     app.use('/api', apiRouter);
 
+    // Auth routes dengan brute force protection (5 gagal = block 5 menit)
+    apiRouter.use('/auth', authLimiter, authRouter);
+    
+    // Protected routes (dilindungi oleh global apiLimiter di app.ts)
     apiRouter.use('/user', userRouter);
-    apiRouter.use('/auth', authRouter);
     apiRouter.use('/package', packageRouter);
     apiRouter.use('/customer', customerRouter);
     apiRouter.use('/service-connection', serviceRouter);
-    // apiRouter.use('/whatsapp', whatsappRouter);
     apiRouter.use('/ticket', ticketRouter);
     apiRouter.use('/schedule', scheduleRouter);
     apiRouter.use('/tenant', tenantRouter);
+    
+    // Dashboard (read-only)
     apiRouter.use('/dashboard', dashboardRouter);
 
     apiRouter.use('*', (req, res) => {
