@@ -1,6 +1,7 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import Mapbox from '@rnmapbox/maps';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
@@ -15,17 +16,64 @@ import { ServiceDetailSheet } from '@/src/components/screens/network/service-det
 import { AddNodeSheet } from '@/src/components/screens/network/add-node-sheet';
 import { ConnectServiceSheet } from '@/src/components/screens/network/connect-service-sheet';
 
-import { useNetworkTopology } from '@/src/features/network/hooks';
+import { useNetworkTopology, useCreateNode } from '@/src/features/network/hooks';
 import { networkService } from '@/src/features/network/service';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { NetworkNode, NetworkService } from '@/src/features/network/types';
+import { useAuthStore } from '@/src/features/auth/store';
+import { useTenant } from '@/src/features/tenant/hooks';
+import { Tenant } from '@/src/lib/types';
 
 export default function NetworkMap() {
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   // ─── Data ──────────────────────────────────────────────────────
+  const { user } = useAuthStore();
   const { data: topologyResponse, isLoading, isError, refetch } = useNetworkTopology();
   const topology = topologyResponse?.data;
+
+  // Fetch tenant data for auto-create first server
+  const { data: tenantResponse } = useTenant(user?.tenant_id || '');
+  const tenant = tenantResponse?.data as Tenant | undefined;
+
+  // ─── Auto-create first server from tenant location ─────────────
+  const createNode = useCreateNode();
+  const [autoCreating, setAutoCreating] = useState(false);
+  const [autoCreateAttempted, setAutoCreateAttempted] = useState(false);
+
+  useEffect(() => {
+    // Only run once when:
+    // 1. Topology loaded AND has 0 nodes
+    // 2. Tenant loaded AND has lat/long
+    // 3. Not already creating or attempted
+    if (
+      topology &&
+      topology.nodes.length === 0 &&
+      tenant?.lat &&
+      tenant?.long &&
+      !autoCreating &&
+      !autoCreateAttempted &&
+      !createNode.isPending
+    ) {
+      setAutoCreating(true);
+      setAutoCreateAttempted(true);
+
+      createNode.mutate(
+        {
+          type: 'SERVER',
+          name: `Server - ${tenant.name}`,
+          lat: tenant.lat,
+          long: tenant.long,
+          address: tenant.address || undefined,
+        },
+        {
+          onSettled: () => {
+            setAutoCreating(false);
+          },
+        }
+      );
+    }
+  }, [topology, tenant, autoCreating, autoCreateAttempted, createNode.isPending]);
 
   // ─── Store ─────────────────────────────────────────────────────
   const {
@@ -152,6 +200,19 @@ export default function NetworkMap() {
     );
   }
 
+  // ─── Auto-creating State ───────────────────────────────────────
+  if (autoCreating) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text weight="medium" className="text-foreground mt-3">Menyiapkan peta jaringan...</Text>
+        <Text className="text-muted-foreground mt-1 text-sm">
+          Membuat server di lokasi {tenant?.name || 'ISP'}
+        </Text>
+      </View>
+    );
+  }
+
   // ─── Error State ───────────────────────────────────────────────
   if (isError) {
     return (
@@ -168,23 +229,36 @@ export default function NetworkMap() {
     );
   }
 
-  // ─── Empty State ───────────────────────────────────────────────
+  // ─── Empty State (tenant has no lat/long) ──────────────────────
   if (topology && topology.nodes.length === 0) {
+    const tenantHasLocation = tenant?.lat && tenant?.long;
+
+    // If tenant has location but auto-create failed or hasn't run yet, show manual option
+    if (tenantHasLocation) {
+      return (
+        <View className="flex-1 items-center justify-center bg-background">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className="text-muted-foreground mt-3">Menyiapkan peta jaringan...</Text>
+        </View>
+      );
+    }
+
+    // Tenant has NO location → prompt to set it first
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
-        <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-4">
-          <Ionicons name="git-network" size={40} color="#3b82f6" />
+        <View className="w-20 h-20 rounded-full bg-amber-500/10 items-center justify-center mb-4">
+          <Ionicons name="location" size={40} color="#f59e0b" />
         </View>
         <Text weight="bold" className="text-foreground text-xl text-center">
-          Peta Jaringan Kosong
+          Lokasi ISP Belum Diatur
         </Text>
         <Text className="text-muted-foreground mt-2 text-center">
-          Mulai dengan menambahkan Server pertama Anda, lalu tambahkan ODP dan hubungkan customer.
+          Atur lokasi ISP Anda terlebih dahulu untuk memulai peta jaringan. Server pertama akan otomatis dibuat di lokasi tersebut.
         </Text>
-        <Button className="mt-6" onPress={() => startAddNode('SERVER')}>
+        <Button className="mt-6" onPress={() => router.push('/settings/edit-tenant')}>
           <View className="flex-row items-center gap-2">
-            <Ionicons name="add" size={18} color="white" />
-            <Text weight="bold" className="text-primary-foreground">Tambah Server Pertama</Text>
+            <Ionicons name="location" size={18} color="white" />
+            <Text weight="bold" className="text-primary-foreground">Atur Lokasi ISP</Text>
           </View>
         </Button>
       </View>

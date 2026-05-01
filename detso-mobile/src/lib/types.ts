@@ -14,6 +14,8 @@ export type Tenant = {
   address: string;
   phone: string;
   logo: string | null;
+  lat: string | null;
+  long: string | null;
   created_at: string;
   stats: TenantStats;
 }
@@ -159,5 +161,30 @@ export type TicketHistory = {
     username: string;
     full_name: string | null;
     avatar: string | null;
+  } | null;
+};
+
+export type ScheduleStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+
+export type Schedule = {
+  id: string;
+  ticket_id?: string | null;
+  technician_id: string;
+  title?: string | null;
+  start_time: string;
+  end_time?: string | null;
+  status: ScheduleStatus;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+  technician?: {
+    id: string;
+    username: string;
+    full_name: string | null;
+    avatar: string | null;
+  };
+  ticket?: {
+    id: string;
+    title: string;
   } | null;
 };

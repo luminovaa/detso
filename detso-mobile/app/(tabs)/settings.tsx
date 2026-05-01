@@ -139,6 +139,25 @@ export default function SettingsScreen() {
             </CardContent>
           </Card>
 
+          {/* --- 1.5. COMPANY SECTION (Owner only) --- */}
+          {user?.role === "TENANT_OWNER" && (
+            <>
+              <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
+                Perusahaan
+              </Text>
+              <Card className="mb-8">
+                <CardContent className="p-0">
+                  <SettingRow
+                    label="Edit Profil ISP"
+                    iconName="business"
+                    onPress={() => router.push("/settings/edit-tenant")}
+                    isLast
+                  />
+                </CardContent>
+              </Card>
+            </>
+          )}
+
           {/* --- 2. PREFERENCES SECTION --- */}
           <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
             {t("settings.preferences.title")}
