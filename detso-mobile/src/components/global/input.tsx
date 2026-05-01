@@ -12,10 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 export interface InputProps extends TextInputProps {
   error?: string;
   isPassword?: boolean;
+  prefix?: string;
+  suffixComponent?: React.ReactNode;
 }
 
 const Input = React.forwardRef<TextInput, InputProps>(
-  ({ className, error, isPassword, secureTextEntry, ...props }, ref) => {
+  ({ className, error, isPassword, prefix, suffixComponent, secureTextEntry, ...props }, ref) => {
     // State untuk toggle mata (show/hide password)
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -41,6 +43,12 @@ const Input = React.forwardRef<TextInput, InputProps>(
             className,
           )}
         >
+          {prefix && (
+            <Text className="text-base text-muted-foreground mr-2 font-medium">
+              {prefix}
+            </Text>
+          )}
+
           <TextInput
             ref={ref}
             className="flex-1 h-full text-base text-foreground leading-tight"
@@ -56,6 +64,13 @@ const Input = React.forwardRef<TextInput, InputProps>(
             }}
             {...props}
           />
+
+          {/* Suffix Component (e.g. unit selector) */}
+          {suffixComponent && (
+            <View className="ml-2">
+              {suffixComponent}
+            </View>
+          )}
 
           {/* Tombol Show/Hide Password */}
           {isPassword && (

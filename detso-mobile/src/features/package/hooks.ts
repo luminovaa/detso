@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { packageService } from './service';
 import { CreatePackageInput, GetAllPackageInput, UpdatePackageInput } from './schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
@@ -21,6 +21,20 @@ export function usePackages(params?: GetAllPackageInput) {
   return useQuery({
     queryKey: packageKeys.list(params),
     queryFn: () => packageService.getAll(params),
+  });
+}
+
+/** Fetch infinite scrollable package list. */
+export function useInfinitePackages(params?: Omit<GetAllPackageInput, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: [...packageKeys.lists(), 'infinite', params],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      packageService.getAll({ ...params, page: pageParam, limit: params?.limit ?? 10 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any) => {
+      const pagination = lastPage?.data?.pagination;
+      return pagination?.hasNextPage ? pagination.currentPage + 1 : undefined;
+    },
   });
 }
 

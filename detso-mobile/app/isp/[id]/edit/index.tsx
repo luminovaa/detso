@@ -119,15 +119,14 @@ export default function ISPEditScreen() {
 
     return (
     <ScreenWrapper headerTitle={t("isp.editTitle")} showBackButton>
-
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-1">
+      <View className="flex-1">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Logo Section */}
-          <View className="items-center mb-10">
+          <View className="items-center mb-6">
             <TouchableOpacity
               onPress={() => setShowImagePicker(true)}
               activeOpacity={0.7}
@@ -151,8 +150,8 @@ export default function ISPEditScreen() {
           </View>
 
           {/* Form Fields */}
-          <View className="gap-y-5">
-            <Text weight="bold" className="text-lg mb-2">
+          <View className="gap-y-3">
+            <Text weight="bold" className="text-lg mb-1">
               {t("isp.companySection")}
             </Text>
 
@@ -163,7 +162,7 @@ export default function ISPEditScreen() {
               placeholder={t("isp.namePlaceholder")}
             />
 
-                        <FormInput
+            <FormInput
               control={control}
               name="phone"
               label={t("isp.phoneLabel")}
@@ -178,7 +177,7 @@ export default function ISPEditScreen() {
                 activeOpacity={0.7}
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
               >
-                                <View className="flex-row items-center flex-1">
+                <View className="flex-row items-center flex-1">
                   <Ionicons name="location-outline" size={20} color="#64748b" />
                   <View className="ml-2 flex-1">
                     {watch("address") ? (
@@ -219,17 +218,20 @@ export default function ISPEditScreen() {
               />
             </View>
           </View>
+        </ScrollView>
 
-                    <Button
+        {/* Fixed Bottom Button */}
+        <View className="px-4 py-3 border-t border-border/10 bg-background">
+          <Button
             title={isSubmitting ? t("isp.updating") : t("isp.saveBtn")}
             size="lg"
-            className="w-full mt-10 shadow-lg shadow-primary/20"
+            className="w-full shadow-lg shadow-primary/20"
             onPress={handleSubmit(onSubmit)}
             isLoading={isSubmitting}
             disabled={isSubmitting}
           />
         </View>
-      </ScrollView>
+      </View>
 
       <ImagePickerSheet
         visible={showImagePicker}

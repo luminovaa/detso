@@ -12,8 +12,11 @@ export const customerService = {
         const response = await api.get(`/customer/${id}`);
         return response.data;
     },
-    create : async (data: CreateCustomerInput) => {
-        const response = await api.post('/customer', data);
+    create : async (data: CreateCustomerInput | FormData) => {
+        const isFormData = data instanceof FormData;
+        const response = await api.post('/customer', data, {
+            headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
+        });
         return response.data;
     },
     update : async (id: string, data: UpdateCustomerInput) => {

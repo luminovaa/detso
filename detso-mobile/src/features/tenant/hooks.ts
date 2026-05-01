@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tenantService } from './service';
 import { CreateTenantInput, GetAllTenantInput, UpdateTenantInput } from './schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
@@ -21,6 +21,20 @@ export function useTenants(params?: GetAllTenantInput) {
   return useQuery({
     queryKey: tenantKeys.list(params),
     queryFn: () => tenantService.getAll(params),
+  });
+}
+
+/** Fetch infinite scrollable tenant list (SAAS Super Admin). */
+export function useInfiniteTenants(params?: Omit<GetAllTenantInput, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: [...tenantKeys.lists(), 'infinite', params],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      tenantService.getAll({ ...params, page: pageParam, limit: params?.limit ?? 10 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any) => {
+      const pagination = lastPage?.data?.pagination;
+      return pagination?.hasNextPage ? pagination.currentPage + 1 : undefined;
+    },
   });
 }
 

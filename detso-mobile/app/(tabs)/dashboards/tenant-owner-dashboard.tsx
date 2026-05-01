@@ -133,12 +133,12 @@ export default function TenantOwnerDashboard() {
                 <QuickMenuCard
                   icon="wifi"
                   label={t("tenantDashboard.services")}
-                  onPress={() => console.log("Navigate to Services")}
+                  onPress={() => router.push("/service")}
                 />
                 <QuickMenuCard
                   icon="people"
                   label={t("tenantDashboard.customers")}
-                  onPress={() => console.log("Navigate to Customers")}
+                  onPress={() => router.push("/customer")}
                 />
                 <QuickMenuCard
                   icon="pricetag"
@@ -155,7 +155,7 @@ export default function TenantOwnerDashboard() {
                 <QuickMenuCard
                   icon="person"
                   label={t("tenantDashboard.users")}
-                  onPress={() => console.log("Navigate to Users")}
+                  onPress={() => router.push("/team")}
                 />
                 <QuickMenuCard
                   icon="apps"

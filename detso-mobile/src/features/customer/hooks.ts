@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customerService } from './service';
 import { CreateCustomerInput, GettAllInput, UpdateCustomerInput } from './schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
@@ -21,6 +21,20 @@ export function useCustomers(params?: GettAllInput) {
   return useQuery({
     queryKey: customerKeys.list(params),
     queryFn: () => customerService.getAll(params),
+  });
+}
+
+/** Fetch infinite scrollable customer list. */
+export function useInfiniteCustomers(params?: Omit<GettAllInput, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: [...customerKeys.lists(), 'infinite', params],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      customerService.getAll({ ...params, page: pageParam, limit: params?.limit ?? 10 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any) => {
+      const pagination = lastPage?.data?.pagination;
+      return pagination?.hasNextPage ? pagination.currentPage + 1 : undefined;
+    },
   });
 }
 

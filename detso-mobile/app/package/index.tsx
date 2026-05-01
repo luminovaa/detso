@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import _debounce from "lodash.debounce";
 
 // --- Global Components ---
@@ -16,7 +17,7 @@ import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { EmptyState } from "@/src/components/global/empty-state";
 import { SearchBar } from "@/src/components/global/search-bar";
 
-import { usePackages, useDeletePackage } from "@/src/features/package/hooks";
+import { useInfinitePackages, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { PackageSkeletonLoading } from "@/src/components/screens/package/skeleton-loading";
 import { PackageItem } from "@/src/components/screens/package/package-item";
@@ -25,22 +26,32 @@ import { Package } from "@/src/lib/types";
 
 export default function PackageScreen() {
   const { t } = useT();
-  const { contentPaddingBottom, fabBottom } = useTabBarHeight();
+  const { contentPaddingBottom } = useTabBarHeight();
+  const { bottom: safeBottom } = useSafeAreaInsets();
+  
+  // FAB position for stack screen (no tab bar)
+  const fabBottom = safeBottom + 24;
   
   // State
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: response, isLoading, refetch, isRefetching } = usePackages({
-    page,
+  const { 
+    data, 
+    isLoading, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch, 
+    isRefetching 
+  } = useInfinitePackages({
     limit: 10,
     search: debouncedSearch || undefined,
   });
-  const packages: Package[] = response?.data?.packages || [];
-  const hasMore = response?.data?.pagination?.hasNextPage || false;
-  const isRefreshing = isRefetching;
+
+  // Flatten semua pages jadi satu array
+  const packages: Package[] = data?.pages.flatMap((page: any) => page?.data?.packages || []) ?? [];
 
   const deletePackage = useDeletePackage();
 
@@ -49,7 +60,6 @@ export default function PackageScreen() {
   const debouncedSearchHandler = useCallback(
     _debounce((text: string) => {
       setDebouncedSearch(text);
-      setPage(1);
     }, 500),
     []
   );
@@ -67,13 +77,12 @@ export default function PackageScreen() {
   }, [debouncedSearchHandler]);
 
   const handleRefresh = () => {
-    setPage(1);
     refetch();
   };
 
   const handleLoadMore = () => {
-    if (hasMore && !isLoading) {
-      setPage((prev) => prev + 1);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
 
@@ -102,7 +111,6 @@ export default function PackageScreen() {
           onClear={() => {
             setSearchQuery("");
             setDebouncedSearch("");
-            setPage(1);
           }}
         />
       </View>
@@ -127,7 +135,7 @@ export default function PackageScreen() {
           onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl 
-              refreshing={isRefreshing} 
+              refreshing={isRefetching && !isFetchingNextPage} 
               onRefresh={handleRefresh} 
               colors={[primaryColor]}
               tintColor={primaryColor}
@@ -140,11 +148,11 @@ export default function PackageScreen() {
               description={t("package.emptyDesc")}
               actionLabel={t("package.refresh")}
               onAction={handleRefresh}
-              isLoading={isRefreshing}
+              isLoading={isRefetching}
             />
           }
           ListFooterComponent={
-            hasMore ? (
+            isFetchingNextPage ? (
               <View className="py-4 items-center">
                 <ActivityIndicator color="hsl(var(--primary))" />
               </View>

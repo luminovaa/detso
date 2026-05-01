@@ -114,72 +114,74 @@ export default function EditProfileScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("profile.editTitle")} showBackButton>
+      <View className="flex-1">
+        <ScrollView 
+          className="flex-1" 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 16 }}
+        >
+          {/* --- PROFILE PICTURE SECTION --- */}
+          <View className="items-center mt-6 mb-6">
+            <View className="relative">
+              <Avatar 
+                src={selectedImage?.uri || user?.profile?.avatar} 
+                alt={user?.profile?.full_name || user?.username}
+                size="2xl"
+                className="border-4 border-background shadow-sm"
+              />
+              
+              <TouchableOpacity 
+                activeOpacity={0.8}
+                onPress={() => setShowImagePicker(true)}
+                className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background shadow-lg"
+              >
+                <Ionicons name="camera" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text className="text-muted-foreground mt-4 text-sm font-medium">
+              {t("profile.cameraHint")}
+            </Text>
+          </View>
 
-      <ScrollView 
-        className="flex-1" 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        {/* --- PROFILE PICTURE SECTION --- */}
-        <View className="items-center mt-6 mb-10">
-          <View className="relative">
-            <Avatar 
-              src={selectedImage?.uri || user?.profile?.avatar} 
-              alt={user?.profile?.full_name || user?.username}
-              size="2xl"
-              className="border-4 border-background shadow-sm"
+          {/* --- FORM SECTION --- */}
+          <View className="px-4 gap-y-3">
+            <FormInput
+              control={control}
+              name="full_name"
+              label={t("profile.fullNameLabel")}
+              placeholder={t("profile.fullNamePlaceholder")}
             />
             
-            <TouchableOpacity 
-              activeOpacity={0.8}
-              onPress={() => setShowImagePicker(true)}
-              className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background shadow-lg"
-            >
-              <Ionicons name="camera" size={18} color="white" />
-            </TouchableOpacity>
+            <FormInput
+              control={control}
+              name="username"
+              label={t("profile.usernameLabel")}
+              placeholder={t("profile.usernamePlaceholder")}
+              autoCapitalize="none"
+            />
+            
+            <FormInput
+              control={control}
+              name="email"
+              label={t("profile.emailLabel")}
+              placeholder={t("profile.emailPlaceholder")}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            
+            <FormInput
+              control={control}
+              name="phone"
+              label={t("profile.phoneLabel")}
+              placeholder={t("profile.phonePlaceholder")}
+              keyboardType="phone-pad"
+            />
           </View>
-          
-          <Text className="text-muted-foreground mt-4 text-sm font-medium">
-            {t("profile.cameraHint")}
-          </Text>
-        </View>
+        </ScrollView>
 
-        {/* --- FORM SECTION --- */}
-        <View className="px-1">
-          <FormInput
-            control={control}
-            name="full_name"
-            label={t("profile.fullNameLabel")}
-            placeholder={t("profile.fullNamePlaceholder")}
-          />
-          
-          <FormInput
-            control={control}
-            name="username"
-            label={t("profile.usernameLabel")}
-            placeholder={t("profile.usernamePlaceholder")}
-            autoCapitalize="none"
-          />
-          
-          <FormInput
-            control={control}
-            name="email"
-            label={t("profile.emailLabel")}
-            placeholder={t("profile.emailPlaceholder")}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          
-          <FormInput
-            control={control}
-            name="phone"
-            label={t("profile.phoneLabel")}
-            placeholder={t("profile.phonePlaceholder")}
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <View className="mt-10">
+        {/* Fixed Bottom Button */}
+        <View className="px-4 py-3 border-t border-border/10 bg-background">
           <Button 
             title={isSubmitting ? t("profile.saving") : t("profile.saveChanges")}
             size="lg"
@@ -189,11 +191,11 @@ export default function EditProfileScreen() {
             disabled={isSubmitting || (!isDirty && !selectedImage)}
           />
           
-          <Text className="text-center text-muted-foreground text-xs mt-4 px-6 leading-relaxed">
+          <Text className="text-center text-muted-foreground text-xs mt-3 px-6 leading-relaxed">
             {t("profile.saveNote")}
           </Text>
         </View>
-      </ScrollView>
+      </View>
 
       {/* --- MODALS --- */}
       <ImagePickerSheet 

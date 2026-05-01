@@ -5,7 +5,6 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 
 import { Card } from "../../global/card";
-import { Text } from "../../global/text";
 import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
@@ -101,10 +100,8 @@ export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: Pa
             </View>
 
             <View className="flex-row items-center">
-              <Badge variant="default" className="bg-green-500/10 border-green-500/20">
-                <Text weight="semibold" className="text-xs text-green-600">
-                  {formatPrice(item.price)}
-                </Text>
+              <Badge colorVariant="success">
+                {formatPrice(item.price)}
               </Badge>
             </View>
           </View>

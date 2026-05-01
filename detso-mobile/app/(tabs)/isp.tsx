@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { 
   View, 
   FlatList, 
@@ -14,7 +14,7 @@ import { router } from "expo-router";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { EmptyState } from "@/src/components/global/empty-state";
 
-import { useTenants } from "@/src/features/tenant/hooks";
+import { useInfiniteTenants } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
 import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleteon-loading";
@@ -25,23 +25,28 @@ export default function IspScreen() {
   const { t } = useT();
   const { contentPaddingBottom, fabBottom } = useTabBarHeight();
 
-  const [page, setPage] = useState(1);
-  const { data: response, isLoading, refetch, isRefetching } = useTenants({ page, limit: 10 });
-  const tenants: Tenant[] = response?.data?.tenants || [];
-  const hasMore = response?.data?.pagination?.hasNextPage || false;
-  const isRefreshing = isRefetching;
+  const { 
+    data, 
+    isLoading, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch, 
+    isRefetching 
+  } = useInfiniteTenants({ limit: 10 });
+
+  // Flatten semua pages jadi satu array
+  const tenants: Tenant[] = data?.pages.flatMap((page: any) => page?.data?.tenants || []) ?? [];
 
   const handleRefresh = () => {
-    setPage(1);
     refetch();
   };
 
   const handleLoadMore = () => {
-    if (hasMore && !isLoading) {
-      setPage((prev) => prev + 1);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
-
 
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -65,7 +70,7 @@ export default function IspScreen() {
           onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl 
-              refreshing={isRefreshing} 
+              refreshing={isRefetching && !isFetchingNextPage} 
               onRefresh={handleRefresh} 
               colors={[primaryColor]}
               tintColor={primaryColor}
@@ -78,11 +83,11 @@ export default function IspScreen() {
               description={t("isp.emptyDesc")}
               actionLabel={t("isp.refresh")}
               onAction={handleRefresh}
-              isLoading={isRefreshing}
+              isLoading={isRefetching}
             />
           }
           ListFooterComponent={
-            hasMore ? (
+            isFetchingNextPage ? (
               <View className="py-4 items-center">
                 <ActivityIndicator color="hsl(var(--primary))" />
               </View>

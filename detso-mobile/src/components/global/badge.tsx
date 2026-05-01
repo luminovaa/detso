@@ -2,20 +2,60 @@ import React from "react";
 import { View, ViewProps } from "react-native";
 import { cn } from "../../lib/utils";
 import { Text } from "./text"; // Gunakan Text custom kita agar font-nya SF Pro!
+import { badgeVariants, BadgeVariantKey, getBadgeTextClass } from "../../lib/badge-variants";
 
 export interface BadgeProps extends ViewProps {
   children?: React.ReactNode;
   label?: string;
   variant?: "default" | "secondary" | "destructive" | "outline" | "accent" | "success";
+  colorVariant?: BadgeVariantKey; // New: Use color variants from badge-variants.ts
 }
 
 function Badge({
   children,
   label,
   variant = "default",
+  colorVariant,
   className,
   ...props
 }: BadgeProps) {
+  // If colorVariant is provided, use it instead of variant
+  if (colorVariant) {
+    const colors = badgeVariants[colorVariant];
+    
+    return (
+      <View
+        className={cn(
+          "flex-row items-center justify-center rounded-full border px-2.5 py-0.5 self-start",
+          colors.bg,
+          colors.border,
+          className,
+        )}
+        {...props}
+      >
+        {children ? (
+          typeof children === "string" ? (
+            <Text
+              weight="semibold"
+              className={cn("text-xs", getBadgeTextClass(colorVariant))}
+            >
+              {children}
+            </Text>
+          ) : (
+            children
+          )
+        ) : (
+          <Text
+            weight="semibold"
+            className={cn("text-xs", getBadgeTextClass(colorVariant))}
+          >
+            {label}
+          </Text>
+        )}
+      </View>
+    );
+  }
+
   // 1. Styling untuk Container (Background & Border)
   const containerVariants = {
     default: "bg-primary border-transparent",

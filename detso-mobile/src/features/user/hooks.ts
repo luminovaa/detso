@@ -1,6 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from './service';
 import { GetAllUserInput, UpdatePasswordInput, UpdateUserInput } from './schema';
+import { authService } from '@/src/features/auth/service';
+import { CreateUserInput } from '@/src/features/auth/schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
@@ -21,6 +23,20 @@ export function useUsers(params?: GetAllUserInput) {
   return useQuery({
     queryKey: userKeys.list(params),
     queryFn: () => userService.getAll(params),
+  });
+}
+
+/** Fetch infinite scrollable user list. */
+export function useInfiniteUsers(params?: Omit<GetAllUserInput, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: [...userKeys.lists(), 'infinite', params],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      userService.getAll({ ...params, page: pageParam, limit: params?.limit ?? 10 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any) => {
+      const pagination = lastPage?.data?.pagination;
+      return pagination?.hasNextPage ? pagination.currentPage + 1 : undefined;
+    },
   });
 }
 
@@ -64,6 +80,23 @@ export function useUpdatePassword() {
     },
     onError: (error) => {
       showErrorToast(error, 'Gagal mengubah password');
+    },
+  });
+}
+
+/** Create a new user (team member). */
+export function useCreateUser() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateUserInput) => authService.register(data as any),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: userKeys.lists() });
+      eventBus.emit(EVENTS.USER.CREATED, { userId: res?.data?.id ?? '' });
+      showToast.success('Berhasil', 'Anggota tim berhasil ditambahkan');
+    },
+    onError: (error) => {
+      showErrorToast(error, 'Gagal menambahkan anggota tim');
     },
   });
 }
