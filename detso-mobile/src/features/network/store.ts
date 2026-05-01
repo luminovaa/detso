@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { MapFilterType, MapMode, NetworkNode, NetworkService } from './types';
 
+export type MapStyleType = 'satellite' | 'streets';
+
 interface NetworkMapState {
   // ─── Selection State ─────────────────────────────────────────────
   selectedNode: NetworkNode | null;
@@ -9,11 +11,12 @@ interface NetworkMapState {
 
   // ─── Mode State ──────────────────────────────────────────────────
   mode: MapMode;
-  addNodeType: 'SERVER' | 'ODP' | null; // Which type to add
-  placedCoordinate: { lat: number; lng: number } | null; // Where user tapped
+  addNodeType: 'SERVER' | 'ODP' | null;
+  placedCoordinate: { lat: number; lng: number } | null;
 
-  // ─── Filter State ────────────────────────────────────────────────
+  // ─── Filter & Style State ────────────────────────────────────────
   filterType: MapFilterType;
+  mapStyle: MapStyleType;
 
   // ─── Actions ─────────────────────────────────────────────────────
   selectNode: (node: NetworkNode | null) => void;
@@ -27,6 +30,7 @@ interface NetworkMapState {
   cancelAdd: () => void;
 
   setFilter: (filter: MapFilterType) => void;
+  toggleMapStyle: () => void;
   reset: () => void;
 }
 
@@ -39,6 +43,7 @@ export const useNetworkMapStore = create<NetworkMapState>((set) => ({
   addNodeType: null,
   placedCoordinate: null,
   filterType: 'ALL',
+  mapStyle: 'satellite',
 
   // Selection
   selectNode: (node) =>
@@ -59,10 +64,12 @@ export const useNetworkMapStore = create<NetworkMapState>((set) => ({
   cancelAdd: () =>
     set({ mode: 'view', addNodeType: null, placedCoordinate: null }),
 
-  // Filter
+  // Filter & Style
   setFilter: (filter) => set({ filterType: filter }),
+  toggleMapStyle: () =>
+    set((state) => ({ mapStyle: state.mapStyle === 'satellite' ? 'streets' : 'satellite' })),
 
-  // Reset
+  // Reset (mapStyle intentionally NOT reset - user preference persists)
   reset: () =>
     set({
       selectedNode: null,

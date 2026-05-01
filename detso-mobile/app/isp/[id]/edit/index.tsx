@@ -57,8 +57,8 @@ export default function ISPEditScreen() {
         address: tenant.address || "",
         phone: tenant.phone || "",
         is_active: tenant.is_active,
-        lat: (tenant as any).lat || "",
-        long: (tenant as any).long || "",
+        lat: tenant.lat || "",
+        long: tenant.long || "",
       });
     }
   }, [tenant, reset]);

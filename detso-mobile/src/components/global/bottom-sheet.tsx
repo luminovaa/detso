@@ -22,7 +22,7 @@ export interface BottomSheetProps {
 export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   (
     {
-      snapPoints = ["50%"],
+      snapPoints,
       children,
       onDismiss,
       enableScroll = false,
@@ -30,6 +30,9 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
     },
     ref,
   ) => {
+    // Jika snapPoints tidak diberikan → dynamic sizing (auto-fit content)
+    const useDynamic = !snapPoints;
+
     // 1. Backdrop (Latar Belakang Gelap)
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -59,15 +62,16 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={snapPoints}
+        {...(useDynamic
+          ? { enableDynamicSizing: true }
+          : { snapPoints }
+        )}
         onDismiss={onDismiss}
         enableContentPanningGesture={enableDrag}
         enableHandlePanningGesture={enableDrag}
         enableOverDrag={enableDrag}
         backdropComponent={renderBackdrop}
-        // Ganti properti backgroundStyle dengan backgroundComponent
         backgroundComponent={renderBackground}
-        // Handle pill (garis abu-abu di atas laci)
         handleIndicatorStyle={{
           backgroundColor: "#94a3b8",
           width: 40,
@@ -79,7 +83,9 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
             {children}
           </BottomSheetScrollView>
         ) : (
-          <View className="flex-1 px-6 pb-6 pt-2">{children}</View>
+          <BottomSheetView className="px-6 pb-6 pt-2">
+            {children}
+          </BottomSheetView>
         )}
       </BottomSheetModal>
     );

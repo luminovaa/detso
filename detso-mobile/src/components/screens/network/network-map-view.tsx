@@ -30,7 +30,11 @@ export function NetworkMapView({
   onNodePress,
   onServicePress,
 }: NetworkMapViewProps) {
-  const { filterType, mode } = useNetworkMapStore();
+  const { filterType, mode, mapStyle } = useNetworkMapStore();
+
+  const styleURL = mapStyle === 'satellite'
+    ? 'mapbox://styles/mapbox/satellite-streets-v12'
+    : 'mapbox://styles/mapbox/streets-v12';
 
   // ─── Filter topology based on current filter ─────────────────────
   const filteredNodes = useMemo(() => {
@@ -94,7 +98,7 @@ export function NetworkMapView({
     <View style={StyleSheet.absoluteFill}>
       <Mapbox.MapView
         style={StyleSheet.absoluteFill}
-        styleURL="mapbox://styles/mapbox/satellite-streets-v12"
+        styleURL={styleURL}
         logoEnabled={false}
         scaleBarEnabled={false}
         attributionEnabled={false}
