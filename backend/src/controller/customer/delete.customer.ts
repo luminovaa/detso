@@ -1,19 +1,29 @@
 import { Request, Response } from 'express';
-import { asyncHandler, AuthorizationError, NotFoundError } from '../../utils/error-handler';
+import { asyncHandler, AuthenticationError, AuthorizationError, NotFoundError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
+import { getParam } from '../../utils/request.utils';
 
 export const deleteCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const customerId = req.params.id;
+  const customerId = getParam(req.params.id);
+  const user = req.user;
 
-  const isAdmin = req.user?.role === 'TENANT_ADMIN' || req.user?.role === 'TENANT_OWNER' || req.user?.role === 'SAAS_SUPER_ADMIN';
+  if (!user || !user.tenant_id) {
+    throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+  }
+
+  const isAdmin = user.role === 'TENANT_ADMIN' || user.role === 'TENANT_OWNER' || user.role === 'SAAS_SUPER_ADMIN';
   if (!isAdmin) {
     throw new AuthorizationError('Hanya admin yang dapat menghapus customer');
   }
 
-  const customer = await prisma.detso_Customer.findUnique({
-    where: { id: customerId, deleted_at: null },
+  const customer = await prisma.detso_Customer.findFirst({
+    where: { 
+      id: customerId, 
+      tenant_id: user.tenant_id,
+      deleted_at: null 
+    },
     include: {
       documents: true,
       service: {

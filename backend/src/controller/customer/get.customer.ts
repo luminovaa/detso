@@ -5,6 +5,7 @@ import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
 import { prisma } from '../../utils/prisma';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { getParam } from '../../utils/request.utils';
 
 export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id dari session user
@@ -149,11 +150,16 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
 });
 
 export const getCustomerById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const customerId = req.params.id;
+    const customerId = getParam(req.params.id);
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
 
-    const customer = await prisma.detso_Customer.findUnique({
+    const customer = await prisma.detso_Customer.findFirst({
         where: {
             id: customerId,
+            tenant_id: user.tenant_id,
             deleted_at: null
         },
         include: {
@@ -235,7 +241,7 @@ export const checkCustomerByNik = asyncHandler(async (req: Request, res: Respons
     }
     const tenant_id = user.tenant_id;
 
-    const { nik } = req.params;
+    const nik = getParam(req.params.nik);
 
     if (!nik) {
         throw new NotFoundError('NIK harus disertakan');

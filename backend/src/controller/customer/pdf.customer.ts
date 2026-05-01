@@ -1,12 +1,32 @@
 // controllers/pdf.controller.ts
 import { Request, Response } from 'express';
-import { asyncHandler, NotFoundError } from '../../utils/error-handler';
+import { asyncHandler, AuthenticationError, NotFoundError } from '../../utils/error-handler';
 import { prisma } from '../../utils/prisma';
 import fs from 'fs';
 import path from 'path';
+import { getParam } from '../../utils/request.utils';
 
 export const downloadInstallationReport = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { customerId } = req.params;
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+
+    const customerId = getParam(req.params.customerId);
+
+    // Validasi customer milik tenant ini
+    const customer = await prisma.detso_Customer.findFirst({
+        where: {
+            id: customerId,
+            tenant_id: user.tenant_id,
+            deleted_at: null
+        },
+        select: { id: true }
+    });
+
+    if (!customer) {
+        throw new NotFoundError('Customer tidak ditemukan');
+    }
 
     const customerPdf = await prisma.detso_Customer_PDF.findFirst({
         where: {
@@ -42,7 +62,26 @@ export const downloadInstallationReport = asyncHandler(async (req: Request, res:
 });
 
 export const viewInstallationReport = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { customerId } = req.params;
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+
+    const customerId = getParam(req.params.customerId);
+
+    // Validasi customer milik tenant ini
+    const customer = await prisma.detso_Customer.findFirst({
+        where: {
+            id: customerId,
+            tenant_id: user.tenant_id,
+            deleted_at: null
+        },
+        select: { id: true }
+    });
+
+    if (!customer) {
+        throw new NotFoundError('Customer tidak ditemukan');
+    }
 
     const customerPdf = await prisma.detso_Customer_PDF.findFirst({
         where: {
