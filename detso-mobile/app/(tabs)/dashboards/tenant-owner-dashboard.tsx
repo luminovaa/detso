@@ -150,7 +150,7 @@ export default function TenantOwnerDashboard() {
                 <QuickMenuCard
                   icon="document-text"
                   label={t("tenantDashboard.tickets")}
-                  onPress={() => console.log("Navigate to Tickets")}
+                  onPress={() => router.push("/ticket")}
                 />
                 <QuickMenuCard
                   icon="person"

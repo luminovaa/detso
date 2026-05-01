@@ -55,8 +55,6 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
       [],
     );
 
-    const Container = enableScroll ? BottomSheetScrollView : BottomSheetView;
-
     return (
       <BottomSheetModal
         ref={ref}
@@ -76,7 +74,13 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
           height: 5,
         }}
       >
-        <Container className="flex-1 px-6 pb-6 pt-2">{children}</Container>
+        {enableScroll ? (
+          <BottomSheetScrollView className="flex-1 px-6 pb-6 pt-2">
+            {children}
+          </BottomSheetScrollView>
+        ) : (
+          <View className="flex-1 px-6 pb-6 pt-2">{children}</View>
+        )}
       </BottomSheetModal>
     );
   },
