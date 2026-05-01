@@ -83,6 +83,8 @@ export const getAllTenants = asyncHandler(async (req: Request, res: Response): P
         is_active: t.is_active,
         address: t.address,
         phone: t.phone,
+        lat: t.lat,
+        long: t.long,
         logo: generateFullUrl(t.logo),
         created_at: t.created_at,
         stats: {
@@ -147,6 +149,8 @@ export const getTenantById = asyncHandler(async (req: Request, res: Response): P
         logo: generateFullUrl(tenant.logo),
         address: tenant.address,
         phone: tenant.phone,
+        lat: tenant.lat,
+        long: tenant.long,
         is_active: tenant.is_active,
         created_at: tenant.created_at,
         updated_at: tenant.updated_at,
