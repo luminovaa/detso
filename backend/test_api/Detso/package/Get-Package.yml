@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/package"
+  url: "{{BASE_URL}}/package?search=gold"
+  params:
+    - name: search
+      value: gold
+      type: query
   auth: inherit
 
 settings:

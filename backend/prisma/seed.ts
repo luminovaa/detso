@@ -21,8 +21,6 @@ async function main() {
   await prisma.detso_Refresh_Token.deleteMany();
   await prisma.detso_Ticket_History.deleteMany();
   await prisma.detso_Work_Schedule.deleteMany();
-  await prisma.detso_WhatsApp_Log.deleteMany();
-  await prisma.detso_Whatsapp_Session.deleteMany();
   await prisma.detso_Customer_PDF.deleteMany();
   await prisma.detso_Service_Photo.deleteMany();
   await prisma.detso_Ticket.deleteMany();
