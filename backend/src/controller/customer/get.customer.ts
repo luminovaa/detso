@@ -5,10 +5,10 @@ import { responseData } from '../../utils/response-handler';
 import { getPagination } from '../../utils/pagination';
 import { prisma } from '../../utils/prisma';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { generateSignedUrl } from '../../utils/signed-url';
 import { getParam } from '../../utils/request.utils';
 
-export const getAllServices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    // [NEW] 1. Ambil tenant_id dari session user
+export const getAllCustomers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const user = req.user;
     if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
@@ -16,136 +16,91 @@ export const getAllServices = asyncHandler(async (req: Request, res: Response): 
     const tenant_id = user.tenant_id;
 
     const validationResult = paginationSchema.safeParse(req.query);
-
     if (!validationResult.success) {
         throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
-    const { page, limit, search, status, package_name } = validationResult.data;
+    const { page, limit, search } = validationResult.data;
 
-    // [NEW] 2. Masukkan tenant_id ke Base Query
-    // Ini memastikan SEMUA filter di bawahnya hanya berjalan di dalam lingkup tenant ini
+    // Base where clause — scoped to tenant
     const whereClause: any = {
-        tenant_id: tenant_id, // <--- KUNCI KEAMANAN SAAS
-        deleted_at: null
+        tenant_id,
+        deleted_at: null,
     };
 
-    if (status) {
-      whereClause.status = status; 
-    }
-
-    if (package_name) {
-      whereClause.package_name = {
-        contains: package_name,
-        mode: 'insensitive',
-      };
-    }
-
+    // Search across customer fields + nested service fields
     if (search) {
         whereClause.OR = [
-            { id_pel: { contains: search, mode: 'insensitive' } },
-            { address: { contains: search, mode: 'insensitive' } },
-            { mac_address: { contains: search } },
-            { package_name: { contains: search, mode: 'insensitive' } },
+            { name: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { nik: { contains: search } },
             {
-                customer: {
-                    // Karena relasi customer -> tenant juga ada,
-                    // filter di root `detso_Service_Connection` sudah cukup.
-                    // Tapi pencarian di tabel customer tetap aman.
-                    OR: [
-                        { name: { contains: search, mode: 'insensitive' } },
-                        { phone: { contains: search } },
-                        { email: { contains: search, mode: 'insensitive' } }
-                    ]
+                service: {
+                    some: {
+                        deleted_at: null,
+                        OR: [
+                            { package_name: { contains: search, mode: 'insensitive' } },
+                            { address: { contains: search, mode: 'insensitive' } },
+                            { id_pel: { contains: search, mode: 'insensitive' } },
+                        ]
+                    }
                 }
             }
         ];
     }
 
-    const totalServices = await prisma.detso_Service_Connection.count({
-        where: whereClause
-    });
+    const totalCustomers = await prisma.detso_Customer.count({ where: whereClause });
 
     const { skip, pagination } = getPagination({
         page,
         limit,
-        totalItems: totalServices
+        totalItems: totalCustomers,
     });
 
-    const services = await prisma.detso_Service_Connection.findMany({
+    const customers = await prisma.detso_Customer.findMany({
         where: whereClause,
         skip,
         take: limit,
         include: {
-            customer: {
+            _count: {
                 select: {
-                    id: true,
-                    name: true,
-                    phone: true,
-                    email: true,
-                    nik: true,
-                    address: true,
-                    created_at: true,
-                    documents: {
-                        select: {
-                            id: true,
-                            document_type: true,
-                            document_url: true,
-                            uploaded_at: true
-                        }
+                    service: {
+                        where: { deleted_at: null }
                     }
                 }
             },
-            package: {
-                select: {
-                    name: true,
-                    speed: true,
-                    price: true
-                }
-            },
-            photos: {
+            service: {
+                where: { deleted_at: null },
                 select: {
                     id: true,
-                    photo_type: true,
-                    photo_url: true,
-                    uploaded_at: true,
-                    notes: true
-                }
-            }
+                    package_name: true,
+                    status: true,
+                },
+                orderBy: { created_at: 'desc' },
+            },
         },
-        orderBy: {
-            created_at: 'desc'
-        }
+        orderBy: { created_at: 'desc' },
     });
 
-    const formattedServices = services.map(service => ({
-        id: service.id,
-        id_pel: service.id_pel,
-        package_name: service.package_name,
-        package_speed: service.package_speed,
-        package_price: service.package_price,
-        address: service.address,
-        ip_address: service.ip_address,
-        mac_address: service.mac_address,
-        status: service.status,
-        created_at: service.created_at,
-        package_details: service.package,
-        photos: service.photos.map(photo => ({
-            ...photo,
-            photo_url: generateFullUrl(photo.photo_url)
+    const formattedCustomers = customers.map(customer => ({
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        nik: customer.nik,
+        created_at: customer.created_at,
+        service_count: customer._count.service,
+        services_summary: customer.service.map(s => ({
+            id: s.id,
+            package_name: s.package_name,
+            status: s.status,
         })),
-        customer: {
-            ...service.customer,
-            documents: service.customer.documents.map(doc => ({
-                ...doc,
-                document_url: generateFullUrl(doc.document_url)
-            }))
-        }
     }));
 
-    responseData(res, 200, 'Daftar layanan berhasil diambil', {
-        services: formattedServices,
-        pagination
+    responseData(res, 200, 'Daftar customer berhasil diambil', {
+        customers: formattedCustomers,
+        pagination,
     });
 });
 
@@ -201,6 +156,15 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         throw new NotFoundError('Customer tidak ditemukan atau telah dihapus');
     }
 
+    // Check if installation report PDF exists
+    const installationReport = await prisma.detso_Customer_PDF.findFirst({
+        where: {
+            customer_id: customerId,
+            pdf_type: 'installation_report'
+        },
+        select: { id: true }
+    });
+
     const formattedCustomer = {
         id: customer.id,
         name: customer.name,
@@ -208,9 +172,10 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         email: customer.email,
         nik: customer.nik,
         created_at: customer.created_at,
+        has_installation_report: !!installationReport,
         documents: customer.documents.map(doc => ({
             ...doc,
-            document_url: generateFullUrl(doc.document_url)
+            document_url: generateSignedUrl(doc.document_url, 180) // 3 minutes expiry
         })),
         services: customer.service.map(service => ({
             id: service.id,
@@ -220,6 +185,8 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
             address: service.address,
             ip_address: service.ip_address,
             mac_address: service.mac_address,
+            lat: service.lat,
+            long: service.long,
             created_at: service.created_at,
             package_details: service.package,
             photos: service.photos.map(photo => ({

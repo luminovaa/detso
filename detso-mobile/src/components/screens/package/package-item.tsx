@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback, useMemo } from "react";
 import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -18,33 +18,33 @@ interface PackageItemProps {
   isDeleting?: boolean;
 }
 
-export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: PackageItemProps) {
+const priceFormatter = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  minimumFractionDigits: 0,
+});
+
+export const PackageItem = React.memo(function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: PackageItemProps) {
   const { t } = useT();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formattedPrice = useMemo(() => priceFormatter.format(item.price), [item.price]);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     bottomSheetRef.current?.present();
-  };
+  }, []);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
     router.push(`/package/${item.id}/edit`);
-  };
+  }, [item.id]);
 
-  const handleDetail = () => {
+  const handleDetail = useCallback(() => {
     bottomSheetRef.current?.close();
     router.push(`/package/${item.id}/detail`);
-  };
+  }, [item.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     bottomSheetRef.current?.close();
     Alert.alert(
       t("package.deleteConfirm"),
@@ -61,7 +61,7 @@ export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: Pa
         },
       ],
     );
-  };
+  }, [item.id, onDelete, t]);
 
   return (
     <>
@@ -101,7 +101,7 @@ export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: Pa
 
             <View className="flex-row items-center">
               <Badge colorVariant="success">
-                {formatPrice(item.price)}
+                {formattedPrice}
               </Badge>
             </View>
           </View>
@@ -119,7 +119,7 @@ export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: Pa
         ref={bottomSheetRef}
         snapPoints={["45%"]}
         title={item.name}
-        description={`${item.speed} • ${formatPrice(item.price)}`}
+        description={`${item.speed} • ${formattedPrice}`}
         cancelLabel={t("package.cancelBtn")}
         actions={[
           {
@@ -149,4 +149,4 @@ export function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: Pa
       />
     </>
   );
-}
+});

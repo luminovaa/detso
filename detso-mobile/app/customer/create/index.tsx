@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, TouchableOpacity, Switch, Image } from "react-native";
+import { View, ScrollView, TouchableOpacity, Switch, Image, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,7 @@ import { useT } from "@/src/features/i18n/store";
 import { createCustomerSchema, CreateCustomerInput } from "@/src/features/customer/schema";
 import { useCreateCustomer } from "@/src/features/customer/hooks";
 import { packageService } from "@/src/features/package/service";
+import { customerService } from "@/src/features/customer/service";
 
 const TOTAL_STEPS = 5;
 
@@ -40,6 +41,11 @@ export default function CustomerCreateScreen() {
   const [currentStep, setCurrentStep] = useState(1);
   const [sameAddress, setSameAddress] = useState(false);
   const [showMap, setShowMap] = useState(false);
+
+  // NIK check state
+  const [existingCustomer, setExistingCustomer] = useState<{ id: string; name: string } | null>(null);
+  const [nikChecking, setNikChecking] = useState(false);
+  const nikCheckTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Photo states
   const [ktpPhoto, setKtpPhoto] = useState<PhotoState | null>(null);
@@ -83,6 +89,7 @@ export default function CustomerCreateScreen() {
   });
 
   const addressValue = watch("address");
+  const nikValue = watch("nik");
 
   // Sync address if checkbox is checked
   React.useEffect(() => {
@@ -90,6 +97,44 @@ export default function CustomerCreateScreen() {
       setValue("address_service", addressValue);
     }
   }, [sameAddress, addressValue, setValue]);
+
+  // Debounced NIK check — triggers when NIK reaches 16 digits
+  React.useEffect(() => {
+    if (nikCheckTimerRef.current) {
+      clearTimeout(nikCheckTimerRef.current);
+    }
+
+    // Reset if NIK is cleared or incomplete
+    if (!nikValue || nikValue.length < 16) {
+      setExistingCustomer(null);
+      return;
+    }
+
+    // Only check when exactly 16 digits
+    if (nikValue.length === 16 && /^\d{16}$/.test(nikValue)) {
+      setNikChecking(true);
+      nikCheckTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await customerService.checkNik(nikValue);
+          const data = res?.data;
+          if (data?.exists && data?.customer) {
+            setExistingCustomer({ id: data.customer.id, name: data.customer.name });
+          } else {
+            setExistingCustomer(null);
+          }
+        } catch {
+          // Graceful degradation — ignore error, allow normal flow
+          setExistingCustomer(null);
+        } finally {
+          setNikChecking(false);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (nikCheckTimerRef.current) clearTimeout(nikCheckTimerRef.current);
+    };
+  }, [nikValue]);
 
   const fetchPackages = useCallback(
     async (search: string, page: number) => {
@@ -115,7 +160,12 @@ export default function CustomerCreateScreen() {
 
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ["name", "address"];
+        // If existing customer found via NIK, skip personal data validation
+        if (existingCustomer) {
+          fieldsToValidate = [];
+        } else {
+          fieldsToValidate = ["name", "address"];
+        }
         break;
       case 2:
         fieldsToValidate = ["package_id", "address_service"];
@@ -130,7 +180,7 @@ export default function CustomerCreateScreen() {
       if (!isValid) return;
     }
 
-    // Step 1: KTP photo required
+    // Step 1: KTP photo required (even for existing customer — new KTP for new service)
     if (currentStep === 1 && !ktpPhoto) {
       return; // Don't proceed without KTP
     }
@@ -273,13 +323,44 @@ export default function CustomerCreateScreen() {
                 )}
               </View>
 
-              <FormInput control={control} name="name" label={t("customer.nameLabel")} placeholder={t("customer.namePlaceholder")} />
-              <FormInput control={control} name="nik" label={t("customer.nikLabel")} placeholder={t("customer.nikPlaceholder")} keyboardType="numeric" />
-              <FormInput control={control} name="phone" label={t("customer.phoneLabel")} placeholder={t("customer.phonePlaceholder")} keyboardType="phone-pad" />
-              <FormInput control={control} name="email" label={t("customer.emailLabel")} placeholder={t("customer.emailPlaceholder")} keyboardType="email-address" autoCapitalize="none" />
-              <FormInput control={control} name="birth_place" label={t("customer.birthPlaceLabel")} placeholder={t("customer.birthPlacePlaceholder")} />
-              <FormDatePicker control={control} name="birth_date" label={t("customer.birthDateLabel")} placeholder={t("customer.birthDatePlaceholder")} maximumDate={new Date()} />
-              <FormInput control={control} name="address" label={t("customer.addressLabel")} placeholder={t("customer.addressPlaceholder")} isTextarea />
+              {/* NIK — always editable, triggers check */}
+              <FormInput control={control} name="nik" label={t("customer.nikLabel")} placeholder={t("customer.nikPlaceholder")} keyboardType="numeric" maxLength={16} />
+
+              {/* NIK checking indicator */}
+              {nikChecking && (
+                <View className="flex-row items-center gap-x-2 px-1">
+                  <ActivityIndicator size="small" color="hsl(var(--primary))" />
+                  <Text className="text-xs text-muted-foreground">Memeriksa NIK...</Text>
+                </View>
+              )}
+
+              {/* Existing customer info card */}
+              {existingCustomer && !nikChecking && (
+                <View className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <View className="flex-row items-center gap-x-2 mb-2">
+                    <Ionicons name="information-circle" size={20} color="hsl(var(--primary))" />
+                    <Text weight="semibold" className="text-sm text-primary">NIK Sudah Terdaftar</Text>
+                  </View>
+                  <Text className="text-sm text-foreground">
+                    Customer <Text weight="bold">{existingCustomer.name}</Text> sudah terdaftar dengan NIK ini.
+                  </Text>
+                  <Text className="text-xs text-muted-foreground mt-1">
+                    Layanan baru akan ditambahkan ke customer ini. Data personal tidak perlu diisi ulang.
+                  </Text>
+                </View>
+              )}
+
+              {/* Personal fields — disabled if existing customer */}
+              {!existingCustomer && (
+                <>
+                  <FormInput control={control} name="name" label={t("customer.nameLabel")} placeholder={t("customer.namePlaceholder")} />
+                  <FormInput control={control} name="phone" label={t("customer.phoneLabel")} placeholder={t("customer.phonePlaceholder")} keyboardType="phone-pad" />
+                  <FormInput control={control} name="email" label={t("customer.emailLabel")} placeholder={t("customer.emailPlaceholder")} keyboardType="email-address" autoCapitalize="none" />
+                  <FormInput control={control} name="birth_place" label={t("customer.birthPlaceLabel")} placeholder={t("customer.birthPlacePlaceholder")} />
+                  <FormDatePicker control={control} name="birth_date" label={t("customer.birthDateLabel")} placeholder={t("customer.birthDatePlaceholder")} maximumDate={new Date()} />
+                  <FormInput control={control} name="address" label={t("customer.addressLabel")} placeholder={t("customer.addressPlaceholder")} isTextarea />
+                </>
+              )}
             </View>
           )}
 

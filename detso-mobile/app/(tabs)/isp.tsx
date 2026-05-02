@@ -81,9 +81,6 @@ export default function IspScreen() {
               icon="business-outline"
               title={t("isp.emptyTitle")}
               description={t("isp.emptyDesc")}
-              actionLabel={t("isp.refresh")}
-              onAction={handleRefresh}
-              isLoading={isRefetching}
             />
           }
           ListFooterComponent={

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -7,50 +7,37 @@ import { router } from "expo-router";
 import { Card } from "../../global/card";
 import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
+import { Text } from "../../global/text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
-import { ServiceConnection } from "@/src/lib/types";
-import { BadgeVariantKey } from "@/src/lib/badge-variants";
+import { CustomerListItem } from "@/src/lib/types";
+import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
 
 interface CustomerItemProps {
-  item: ServiceConnection;
+  item: CustomerListItem;
   searchQuery?: string;
   onDelete?: (id: string) => void;
   isDeleting?: boolean;
 }
 
-export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: CustomerItemProps) {
+export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: CustomerItemProps) {
   const { t } = useT();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const customerName = item.customer?.name || "-";
-  const customerPhone = item.customer?.phone || "-";
+  const handlePress = useCallback(() => {
+    router.push(`/customer/${item.id}/detail` as any);
+  }, [item.id]);
 
-  const getStatusColor = (status: string): BadgeVariantKey => {
-    switch (status) {
-      case "ACTIVE":
-        return "success";
-      case "INACTIVE":
-        return "neutral";
-      case "SUSPENDED":
-        return "error";
-      default:
-        return "neutral";
-    }
-  };
-
-  const statusColorVariant = getStatusColor(item.status);
-
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
-    router.push(`/customer/${item.customer?.id}/edit`);
-  };
+    router.push(`/customer/${item.id}/edit`);
+  }, [item.id]);
 
-  const handleLongPress = () => {
+  const handleLongPress = useCallback(() => {
     bottomSheetRef.current?.present();
-  };
+  }, []);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     bottomSheetRef.current?.close();
     Alert.alert(
       t("customer.deleteConfirm"),
@@ -64,7 +51,10 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
         },
       ],
     );
-  };
+  }, [item.id, onDelete, t]);
+
+  // Get unique statuses from services (max 3)
+  const uniqueStatuses = [...new Set(item.services_summary.map(s => s.status))].slice(0, 3);
 
   return (
     <>
@@ -72,7 +62,7 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
-          onPress={handleEdit}
+          onPress={handlePress}
           onLongPress={handleLongPress}
           delayLongPress={250}
         >
@@ -84,7 +74,7 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
           <View className="flex-1 ml-3">
             {/* Name */}
             <HighlightedText
-              text={customerName}
+              text={item.name}
               searchQuery={searchQuery}
               className="text-base text-foreground font-semibold"
               numberOfLines={1}
@@ -92,20 +82,22 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
 
             {/* Phone */}
             <HighlightedText
-              text={customerPhone}
+              text={item.phone || "-"}
               searchQuery={searchQuery}
               className="text-xs text-muted-foreground mt-0.5"
               numberOfLines={1}
             />
 
-            {/* Package + Status */}
-            <View className="flex-row items-center mt-2 gap-x-2">
+            {/* Service count + Status badges */}
+            <View className="flex-row items-center mt-2 gap-x-2 flex-wrap">
               <Badge colorVariant="info">
-                {item.package_name}
+                {item.service_count} Layanan
               </Badge>
-              <Badge colorVariant={statusColorVariant}>
-                {item.status}
-              </Badge>
+              {uniqueStatuses.map((status) => (
+                <Badge key={status} colorVariant={SERVICE_STATUS_VARIANTS[status] || "neutral"}>
+                  {status}
+                </Badge>
+              ))}
             </View>
           </View>
         </TouchableOpacity>
@@ -114,10 +106,17 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
       <ActionSheet
         ref={bottomSheetRef}
         snapPoints={["40%"]}
-        title={customerName}
-        description={`${item.package_name} • ${item.status}`}
+        title={item.name}
+        description={`${item.service_count} Layanan`}
         cancelLabel={t("customer.cancelBtn")}
         actions={[
+          {
+            key: "detail",
+            label: "Detail",
+            onPress: handlePress,
+            icon: <Ionicons name="eye-outline" size={20} color="hsl(var(--primary))" />,
+            variant: "default",
+          },
           {
             key: "edit",
             label: t("customer.editTitle"),
@@ -138,4 +137,4 @@ export function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: C
       />
     </>
   );
-}
+});

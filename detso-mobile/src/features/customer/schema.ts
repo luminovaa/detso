@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useLanguageStore } from '@/src/features/i18n/store';
+import { basePaginationSchema } from '@/src/lib/base-schemas';
 
 // Helper to get translation outside React components
 const t = (key: string) => {
@@ -98,12 +99,6 @@ export const createCustomerSchema = z.object({
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 
-export const gettAllSchema = z.object({
-  page: z.number().default(1),
-  limit: z.number().default(10),
-  search: z.string().trim().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
-  package_name: z.string().trim().optional()
-});
+export const gettAllSchema = basePaginationSchema;
 
 export type GettAllInput = z.infer<typeof gettAllSchema>;

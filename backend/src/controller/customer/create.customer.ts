@@ -6,6 +6,7 @@ import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateUniqueIdPel } from '../../helper/random.idpel';
 import { PDFGeneratorService } from '../../services/generate.service.pdf';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 interface CustomerUploadedFiles {
     documents?: Express.Multer.File[];
@@ -227,7 +228,17 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
 
         responseData(res, 201, 'Customer dan service connection berhasil dibuat', {
             customer: result.customer,
-            serviceConnection: result.serviceConnection,
+            serviceConnection: {
+                ...result.serviceConnection,
+                photos: result.createdPhotos.map(photo => ({
+                    ...photo,
+                    photo_url: generateFullUrl(photo.photo_url)
+                }))
+            },
+            documents: result.createdDocuments.map(doc => ({
+                ...doc,
+                document_url: generateFullUrl(doc.document_url)
+            })),
             pdfGenerated: pdfPath !== null,
             pdfPath: pdfPath,
             whatsappSent: whatsappSent,

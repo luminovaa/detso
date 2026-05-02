@@ -1,8 +1,15 @@
 // app/index.tsx
 import { Redirect } from 'expo-router';
+import { useAuthStore } from '@/src/features/auth/store';
 
 export default function Index() {
-  // Secara default arahkan ke login
-  // Nanti checkAuth di _layout.tsx akan memindahkan ke (tabs) jika sudah login
+  const user = useAuthStore((s) => s.user);
+
+  // Jika sudah login, langsung ke dashboard
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  // Belum login, arahkan ke login
   return <Redirect href="/sign-in" />;
 }

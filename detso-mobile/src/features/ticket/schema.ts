@@ -1,11 +1,10 @@
 import { z } from 'zod';
+import { basePaginationSchema } from '@/src/lib/base-schemas';
 
-export const getAllTicketSchema = z.object({
-  page: z.number().default(1),
-  limit: z.number().default(10),
-  search: z.string().trim().optional(),
+export const getAllTicketSchema = basePaginationSchema.extend({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
+  customer_id: z.string().optional(),
 });
 
 export type GetAllTicketInput = z.infer<typeof getAllTicketSchema>;

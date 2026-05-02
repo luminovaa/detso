@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   FlatList,
@@ -10,7 +10,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import _debounce from "lodash.debounce";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -22,7 +21,8 @@ import { useT } from "@/src/features/i18n/store";
 import { CustomerItem } from "@/src/components/screens/customer/customer-item";
 import { CustomerSkeletonLoading } from "@/src/components/screens/customer/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
-import { ServiceConnection } from "@/src/lib/types";
+import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
+import { CustomerListItem } from "@/src/lib/types";
 
 export default function CustomerScreen() {
   const { t } = useT();
@@ -31,8 +31,7 @@ export default function CustomerScreen() {
   const fabBottom = safeBottom + 24;
 
   // State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const {
@@ -48,52 +47,32 @@ export default function CustomerScreen() {
     search: debouncedSearch || undefined,
   });
 
-  // Flatten all pages
-  const customers: ServiceConnection[] =
-    data?.pages.flatMap((page: any) => page?.data?.services || []) ?? [];
+  // Flatten all pages — now returns customers (not services)
+  const customers: CustomerListItem[] = useMemo(
+    () => data?.pages.flatMap((page: any) => page?.data?.customers || []) ?? [],
+    [data?.pages],
+  );
 
   const deleteCustomer = useDeleteCustomer();
 
-  // Debounced search
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearchHandler = useCallback(
-    _debounce((text: string) => {
-      setDebouncedSearch(text);
-    }, 500),
-    [],
-  );
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    debouncedSearchHandler(text);
-  };
-
-  useEffect(() => {
-    return () => {
-      debouncedSearchHandler.cancel();
-    };
-  }, [debouncedSearchHandler]);
-
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setDeletingId(id);
     deleteCustomer.mutate(id, {
       onSettled: () => setDeletingId(null),
     });
-  };
+  }, [deleteCustomer]);
 
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const primaryColor = isDark ? "#66a3ff" : "#102a4d";
+  const primaryColor = "hsl(var(--primary))";
 
   return (
     <ScreenWrapper headerTitle={t("customer.title")} showBackButton isLoading={isLoading}>
@@ -103,10 +82,7 @@ export default function CustomerScreen() {
           value={searchQuery}
           onChangeText={handleSearchChange}
           placeholder={t("customer.searchPlaceholder")}
-          onClear={() => {
-            setSearchQuery("");
-            setDebouncedSearch("");
-          }}
+          onClear={clearSearch}
         />
       </View>
 
@@ -128,6 +104,10 @@ export default function CustomerScreen() {
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          initialNumToRender={10}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching && !isFetchingNextPage}
@@ -141,9 +121,6 @@ export default function CustomerScreen() {
               icon="people-outline"
               title={t("customer.emptyTitle")}
               description={t("customer.emptyDesc")}
-              actionLabel={t("customer.refresh")}
-              onAction={handleRefresh}
-              isLoading={isRefetching}
             />
           }
           ListFooterComponent={

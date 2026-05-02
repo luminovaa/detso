@@ -6,6 +6,7 @@ import { asyncHandler, AuthenticationError, AuthorizationError, ValidationError 
 import { responseData } from '../../utils/response-handler'
 import { prisma } from '../../utils/prisma'
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file'
+import { generateFullUrl } from '../../utils/generate-full-url'
 
 const createSlug = (name: string) => name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
@@ -109,7 +110,14 @@ export const registerTenant = asyncHandler(async (req: Request, res: Response): 
             };
         });
 
-        responseData(res, 201, 'Pendaftaran ISP Berhasil', result);
+        responseData(res, 201, 'Pendaftaran ISP Berhasil', {
+            tenant: {
+                ...result.tenant,
+                logo: generateFullUrl(result.tenant.logo)
+            },
+            user: result.user,
+            profile: result.profile
+        });
     } catch (error) {
         await cleanupUploadedFile();
         throw error;

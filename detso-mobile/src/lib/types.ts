@@ -66,7 +66,23 @@ export type CustomerInfo = {
   nik: string | null;
   address: string | null;
   created_at: string;
+  has_installation_report?: boolean;
   documents: CustomerDocument[];
+}
+
+export type CustomerListItem = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  nik: string | null;
+  created_at: string;
+  service_count: number;
+  services_summary: {
+    id: string;
+    package_name: string;
+    status: string;
+  }[];
 }
 
 export type ServiceConnection = {

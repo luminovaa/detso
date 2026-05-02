@@ -1,26 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Text } from '@/src/components/global/text';
 import { Schedule, ScheduleStatus } from '@/src/lib/types';
 import { HOUR_HEIGHT, TIME_LABEL_WIDTH, getBlockPosition } from '@/src/lib/calendar-utils';
+import { hexToRgba, hexToRgb } from '@/src/lib/colors';
 
 // ─── Status Colors ───────────────────────────────────────────────
 
 const STATUS_STYLES: Record<ScheduleStatus, { bg: string; border: string; text: string }> = {
   SCHEDULED: {
-    bg: 'rgba(59, 130, 246, 0.15)', // blue-500/15
-    border: 'rgb(59, 130, 246)', // blue-500
-    text: 'rgb(37, 99, 235)', // blue-600
+    bg: hexToRgba('#0F766E', 0.15), // teal-700/15
+    border: hexToRgb('#0F766E'), // teal-700
+    text: hexToRgb('#0D9488'), // teal-600
   },
   COMPLETED: {
-    bg: 'rgba(34, 197, 94, 0.15)', // green-500/15
-    border: 'rgb(34, 197, 94)', // green-500
-    text: 'rgb(22, 163, 74)', // green-600
+    bg: hexToRgba('#10B981', 0.15), // emerald-500/15
+    border: hexToRgb('#10B981'), // emerald-500
+    text: hexToRgb('#059669'), // emerald-600
   },
   CANCELLED: {
-    bg: 'rgba(156, 163, 175, 0.15)', // gray-400/15
-    border: 'rgb(156, 163, 175)', // gray-400
-    text: 'rgb(107, 114, 128)', // gray-500
+    bg: hexToRgba('#9CA3AF', 0.15), // gray-400/15
+    border: hexToRgb('#9CA3AF'), // gray-400
+    text: hexToRgb('#6B7280'), // gray-500
   },
 };
 
@@ -44,8 +45,8 @@ interface ScheduleBlockProps {
   onPress?: (schedule: Schedule) => void;
 }
 
-export function ScheduleBlock({ schedule, segmentStart, segmentEnd, column, totalColumns, onPress }: ScheduleBlockProps) {
-  const { top, height } = getBlockPosition(segmentStart, segmentEnd);
+export const ScheduleBlock = React.memo(function ScheduleBlock({ schedule, segmentStart, segmentEnd, column, totalColumns, onPress }: ScheduleBlockProps) {
+  const { top, height } = useMemo(() => getBlockPosition(segmentStart, segmentEnd), [segmentStart, segmentEnd]);
   const style = STATUS_STYLES[schedule.status] || STATUS_STYLES.SCHEDULED;
 
   // Calculate horizontal position for split columns
@@ -114,4 +115,4 @@ export function ScheduleBlock({ schedule, segmentStart, segmentEnd, column, tota
       </View>
     </TouchableOpacity>
   );
-}
+});

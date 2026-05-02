@@ -5,6 +5,7 @@ import { createServiceConnectionSchema } from './validation/validation.service';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateUniqueIdPel } from '../../helper/random.idpel';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 interface ServiceConnectionUploadedFiles {
     photos?: Express.Multer.File[];
@@ -122,6 +123,15 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
                             speed: true,
                             price: true
                         }
+                    },
+                    photos: {
+                        select: {
+                            id: true,
+                            photo_type: true,
+                            photo_url: true,
+                            uploaded_at: true,
+                            notes: true
+                        }
                     }
                 }
             });
@@ -149,7 +159,13 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
             return serviceConnection;
         });
 
-        responseData(res, 201, 'Service connection berhasil dibuat', result);
+        responseData(res, 201, 'Service connection berhasil dibuat', {
+            ...result,
+            photos: result.photos.map(photo => ({
+                ...photo,
+                photo_url: generateFullUrl(photo.photo_url)
+            }))
+        });
 
     } catch (error) {
         await cleanupFiles();

@@ -1,8 +1,6 @@
 import api from '@/src/lib/api';
 import { CreateCustomerInput, GettAllInput, UpdateCustomerInput } from './schema';
 
-
-
 export const customerService = {
     getAll : async (params?: GettAllInput) => {
         const response = await api.get('/customer', { params });
@@ -27,13 +25,13 @@ export const customerService = {
         const response = await api.delete(`/customer/${id}`);
         return response.data;
     },
-    getPdf: async (id: string) => {
-        const response = await api.get(`/customer/pdf/${id}/download`);
-        return response.data;
-    },
-    viewPdf: async (id: string) => {
-        const response = await api.get(`/customer/pdf/${id}/view`);
-        return response.data;
+    /**
+     * Get signed URL for PDF (authenticated request → returns signed URL)
+     * The signed URL can be opened in browser without auth token (expires in 3 min)
+     */
+    getSignedPdfUrl: async (customerId: string): Promise<string> => {
+        const response = await api.get(`/customer/pdf/${customerId}/signed-url`);
+        return response.data.data.url;
     },
     checkNik: async (nik: string) => {
         const response = await api.get(`/customer/check-nik/${nik}`);

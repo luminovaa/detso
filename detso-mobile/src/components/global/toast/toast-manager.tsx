@@ -94,7 +94,6 @@ export const toastManager = new ToastManager();
 
 /**
  * Context Provider component that constructs the foundational boundaries and injects the toast management API into the React tree.
- * Utilizes `@gorhom/portal` to float dynamic toast instances above all other UI elements natively.
  */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
@@ -119,7 +118,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Internal container responsible for segregating and rendering mapped toast arrays based on designated screen positions.
+ * Stacked toast container.
+ * Latest toast is on top (front), older toasts stack behind with decreasing scale/opacity.
  */
 function ToastContainer({ toasts }: { toasts: ToastData[] }) {
   const topToasts = toasts.filter((t) => t.position === "top");
@@ -127,37 +127,68 @@ function ToastContainer({ toasts }: { toasts: ToastData[] }) {
 
   return (
     <>
-      {topToasts.map((toast, index) => (
-        <ToastItem key={toast.id} toast={toast} index={index} position="top" />
-      ))}
-      {bottomToasts.map((toast, index) => (
-        <ToastItem
-          key={toast.id}
-          toast={toast}
-          index={index}
-          position="bottom"
-        />
-      ))}
+      <StackedGroup toasts={topToasts} position="top" />
+      <StackedGroup toasts={bottomToasts} position="bottom" />
     </>
   );
 }
 
 /**
- * Individually animated toast component handling continuous entry and exit springs, opacities, and positioning offsets.
+ * Renders toasts in a stacked formation.
+ * The newest toast (last in array) is fully visible on top.
+ * Older toasts peek behind with scale-down + slight vertical offset + reduced opacity.
+ * Max 3 visible in stack.
+ */
+function StackedGroup({
+  toasts,
+  position,
+}: {
+  toasts: ToastData[];
+  position: "top" | "bottom";
+}) {
+  if (toasts.length === 0) return null;
+
+  // Show max 3 toasts in the stack (newest last)
+  const maxVisible = 3;
+  const visibleToasts = toasts.slice(-maxVisible);
+  const total = visibleToasts.length;
+
+  return (
+    <>
+      {visibleToasts.map((toast, i) => {
+        // i=0 is oldest visible, i=total-1 is newest (front)
+        const reverseIndex = total - 1 - i; // 0 = front, 1 = behind, 2 = furthest back
+        return (
+          <ToastItem
+            key={toast.id}
+            toast={toast}
+            stackIndex={reverseIndex}
+            position={position}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+/**
+ * Individually animated toast with stacked positioning.
+ * stackIndex: 0 = front (newest), 1 = behind, 2 = furthest back
  */
 function ToastItem({
   toast,
-  index,
+  stackIndex,
   position,
 }: {
   toast: ToastData;
-  index: number;
+  stackIndex: number;
   position: "top" | "bottom";
 }) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(
-    new Animated.Value(position === "top" ? -20 : 20),
+    new Animated.Value(position === "top" ? -30 : 30),
   ).current;
+  const scale = useRef(new Animated.Value(0.95)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -172,22 +203,72 @@ function ToastItem({
         tension: 40,
         useNativeDriver: true,
       }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, []);
+
+  // Animate stack position changes
+  const stackScale = useRef(new Animated.Value(1)).current;
+  const stackTranslateY = useRef(new Animated.Value(0)).current;
+  const stackOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    // Scale down for items behind: 1.0, 0.95, 0.90
+    const targetScale = 1 - stackIndex * 0.05;
+    // Offset behind items slightly: 0, 8, 16 (top) or 0, -8, -16 (bottom)
+    const targetOffset = position === "top"
+      ? stackIndex * 8
+      : -(stackIndex * 8);
+    // Reduce opacity for items behind: 1.0, 0.7, 0.4
+    const targetOpacity = Math.max(1 - stackIndex * 0.3, 0.4);
+
+    Animated.parallel([
+      Animated.spring(stackScale, {
+        toValue: targetScale,
+        friction: 10,
+        tension: 60,
+        useNativeDriver: true,
+      }),
+      Animated.spring(stackTranslateY, {
+        toValue: targetOffset,
+        friction: 10,
+        tension: 60,
+        useNativeDriver: true,
+      }),
+      Animated.timing(stackOpacity, {
+        toValue: targetOpacity,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [stackIndex, position]);
 
   const handlePress = () => {
     if (toast.onPress) toast.onPress();
     if (toast.onPressAutoHide !== false) toastManager.hide(toast.id);
   };
 
-  const offset = index * 76; // 68px toast height + 8px gap
+  // zIndex: front toast gets highest
+  const zIndex = 9999 - stackIndex;
 
   return (
     <Animated.View
       style={[
         itemBaseStyle,
-        position === "top" ? { top: 52 + offset } : { bottom: 52 + offset },
-        { opacity, transform: [{ translateY }] },
+        position === "top" ? { top: 52 } : { bottom: 52 },
+        {
+          zIndex,
+          opacity: Animated.multiply(opacity, stackOpacity),
+          transform: [
+            { translateY: Animated.add(translateY, stackTranslateY) },
+            { scale: Animated.multiply(scale, stackScale) },
+          ],
+        },
       ]}
     >
       <ToastContent
@@ -203,7 +284,6 @@ const itemBaseStyle = {
   position: "absolute",
   left: 16,
   right: 16,
-  zIndex: 9999,
 } as const;
 
 /**

@@ -1,7 +1,9 @@
 // controllers/pdf.controller.ts
 import { Request, Response } from 'express';
 import { asyncHandler, AuthenticationError, NotFoundError } from '../../utils/error-handler';
+import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
+import { generateSignedUrl } from '../../utils/signed-url';
 import fs from 'fs';
 import path from 'path';
 import { getParam } from '../../utils/request.utils';
@@ -108,4 +110,63 @@ export const viewInstallationReport = asyncHandler(async (req: Request, res: Res
 
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
+});
+
+/**
+ * Generate signed URL for PDF installation report
+ * 
+ * GET /customer/pdf/:customerId/signed-url
+ * 
+ * Returns a signed URL that can be opened in browser without auth token.
+ * The signed URL expires in 3 minutes.
+ */
+export const getSignedPdfUrl = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const user = req.user;
+    if (!user || !user.tenant_id) {
+        throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
+    }
+
+    const customerId = getParam(req.params.customerId);
+
+    // Validasi customer milik tenant ini
+    const customer = await prisma.detso_Customer.findFirst({
+        where: {
+            id: customerId,
+            tenant_id: user.tenant_id,
+            deleted_at: null
+        },
+        select: { id: true }
+    });
+
+    if (!customer) {
+        throw new NotFoundError('Customer tidak ditemukan');
+    }
+
+    const customerPdf = await prisma.detso_Customer_PDF.findFirst({
+        where: {
+            customer_id: customerId,
+            pdf_type: 'installation_report'
+        },
+        orderBy: {
+            generated_at: 'desc'
+        }
+    });
+
+    if (!customerPdf) {
+        throw new NotFoundError('PDF laporan pemasangan tidak ditemukan');
+    }
+
+    const filePath = path.resolve(customerPdf.pdf_path);
+
+    if (!fs.existsSync(filePath)) {
+        throw new NotFoundError('File PDF tidak ditemukan di sistem');
+    }
+
+    // Generate signed URL with 3 minutes expiry
+    const signedUrl = generateSignedUrl(customerPdf.pdf_path, 180);
+
+    responseData(res, 200, 'Signed URL berhasil dibuat', {
+        url: signedUrl,
+        expires_in: 180 // seconds
+    });
 });

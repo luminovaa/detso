@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   FlatList,
@@ -10,7 +10,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import _debounce from "lodash.debounce";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -22,6 +21,7 @@ import { useT } from "@/src/features/i18n/store";
 import { TeamItem } from "@/src/components/screens/team/team-item";
 import { TeamSkeletonLoading } from "@/src/components/screens/team/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { TeamMember } from "@/src/lib/types";
 
 export default function TeamScreen() {
@@ -33,8 +33,7 @@ export default function TeamScreen() {
   const fabBottom = safeBottom + 24;
 
   // State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const {
@@ -51,52 +50,33 @@ export default function TeamScreen() {
   });
 
   // Flatten all pages into one array
-  const members: TeamMember[] =
-    data?.pages.flatMap((page: any) => page?.data?.users || []) ?? [];
+  const members: TeamMember[] = useMemo(
+    () => data?.pages.flatMap((page: any) => page?.data?.users || []) ?? [],
+    [data?.pages],
+  );
 
   const deleteUser = useDeleteUser();
 
-  // Debounced search
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearchHandler = useCallback(
-    _debounce((text: string) => {
-      setDebouncedSearch(text);
-    }, 500),
-    [],
-  );
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    debouncedSearchHandler(text);
-  };
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSearchHandler.cancel();
-    };
-  }, [debouncedSearchHandler]);
-
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setDeletingId(id);
     deleteUser.mutate(id, {
       onSettled: () => setDeletingId(null),
     });
-  };
+  }, [deleteUser]);
 
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const primaryColor = isDark ? "#66a3ff" : "#102a4d";
+  const primaryColor = "hsl(var(--primary))";
 
   return (
     <ScreenWrapper headerTitle={t("team.title")} showBackButton isLoading={isLoading}>
@@ -106,10 +86,7 @@ export default function TeamScreen() {
           value={searchQuery}
           onChangeText={handleSearchChange}
           placeholder={t("team.searchPlaceholder")}
-          onClear={() => {
-            setSearchQuery("");
-            setDebouncedSearch("");
-          }}
+          onClear={clearSearch}
         />
       </View>
 
@@ -131,6 +108,10 @@ export default function TeamScreen() {
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          initialNumToRender={10}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching && !isFetchingNextPage}

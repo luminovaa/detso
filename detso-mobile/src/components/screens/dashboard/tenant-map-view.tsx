@@ -12,6 +12,7 @@ import { Badge } from "@/src/components/global/badge";
 import { config } from "@/src/lib/config";
 import { TenantMapData } from "@/src/features/dashboard/types";
 import { useT } from "@/src/features/i18n/store";
+import { COLORS } from "@/src/lib/colors";
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
@@ -123,7 +124,7 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
                     <Ionicons
                       name="location-sharp"
                       size={40}
-                      color={tenant.is_active ? "#10b981" : "#ef4444"}
+                      color={tenant.is_active ? COLORS.status.success : COLORS.status.error}
                     />
                   </View>
                   <Mapbox.Callout title={tenant.name} />
@@ -134,13 +135,13 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
             {/* Legend overlay */}
             <View className="absolute bottom-2.5 left-2.5 flex-row bg-white/90 px-3 py-1.5 rounded-full shadow-sm">
               <View className="flex-row items-center mr-4">
-                <Ionicons name="location-sharp" size={16} color="#10b981" />
+                <Ionicons name="location-sharp" size={16} color={COLORS.status.success} />
                 <Text className="text-xs text-primary ml-1">
                   {`${t("dashboard.legendActive")} (${validTenants.filter((item) => item.is_active).length})`}
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Ionicons name="location-sharp" size={16} color="#ef4444" />
+                <Ionicons name="location-sharp" size={16} color={COLORS.status.error} />
                 <Text className="text-xs text-primary ml-1">
                   {`${t("dashboard.legendInactive")} (${validTenants.filter((item) => !item.is_active).length})`}
                 </Text>

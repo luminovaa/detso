@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback, useMemo } from "react";
 import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -20,38 +20,37 @@ interface TeamItemProps {
   isDeleting?: boolean;
 }
 
-export function TeamItem({ item, searchQuery = "", onDelete, isDeleting }: TeamItemProps) {
+const getRoleBadgeColor = (role: string): BadgeVariantKey => {
+  switch (role) {
+    case "TENANT_OWNER":
+      return "warning";
+    case "TENANT_ADMIN":
+      return "info";
+    case "TENANT_TEKNISI":
+      return "success";
+    default:
+      return "neutral";
+  }
+};
+
+export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", onDelete, isDeleting }: TeamItemProps) {
   const { t } = useT();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const displayName = item.profile?.full_name || item.username;
   const roleLabel = t(`roles.${item.role}`) || item.role;
+  const roleColorVariant = useMemo(() => getRoleBadgeColor(item.role), [item.role]);
 
-  const getRoleBadgeColor = (role: string): BadgeVariantKey => {
-    switch (role) {
-      case "TENANT_OWNER":
-        return "warning";
-      case "TENANT_ADMIN":
-        return "info";
-      case "TENANT_TEKNISI":
-        return "success";
-      default:
-        return "neutral";
-    }
-  };
-
-  const roleColorVariant = getRoleBadgeColor(item.role);
-
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     bottomSheetRef.current?.present();
-  };
+  }, []);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
     router.push(`/team/${item.id}/edit`);
-  };
+  }, [item.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     bottomSheetRef.current?.close();
     Alert.alert(
       t("team.deleteConfirm"),
@@ -65,7 +64,7 @@ export function TeamItem({ item, searchQuery = "", onDelete, isDeleting }: TeamI
         },
       ],
     );
-  };
+  }, [item.id, onDelete, t]);
 
   return (
     <>
@@ -139,4 +138,4 @@ export function TeamItem({ item, searchQuery = "", onDelete, isDeleting }: TeamI
       />
     </>
   );
-}
+});

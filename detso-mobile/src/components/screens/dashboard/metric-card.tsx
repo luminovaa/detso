@@ -13,7 +13,7 @@ interface MetricCardProps {
   onPress?: () => void;
 }
 
-export function MetricCard({ icon, label, value, color, onPress }: MetricCardProps) {
+export const MetricCard = React.memo(function MetricCard({ icon, label, value, color, onPress }: MetricCardProps) {
   const Content = (
     <Card className="flex-1">
       <CardContent className="p-4">
@@ -46,4 +46,4 @@ export function MetricCard({ icon, label, value, color, onPress }: MetricCardPro
   }
 
   return <View className="flex-1">{Content}</View>;
-}
+});

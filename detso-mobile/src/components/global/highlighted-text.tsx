@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Text } from "./text";
 
 export interface HighlightedTextProps {
@@ -17,29 +17,35 @@ export interface HighlightedTextProps {
  * @param highlightClassName - Class untuk text yang di-highlight
  * @param numberOfLines - Jumlah baris maksimal
  */
-export const HighlightedText: React.FC<HighlightedTextProps> = ({
+export const HighlightedText = React.memo(function HighlightedText({
   text,
   searchQuery,
   className = "text-base text-foreground",
   highlightClassName = "text-primary bg-primary/10",
   numberOfLines,
-}) => {
+}: HighlightedTextProps) {
+  // Memoize regex creation — expensive operation yang tidak perlu diulang tiap render
+  const regex = useMemo(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return null;
+    const searchWords = trimmed.split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    return new RegExp(`(${searchWords.join("|")})`, "gi");
+  }, [searchQuery]);
+
+  // Memoize parts splitting
+  const parts = useMemo(() => {
+    if (!regex) return null;
+    return text.split(regex);
+  }, [text, regex]);
+
   // Jika tidak ada search query, tampilkan text biasa
-  if (!searchQuery.trim()) {
+  if (!regex || !parts) {
     return (
       <Text className={className} numberOfLines={numberOfLines}>
         {text}
       </Text>
     );
   }
-
-  // Buat regex untuk mencari kata yang match (case insensitive)
-  // Split search query untuk support multiple words
-  const searchWords = searchQuery.trim().split(/\s+/);
-  const regex = new RegExp(`(${searchWords.join("|")})`, "gi");
-  
-  // Split text berdasarkan regex
-  const parts = text.split(regex);
 
   return (
     <Text className={className} numberOfLines={numberOfLines}>
@@ -60,7 +66,7 @@ export const HighlightedText: React.FC<HighlightedTextProps> = ({
       })}
     </Text>
   );
-};
+});
 
 /**
  * Utility function untuk highlight text (tanpa component)

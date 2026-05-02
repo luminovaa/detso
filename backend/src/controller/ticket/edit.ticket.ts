@@ -6,6 +6,7 @@ import { prisma } from '../../utils/prisma';
 import { TicketAction } from '@prisma/client';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { getParam } from '../../utils/request.utils';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const editTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -274,7 +275,10 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 
         responseData(res, 200, 'Ticket berhasil diperbarui', {
             ticket: result.ticket,
-            history: result.histories
+            history: result.histories.map(h => ({
+                ...h,
+                image: generateFullUrl(h.image)
+            }))
         });
 
     } catch (error) {
@@ -392,7 +396,13 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
             return { ticket: updatedTicket, history };
         });
 
-        responseData(res, 200, `Status ticket berhasil diubah menjadi ${status}`, result);
+        responseData(res, 200, `Status ticket berhasil diubah menjadi ${status}`, {
+            ticket: result.ticket,
+            history: {
+                ...result.history,
+                image: generateFullUrl(result.history.image)
+            }
+        });
 
     } catch (error) {
         await cleanupUploadedFile();
@@ -456,7 +466,12 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
             }
         });
 
-        responseData(res, 201, 'Catatan berhasil ditambahkan', { history });
+        responseData(res, 201, 'Catatan berhasil ditambahkan', { 
+            history: {
+                ...history,
+                image: generateFullUrl(history.image)
+            }
+        });
 
     } catch (error) {
         await cleanupUploadedFile();

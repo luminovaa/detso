@@ -55,9 +55,6 @@ export default function TenantAdminDashboard() {
           icon="analytics-outline"
           title={t("dashboard.emptyTitle")}
           description={t("dashboard.emptyDesc")}
-          actionLabel={t("dashboard.refresh")}
-          onAction={handleRefresh}
-          isLoading={isRefreshing}
         />
       </ScreenWrapper>
     );

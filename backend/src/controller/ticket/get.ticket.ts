@@ -22,13 +22,17 @@ export const getAllTickets = asyncHandler(async (req: Request, res: Response): P
         throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
-    const { page, limit, search, priority, status } = validationResult.data;
+    const { page, limit, search, priority, status, customer_id } = validationResult.data;
 
     // [NEW] 2. Base Where Clause dengan tenant_id
     const whereClause: any = {
         tenant_id: tenant_id, // <--- KUNCI UTAMA FILTER
         deleted_at: null
     };
+
+    if (customer_id) {
+        whereClause.customer_id = customer_id;
+    }
 
     if (priority) {
         whereClause.priority = priority;

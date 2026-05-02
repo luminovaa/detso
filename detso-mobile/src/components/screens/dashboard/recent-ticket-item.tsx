@@ -1,24 +1,19 @@
 // src/components/screens/dashboard/recent-ticket-item.tsx
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Card, CardContent } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Badge } from "@/src/components/global/badge";
 import { RecentTicket } from "@/src/features/dashboard/types";
 import { formatRelativeTime } from "@/src/lib/format-date";
+import { TICKET_PRIORITY_COLORS } from "@/src/lib/ticket-constants";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
 interface RecentTicketItemProps {
   item: RecentTicket;
 }
-
-const priorityColors = {
-  LOW: "hsl(var(--muted-foreground))",
-  MEDIUM: "hsl(var(--primary))",
-  HIGH: "#f59e0b",
-  URGENT: "#ef4444",
-};
 
 const statusVariants = {
   OPEN: "default" as const,
@@ -27,29 +22,28 @@ const statusVariants = {
   CLOSED: "outline" as const,
 };
 
-export function RecentTicketItem({ item }: RecentTicketItemProps) {
+export const RecentTicketItem = React.memo(function RecentTicketItem({ item }: RecentTicketItemProps) {
   const locale = useLanguageStore((s) => s.locale);
   const { t } = useT();
   const timeAgo = formatRelativeTime(item.created_at, locale);
 
-  const statusLabels: Record<string, string> = {
+  const statusLabels: Record<string, string> = useMemo(() => ({
     OPEN: t("ticket.status.OPEN"),
     IN_PROGRESS: t("ticket.status.IN_PROGRESS"),
     RESOLVED: t("ticket.status.RESOLVED"),
     CLOSED: t("ticket.status.CLOSED"),
-  };
+  }), [t]);
 
-  const priorityLabels: Record<string, string> = {
+  const priorityLabels: Record<string, string> = useMemo(() => ({
     LOW: t("ticket.priority.LOW"),
     MEDIUM: t("ticket.priority.MEDIUM"),
     HIGH: t("ticket.priority.HIGH"),
     URGENT: t("ticket.priority.URGENT"),
-  };
+  }), [t]);
 
-  const handlePress = () => {
-    // TODO: Navigate to ticket detail
-    console.log("Navigate to ticket:", item.id);
-  };
+  const handlePress = useCallback(() => {
+    router.push(`/ticket/${item.id}/detail` as any);
+  }, [item.id]);
 
   return (
     <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
@@ -82,7 +76,7 @@ export function RecentTicketItem({ item }: RecentTicketItemProps) {
               <Ionicons 
                 name="flag" 
                 size={12} 
-                color={priorityColors[item.priority]} 
+                color={TICKET_PRIORITY_COLORS[item.priority] || "hsl(var(--muted-foreground))"} 
               />
               <Text className="text-xs text-muted-foreground ml-1">
                 {priorityLabels[item.priority] || item.priority}
@@ -109,4 +103,4 @@ export function RecentTicketItem({ item }: RecentTicketItemProps) {
       </Card>
     </TouchableOpacity>
   );
-}
+});

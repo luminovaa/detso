@@ -9,6 +9,7 @@ import scheduleRouter from '../controller/schedule';
 import tenantRouter from '../controller/tenant';
 import dashboardRouter from '../controller/dashboard';
 import networkRouter from '../controller/network';
+import filesRouter from '../controller/files';
 import { authLimiter } from '../middleware/rate-limit.middleware';
 
 export default (app: Express) => {
@@ -22,6 +23,9 @@ export default (app: Express) => {
 
     // Auth routes dengan brute force protection (5 gagal = block 5 menit)
     apiRouter.use('/auth', authLimiter, authRouter);
+    
+    // Public file serving with signed URLs (no auth required, token verified in controller)
+    apiRouter.use('/files', filesRouter);
     
     // Protected routes (dilindungi oleh global apiLimiter di app.ts)
     apiRouter.use('/user', userRouter);

@@ -1,7 +1,8 @@
 // src/components/screens/dashboard/recent-customer-item.tsx
-import React from "react";
+import React, { useCallback } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Card, CardContent } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
@@ -13,15 +14,14 @@ interface RecentCustomerItemProps {
   item: RecentCustomer;
 }
 
-export function RecentCustomerItem({ item }: RecentCustomerItemProps) {
+export const RecentCustomerItem = React.memo(function RecentCustomerItem({ item }: RecentCustomerItemProps) {
   const locale = useLanguageStore((s) => s.locale);
   const { t } = useT();
   const timeAgo = formatRelativeTime(item.created_at, locale);
 
-  const handlePress = () => {
-    // TODO: Navigate to customer detail
-    console.log("Navigate to customer:", item.id);
-  };
+  const handlePress = useCallback(() => {
+    router.push(`/customer/${item.id}/detail` as any);
+  }, [item.id]);
 
   return (
     <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
@@ -72,4 +72,4 @@ export function RecentCustomerItem({ item }: RecentCustomerItemProps) {
       </Card>
     </TouchableOpacity>
   );
-}
+});

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "../../global/card";
@@ -9,15 +9,19 @@ import { Tenant } from "@/src/lib/types";
 import { useT } from "@/src/features/i18n/store";
 import { router } from "expo-router";
 
-export function ISPItem({ item }: { item: Tenant }) {
+export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
   const { t } = useT();
+
+  const handlePress = useCallback(() => {
+    router.push(`/isp/${item.id}/detail`);
+  }, [item.id]);
 
   return (
     <Card className="mb-4 overflow-hidden border-border/40">
       <TouchableOpacity
         activeOpacity={0.7}
         className="flex-row items-center p-4"
-        onPress={() => router.push(`/isp/${item.id}/detail`)}
+        onPress={handlePress}
       >
         <Avatar
           src={item.logo || undefined}
@@ -74,4 +78,4 @@ export function ISPItem({ item }: { item: Tenant }) {
       </TouchableOpacity>
     </Card>
   );
-}
+});

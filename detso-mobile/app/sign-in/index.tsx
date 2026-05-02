@@ -106,7 +106,7 @@ export default function SignInScreen() {
     setIsLoading(true);
     try {
       await login(data);
-      router.replace("/");
+      router.replace("/(tabs)");
     } catch (error: any) {
       console.error("Login Error:", error);
     } finally {

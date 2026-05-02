@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../utils/prisma";
+import { generateFullUrl } from "../../utils/generate-full-url";
 
 export const getSaasDashboardData = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -71,7 +72,10 @@ export const getSaasDashboardData = async (req: Request, res: Response, next: Ne
                     total_customers: totalCustomers
                 },
                 map_data: mapData,
-                recent_activities: recentTenants
+                recent_activities: recentTenants.map(tenant => ({
+                    ...tenant,
+                    logo: generateFullUrl(tenant.logo)
+                }))
             }
         });
     } catch (error) {

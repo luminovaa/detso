@@ -118,11 +118,11 @@ export function CustomTabBar({
 
   const TOKENS = useMemo(
     () => ({
-      primary: isDark ? "hsl(217, 100%, 70%)" : "hsl(217, 71%, 22%)",
+      primary: isDark ? "hsl(180, 77%, 47%)" : "hsl(180, 84%, 25%)", // teal-400 : teal-700
       primaryLight: isDark
-        ? "hsla(217, 100%, 70%, 0.15)"
-        : "hsla(217, 71%, 22%, 0.15)",
-      uiMuted: isDark ? "hsl(220, 10%, 70%)" : "hsl(220, 10%, 50%)",
+        ? "hsla(180, 77%, 47%, 0.15)"
+        : "hsla(180, 84%, 25%, 0.15)",
+      uiMuted: isDark ? "hsl(180, 10%, 70%)" : "hsl(180, 10%, 45%)",
       bgOverlay: isDark
         ? "rgba(10, 10, 10, 0.85)"
         : "rgba(255, 255, 255, 0.85)",

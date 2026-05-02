@@ -6,6 +6,8 @@ import { Text } from '@/src/components/global/text';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
 import { useT } from '@/src/features/i18n/store';
+import { useColorScheme } from 'nativewind';
+import { getColor } from '@/src/lib/colors';
 
 interface MapControlsProps {
   onLocateMe: (lat: number, lng: number) => void;
@@ -16,6 +18,8 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
   const { mode, cancelAdd, mapStyle, toggleMapStyle } = useNetworkMapStore();
   const [isLocating, setIsLocating] = useState(false);
   const { fabBottom } = useTabBarHeight();
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const handleLocateMe = async () => {
     try {
@@ -60,7 +64,7 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
         <Ionicons
           name={mapStyle === 'satellite' ? 'map-outline' : 'earth'}
           size={22}
-          color="#6b7280"
+          color={isDark ? '#94A3B8' : '#64748B'}
         />
       </TouchableOpacity>
 
@@ -72,9 +76,9 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
         style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
       >
         {isLocating ? (
-          <ActivityIndicator size="small" color="#3b82f6" />
+          <ActivityIndicator size="small" color={getColor('brand.primary', isDark)} />
         ) : (
-          <Ionicons name="locate" size={22} color="#3b82f6" />
+          <Ionicons name="locate" size={22} color={getColor('brand.primary', isDark)} />
         )}
       </TouchableOpacity>
 

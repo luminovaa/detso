@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../utils/prisma";
+import { generateFullUrl } from "../../utils/generate-full-url";
 
 export const getTenantDashboardData = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -90,7 +91,16 @@ export const getTenantDashboardData = async (req: Request, res: Response, next: 
                     open_tickets: openTickets,
                     total_packages: totalPackages,
                 },
-                recent_tickets: recentTickets,
+                recent_tickets: recentTickets.map(ticket => ({
+                    ...ticket,
+                    technician: ticket.technician ? {
+                        ...ticket.technician,
+                        profile: ticket.technician.profile ? {
+                            ...ticket.technician.profile,
+                            avatar: generateFullUrl(ticket.technician.profile.avatar)
+                        } : null
+                    } : null
+                })),
                 recent_customers: recentCustomers,
             }
         });

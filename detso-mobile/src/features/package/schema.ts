@@ -1,16 +1,13 @@
 import { z } from 'zod';
 import { useLanguageStore } from '@/src/features/i18n/store';
+import { basePaginationSchema } from '@/src/lib/base-schemas';
 
 const t = (key: string) => {
   const { locale, i18n } = useLanguageStore.getState();
   return i18n.t(key, { locale });
 };
 
-export const getAllPackageSchema = z.object({
-  page: z.number().default(1),
-  limit: z.number().default(10),
-  search: z.string().trim().optional(),
-});
+export const getAllPackageSchema = basePaginationSchema;
 
 export type GetAllPackageInput = z.infer<typeof getAllPackageSchema>;
 

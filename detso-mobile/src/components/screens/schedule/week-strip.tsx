@@ -1,5 +1,11 @@
-import React from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { View, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { Text } from '@/src/components/global/text';
 import { useT } from '@/src/features/i18n/store';
 import {
@@ -18,24 +24,58 @@ interface WeekStripProps {
   onDateSelect: (date: Date) => void;
 }
 
-export function WeekStrip({ selectedDate, schedules, onDateSelect }: WeekStripProps) {
+// Animation config
+const SLIDE_DURATION = 250;
+const SLIDE_EASING = Easing.bezier(0.25, 0.1, 0.25, 1);
+
+export const WeekStrip = React.memo(function WeekStrip({ selectedDate, schedules, onDateSelect }: WeekStripProps) {
   const { t } = useT();
-  const weekDays = getWeekDays(selectedDate);
+  const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
+
+  // Track previous week to detect week changes and animate
+  const prevWeekStartRef = useRef<string>(formatDateLocal(weekDays[0]));
+  const translateX = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    const currentWeekStart = formatDateLocal(weekDays[0]);
+    const prevWeekStart = prevWeekStartRef.current;
+
+    if (currentWeekStart !== prevWeekStart) {
+      // Determine direction: if new week is later → slide from right, else from left
+      const direction = currentWeekStart > prevWeekStart ? 1 : -1;
+
+      // Start off-screen in the direction we're coming from
+      translateX.value = direction * 60;
+      opacity.value = 0;
+
+      // Animate to center
+      translateX.value = withTiming(0, { duration: SLIDE_DURATION, easing: SLIDE_EASING });
+      opacity.value = withTiming(1, { duration: SLIDE_DURATION, easing: SLIDE_EASING });
+
+      prevWeekStartRef.current = currentWeekStart;
+    }
+  }, [weekDays]);
 
   // Pre-compute which dates have schedules (supports multi-day)
-  const datesWithSchedules = getDatesWithSchedules(schedules);
+  const datesWithSchedules = useMemo(() => getDatesWithSchedules(schedules), [schedules]);
 
   // Day name labels
-  const dayLabels: string[] = (() => {
+  const dayLabels: string[] = useMemo(() => {
     const raw = t('schedule.dayNamesShort');
     if (Array.isArray(raw)) return raw;
     // Fallback
     return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  })();
+  }, [t]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+    opacity: opacity.value,
+  }));
 
   return (
-    <View className="bg-card border-b border-border px-2 py-3">
-      <View className="flex-row gap-1">
+    <View className="bg-card border-b border-border px-2 py-3 overflow-hidden">
+      <Animated.View style={[{ flexDirection: 'row', gap: 4 }, animatedStyle]}>
         {weekDays.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
           const today = isTodayFn(date);
@@ -95,7 +135,7 @@ export function WeekStrip({ selectedDate, schedules, onDateSelect }: WeekStripPr
             </TouchableOpacity>
           );
         })}
-      </View>
+      </Animated.View>
     </View>
   );
-}
+});

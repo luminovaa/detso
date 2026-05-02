@@ -108,7 +108,7 @@ export function ConnectServiceSheet({
               className="flex-row items-center py-3 px-2 border-b border-border"
             >
               <View className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mr-3">
-                <Ionicons name="person" size={16} color="#10b981" />
+                <Ionicons name="person" size={16} color="#10B981" />
               </View>
               <View className="flex-1">
                 <Text weight="medium" className="text-sm text-foreground">
@@ -120,7 +120,7 @@ export function ConnectServiceSheet({
               </View>
               {hasLocation ? (
                 <Badge variant="outline" className="ml-2">
-                  <Ionicons name="location" size={10} color="#10b981" />
+                  <Ionicons name="location" size={10} color="#10B981" />
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="ml-2">
@@ -132,7 +132,7 @@ export function ConnectServiceSheet({
         }}
         ListEmptyComponent={
           <View className="items-center py-8">
-            <Ionicons name="checkmark-circle" size={40} color="#10b981" />
+            <Ionicons name="checkmark-circle" size={40} color="#10B981" />
             <Text className="text-muted-foreground mt-2 text-center">
               {search
                 ? t('network.connectService.noMatch')

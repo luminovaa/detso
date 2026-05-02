@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, ViewProps } from "react-native";
+import { View, ViewProps } from "react-native";
+import { Image } from "expo-image";
 import { cn } from "../../lib/utils";
 import { Text } from "./text";
 
@@ -69,7 +70,9 @@ export function Avatar({
         <Image
           source={{ uri: src }}
           className="h-full w-full"
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          transition={200}
           onError={() => setImageFailed(true)} // Jika link mati, otomatis fallback ke inisial
         />
       ) : (

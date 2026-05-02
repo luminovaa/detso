@@ -102,7 +102,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Cek apakah token sudah expire
         if (isTokenExpired(token)) {
           console.log('Token expired, trying to refresh...');
-          await get().setupAutoRefresh();
+          try {
+            await get().setupAutoRefresh();
+            // Setelah refresh, cek apakah user sudah ter-set
+            const currentUser = get().user;
+            if (!currentUser) {
+              // Refresh berhasil tapi user belum di-set, coba ambil data user
+              const response = await authService.getMe();
+              set({ user: response.data, isInitialized: true });
+            } else {
+              set({ isInitialized: true });
+            }
+          } catch (refreshError) {
+            // Refresh gagal, clear tokens dan set initialized
+            await SecureStore.deleteItemAsync('accessToken');
+            await SecureStore.deleteItemAsync('refreshToken');
+            set({ user: null, isInitialized: true });
+          }
           return;
         }
 

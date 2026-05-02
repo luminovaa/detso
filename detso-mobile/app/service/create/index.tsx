@@ -45,21 +45,12 @@ export default function ServiceCreateScreen() {
   const fetchCustomers = useCallback(
     async (search: string, page: number) => {
       const res = await customerService.getAll({ search, page, limit: 20 });
-      const services = res?.data?.services || [];
-      // Get unique customers from services
-      const seen = new Set<string>();
-      const customers = services
-        .filter((s: any) => {
-          if (seen.has(s.customer?.id)) return false;
-          seen.add(s.customer?.id);
-          return true;
-        })
-        .map((s: any) => ({
-          label: `${s.customer?.name || "-"} • ${s.customer?.phone || "-"}`,
-          value: s.customer?.id || "",
-        }));
+      const customers = res?.data?.customers || [];
       return {
-        data: customers,
+        data: customers.map((c: any) => ({
+          label: `${c.name || "-"} • ${c.phone || "-"}`,
+          value: c.id,
+        })),
         hasNextPage: res?.data?.pagination?.hasNextPage || false,
       };
     },

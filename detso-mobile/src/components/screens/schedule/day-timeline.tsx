@@ -18,6 +18,7 @@ import {
   assignColumns,
 } from '@/src/lib/calendar-utils';
 import { ScheduleBlock } from './schedule-block';
+import { COLORS } from '@/src/lib/colors';
 
 // ─── Sub-components ──────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function CurrentTimeIndicator({ top }: { top: number }) {
             width: 8,
             height: 8,
             borderRadius: 4,
-            backgroundColor: 'rgb(239, 68, 68)', // red-500
+            backgroundColor: COLORS.status.error, // red-500
           }}
         />
       </View>
@@ -76,7 +77,7 @@ function CurrentTimeIndicator({ top }: { top: number }) {
         style={{
           flex: 1,
           height: 2,
-          backgroundColor: 'rgb(239, 68, 68)', // red-500
+          backgroundColor: COLORS.status.error, // red-500
         }}
       />
     </View>

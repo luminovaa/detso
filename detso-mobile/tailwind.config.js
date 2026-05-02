@@ -55,6 +55,14 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Network topology semantic colors
+        "fiber-line": "#14B8A6", // teal-500
+        "drop-cable": "#22D3EE", // cyan-400
+        "node-server": "#0F766E", // teal-700
+        "node-odp": "#0891B2", // cyan-600
+        "service-active": "#10B981", // emerald-500
+        "service-inactive": "#EF4444", // red-500
+        "service-suspended": "#F59E0B", // amber-500
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback, useMemo } from "react";
 import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -11,7 +11,7 @@ import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { Ticket, TicketPriority, TicketStatus } from "@/src/lib/types";
-import { BadgeVariantKey } from "@/src/lib/badge-variants";
+import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
 import { formatRelativeTime } from "@/src/lib/format-date";
 
 interface TicketItemProps {
@@ -21,71 +21,41 @@ interface TicketItemProps {
   isDeleting?: boolean;
 }
 
-const getStatusVariant = (status: TicketStatus): BadgeVariantKey => {
-  switch (status) {
-    case "OPEN":
-      return "info";
-    case "IN_PROGRESS":
-      return "warning";
-    case "RESOLVED":
-      return "success";
-    case "CLOSED":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-};
-
-const getPriorityVariant = (priority: TicketPriority): BadgeVariantKey => {
-  switch (priority) {
-    case "LOW":
-      return "neutral";
-    case "MEDIUM":
-      return "info";
-    case "HIGH":
-      return "warning";
-    case "URGENT":
-      return "error";
-    default:
-      return "neutral";
-  }
-};
-
-export function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: TicketItemProps) {
+export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: TicketItemProps) {
   const { t } = useT();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const statusLabelMap: Record<TicketStatus, string> = {
+  const statusLabelMap: Record<TicketStatus, string> = useMemo(() => ({
     OPEN: t("ticket.statusOpen"),
     IN_PROGRESS: t("ticket.statusInProgress"),
     RESOLVED: t("ticket.statusResolved"),
     CLOSED: t("ticket.statusClosed"),
-  };
+  }), [t]);
 
-  const priorityLabelMap: Record<TicketPriority, string> = {
+  const priorityLabelMap: Record<TicketPriority, string> = useMemo(() => ({
     LOW: t("ticket.priorityLow"),
     MEDIUM: t("ticket.priorityMedium"),
     HIGH: t("ticket.priorityHigh"),
     URGENT: t("ticket.priorityUrgent"),
-  };
+  }), [t]);
 
   const statusLabel = statusLabelMap[item.status] || item.status;
   const priorityLabel = priorityLabelMap[item.priority] || item.priority;
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     router.push(`/ticket/${item.id}/detail` as any);
-  };
+  }, [item.id]);
 
-  const handleLongPress = () => {
+  const handleLongPress = useCallback(() => {
     bottomSheetRef.current?.present();
-  };
+  }, []);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
     router.push(`/ticket/${item.id}/edit` as any);
-  };
+  }, [item.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     bottomSheetRef.current?.close();
     Alert.alert(
       t("ticket.deleteConfirm"),
@@ -99,7 +69,7 @@ export function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: Tic
         },
       ],
     );
-  };
+  }, [item.id, onDelete, t]);
 
   return (
     <>
@@ -113,10 +83,10 @@ export function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: Tic
         >
           {/* Priority + Status Badges */}
           <View className="flex-row items-center gap-x-2 mb-2">
-            <Badge colorVariant={getPriorityVariant(item.priority)}>
+            <Badge colorVariant={TICKET_PRIORITY_VARIANTS[item.priority] || "neutral"}>
               {priorityLabel}
             </Badge>
-            <Badge colorVariant={getStatusVariant(item.status)}>
+            <Badge colorVariant={TICKET_STATUS_VARIANTS[item.status] || "neutral"}>
               {statusLabel}
             </Badge>
           </View>
@@ -194,4 +164,4 @@ export function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: Tic
       />
     </>
   );
-}
+});

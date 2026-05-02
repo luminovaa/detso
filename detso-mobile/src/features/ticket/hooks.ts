@@ -59,6 +59,15 @@ export function useTicketHistory(id: string) {
   });
 }
 
+/** Fetch tickets filtered by customer ID. */
+export function useTicketsByCustomer(customerId: string) {
+  return useQuery({
+    queryKey: [...ticketKeys.lists(), 'by-customer', customerId],
+    queryFn: () => ticketService.getAll({ page: 1, customer_id: customerId, limit: 50 }),
+    enabled: !!customerId,
+  });
+}
+
 // ─── Mutations ───────────────────────────────────────────────────
 
 /** Create a new ticket. */

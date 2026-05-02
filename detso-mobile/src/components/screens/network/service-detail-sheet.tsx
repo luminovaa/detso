@@ -13,6 +13,7 @@ import { Button } from '@/src/components/global/button';
 import { NetworkService, NetworkTopology } from '@/src/features/network/types';
 import { useDeleteLink } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
+import { COLORS } from '@/src/lib/colors';
 
 interface ServiceDetailSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -41,10 +42,10 @@ export function ServiceDetailSheet({
 
   const statusColor =
     service.status === 'ACTIVE'
-      ? '#10b981'
+      ? COLORS.network.serviceActive
       : service.status === 'INACTIVE'
-      ? '#ef4444'
-      : '#f59e0b';
+      ? COLORS.network.serviceInactive
+      : COLORS.network.serviceSuspended;
 
   const statusLabel =
     service.status === 'ACTIVE'
@@ -99,7 +100,7 @@ export function ServiceDetailSheet({
       {/* Info */}
       <View className="gap-2.5 mb-4">
         <View className="flex-row items-center gap-2">
-          <Ionicons name="speedometer-outline" size={16} color="#6b7280" />
+          <Ionicons name="speedometer-outline" size={16} color="#6B7280" />
           <Text className="text-sm text-muted-foreground">
             {service.package_name} ({service.package_speed})
           </Text>
@@ -107,14 +108,14 @@ export function ServiceDetailSheet({
 
         {service.address && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="location-outline" size={16} color="#6b7280" />
+            <Ionicons name="location-outline" size={16} color="#6B7280" />
             <Text className="text-sm text-muted-foreground flex-1">{service.address}</Text>
           </View>
         )}
 
         {connectedNode && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="cube-outline" size={16} color="#6b7280" />
+            <Ionicons name="cube-outline" size={16} color="#6B7280" />
             <Text className="text-sm text-muted-foreground">
               {t('network.serviceDetail.connectedTo', { name: connectedNode.name })}
             </Text>
@@ -123,7 +124,7 @@ export function ServiceDetailSheet({
 
         {service.customer_phone && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="call-outline" size={16} color="#6b7280" />
+            <Ionicons name="call-outline" size={16} color="#6B7280" />
             <Text className="text-sm text-muted-foreground">{service.customer_phone}</Text>
           </View>
         )}

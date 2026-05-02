@@ -4,6 +4,7 @@ import { TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "@/src/components/global/text";
 import { useColorScheme } from "nativewind";
+import { getColor, hexToRgba } from "@/src/lib/colors";
 
 interface QuickMenuCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -11,9 +12,12 @@ interface QuickMenuCardProps {
   onPress: () => void;
 }
 
-export function QuickMenuCard({ icon, label, onPress }: QuickMenuCardProps) {
+export const QuickMenuCard = React.memo(function QuickMenuCard({ icon, label, onPress }: QuickMenuCardProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
+  
+  const iconColor = getColor('brand.primary', isDark);
+  const bgColor = hexToRgba(iconColor, 0.15);
 
   return (
     <TouchableOpacity
@@ -30,12 +34,12 @@ export function QuickMenuCard({ icon, label, onPress }: QuickMenuCardProps) {
     >
       <View 
         className="w-12 h-12 rounded-full items-center justify-center mb-2"
-        style={{ backgroundColor: isDark ? "rgba(102, 163, 255, 0.15)" : "rgba(16, 42, 77, 0.1)" }}
+        style={{ backgroundColor: bgColor }}
       >
         <Ionicons 
           name={icon} 
           size={24} 
-          color={isDark ? "#66a3ff" : "#102a4d"} 
+          color={iconColor} 
         />
       </View>
       <Text weight="semibold" className="text-xs text-foreground text-center">
@@ -43,4 +47,4 @@ export function QuickMenuCard({ icon, label, onPress }: QuickMenuCardProps) {
       </Text>
     </TouchableOpacity>
   );
-}
+});

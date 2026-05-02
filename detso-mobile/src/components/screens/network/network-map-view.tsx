@@ -12,6 +12,7 @@ import {
   getCenter,
   getZoomForPoints,
 } from '@/src/lib/map-utils';
+import { COLORS } from '@/src/lib/colors';
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
@@ -115,12 +116,12 @@ export function NetworkMapView({
         {/* ─── Lines Layer ─────────────────────────────────────────── */}
         {showLines && (
           <Mapbox.ShapeSource id="links-source" shape={linksGeoJSON as any}>
-            {/* Fiber lines (orange, thicker) */}
+            {/* Fiber lines (teal, thicker) */}
             <Mapbox.LineLayer
               id="fiber-lines"
               filter={['==', ['get', 'type'], 'FIBER']}
               style={{
-                lineColor: '#f97316',
+                lineColor: COLORS.network.fiberLine,
                 lineWidth: 3,
                 lineOpacity: 0.85,
                 lineCap: 'round',
@@ -132,7 +133,7 @@ export function NetworkMapView({
               id="drop-lines"
               filter={['==', ['get', 'type'], 'DROP_CABLE']}
               style={{
-                lineColor: '#06b6d4',
+                lineColor: COLORS.network.dropCable,
                 lineWidth: 2,
                 lineOpacity: 0.8,
                 lineCap: 'round',
@@ -150,14 +151,14 @@ export function NetworkMapView({
             onPress={handleServicePress}
             hitbox={{ width: 20, height: 20 }}
           >
-            {/* Active services (green) */}
+            {/* Active services (emerald green) */}
             <Mapbox.CircleLayer
               id="services-active"
               filter={['==', ['get', 'status'], 'ACTIVE']}
               style={{
                 circleRadius: 6,
-                circleColor: '#10b981',
-                circleStrokeColor: '#ffffff',
+                circleColor: COLORS.network.serviceActive,
+                circleStrokeColor: COLORS.map.markerStroke,
                 circleStrokeWidth: 2,
               }}
             />
@@ -167,8 +168,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'status'], 'INACTIVE']}
               style={{
                 circleRadius: 6,
-                circleColor: '#ef4444',
-                circleStrokeColor: '#ffffff',
+                circleColor: COLORS.network.serviceInactive,
+                circleStrokeColor: COLORS.map.markerStroke,
                 circleStrokeWidth: 2,
               }}
             />
@@ -178,8 +179,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'status'], 'SUSPENDED']}
               style={{
                 circleRadius: 6,
-                circleColor: '#f59e0b',
-                circleStrokeColor: '#ffffff',
+                circleColor: COLORS.network.serviceSuspended,
+                circleStrokeColor: COLORS.map.markerStroke,
                 circleStrokeWidth: 2,
               }}
             />
@@ -194,25 +195,25 @@ export function NetworkMapView({
             onPress={handleNodePress}
             hitbox={{ width: 30, height: 30 }}
           >
-            {/* Server markers (purple, larger) */}
+            {/* Server markers (deep teal, larger) */}
             <Mapbox.CircleLayer
               id="server-markers"
               filter={['==', ['get', 'type'], 'SERVER']}
               style={{
                 circleRadius: 12,
-                circleColor: '#8b5cf6',
-                circleStrokeColor: '#ffffff',
+                circleColor: COLORS.network.nodeServer,
+                circleStrokeColor: COLORS.map.markerStroke,
                 circleStrokeWidth: 3,
               }}
             />
-            {/* ODP markers (blue, medium) */}
+            {/* ODP markers (cyan, medium) */}
             <Mapbox.CircleLayer
               id="odp-markers"
               filter={['==', ['get', 'type'], 'ODP']}
               style={{
                 circleRadius: 9,
-                circleColor: '#3b82f6',
-                circleStrokeColor: '#ffffff',
+                circleColor: COLORS.network.nodeOdp,
+                circleStrokeColor: COLORS.map.markerStroke,
                 circleStrokeWidth: 2.5,
               }}
             />
@@ -228,8 +229,8 @@ export function NetworkMapView({
               style={{
                 textField: ['get', 'name'],
                 textSize: 11,
-                textColor: '#ffffff',
-                textHaloColor: '#000000',
+                textColor: COLORS.map.labelText,
+                textHaloColor: COLORS.map.labelHalo,
                 textHaloWidth: 1,
                 textOffset: [0, 1.8],
                 textAnchor: 'top',

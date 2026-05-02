@@ -16,26 +16,26 @@ export function MapLegend() {
       {/* Node types */}
       <View className="flex-row items-center gap-3 mb-1">
         <View className="flex-row items-center gap-1">
-          <View className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
+          <View className="w-3 h-3 rounded-full bg-node-server" />
           <Text className="text-[10px] text-foreground">{t('network.legend.server')}</Text>
         </View>
         <View className="flex-row items-center gap-1">
-          <View className="w-3 h-3 rounded-full bg-[#3b82f6]" />
+          <View className="w-3 h-3 rounded-full bg-node-odp" />
           <Text className="text-[10px] text-foreground">{t('network.legend.odp')}</Text>
         </View>
         <View className="flex-row items-center gap-1">
-          <View className="w-3 h-3 rounded-full bg-[#10b981]" />
+          <View className="w-3 h-3 rounded-full bg-service-active" />
           <Text className="text-[10px] text-foreground">{t('network.legend.ont')}</Text>
         </View>
       </View>
       {/* Line types */}
       <View className="flex-row items-center gap-3">
         <View className="flex-row items-center gap-1">
-          <View className="w-4 h-[3px] bg-[#f97316] rounded-full" />
+          <View className="w-4 h-[3px] bg-fiber-line rounded-full" />
           <Text className="text-[10px] text-foreground">{t('network.legend.fiber')}</Text>
         </View>
         <View className="flex-row items-center gap-1">
-          <View className="w-4 h-[2px] bg-[#06b6d4] rounded-full" />
+          <View className="w-4 h-[2px] bg-drop-cable rounded-full" />
           <Text className="text-[10px] text-foreground">{t('network.legend.drop')}</Text>
         </View>
       </View>

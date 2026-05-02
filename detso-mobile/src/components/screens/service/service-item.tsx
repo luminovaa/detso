@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
+import { useColorScheme } from "nativewind";
 
 import { Card } from "../../global/card";
 import { Badge } from "../../global/badge";
@@ -10,7 +11,8 @@ import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { ServiceConnection } from "@/src/lib/types";
-import { BadgeVariantKey } from "@/src/lib/badge-variants";
+import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
+import { getColor } from "@/src/lib/colors";
 
 interface ServiceItemProps {
   item: ServiceConnection;
@@ -19,37 +21,25 @@ interface ServiceItemProps {
   isDeleting?: boolean;
 }
 
-export function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: ServiceItemProps) {
+export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: ServiceItemProps) {
   const { t } = useT();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const customerName = item.customer?.name || "-";
+  const statusColorVariant = SERVICE_STATUS_VARIANTS[item.status] || "neutral";
 
-  const getStatusColor = (status: string): BadgeVariantKey => {
-    switch (status) {
-      case "ACTIVE":
-        return "success";
-      case "INACTIVE":
-        return "neutral";
-      case "SUSPENDED":
-        return "error";
-      default:
-        return "neutral";
-    }
-  };
-
-  const statusColorVariant = getStatusColor(item.status);
-
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
     router.push(`/service/${item.id}/edit` as any);
-  };
+  }, [item.id]);
 
-  const handleLongPress = () => {
+  const handleLongPress = useCallback(() => {
     bottomSheetRef.current?.present();
-  };
+  }, []);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     bottomSheetRef.current?.close();
     Alert.alert(
       t("service.deleteConfirm"),
@@ -63,7 +53,7 @@ export function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: Se
         },
       ],
     );
-  };
+  }, [item.id, onDelete, t]);
 
   return (
     <>
@@ -77,7 +67,7 @@ export function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: Se
         >
           {/* Icon */}
           <View className="w-12 h-12 rounded-xl bg-blue-500/10 items-center justify-center border border-blue-500/20">
-            <Ionicons name="wifi" size={22} color="#3b82f6" />
+            <Ionicons name="wifi" size={22} color={getColor('brand.primary', isDark)} />
           </View>
 
           <View className="flex-1 ml-3">
@@ -146,4 +136,4 @@ export function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: Se
       />
     </>
   );
-}
+});
