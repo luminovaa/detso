@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
@@ -7,6 +7,14 @@ import {
   BottomSheetHeader,
   BottomSheetTitle,
 } from '@/src/components/global/bottom-sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/src/components/global/dialog';
 import { Text } from '@/src/components/global/text';
 import { Badge } from '@/src/components/global/badge';
 import { Button } from '@/src/components/global/button';
@@ -32,36 +40,25 @@ export function NodeDetailSheet({
 }: NodeDetailSheetProps) {
   const { t } = useT();
   const deleteNode = useDeleteNode();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   if (!node) return null;
 
   const isServer = node.type === 'SERVER';
-  const iconColor = isServer ? COLORS.network.nodeServer : COLORS.network.nodeOdp;
-  const typeLabel = isServer ? t('network.nodeDetail.server') : t('network.nodeDetail.odp');
+  const iconColor = isServer ? '#8b5cf6' : '#3b82f6';
+  const typeLabel = isServer ? 'Server' : 'ODP';
 
   const handleDelete = () => {
-    Alert.alert(
-      t('network.nodeDetail.deleteTitle', { type: typeLabel }),
-      `${t('network.nodeDetail.deleteMessage', { name: node.name })}${
-        isServer
-          ? t('network.nodeDetail.deleteWarningServer')
-          : t('network.nodeDetail.deleteWarningODP')
-      }`,
-      [
-        { text: t('network.nodeDetail.cancel'), style: 'cancel' },
-        {
-          text: t('network.nodeDetail.delete'),
-          style: 'destructive',
-          onPress: () => {
-            deleteNode.mutate(node.id, {
-              onSuccess: () => {
-                sheetRef.current?.dismiss();
-              },
-            });
-          },
-        },
-      ]
-    );
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    deleteNode.mutate(node.id, {
+      onSuccess: () => {
+        setShowDeleteDialog(false);
+        sheetRef.current?.dismiss();
+      },
+    });
   };
 
   return (
@@ -136,16 +133,16 @@ export function NodeDetailSheet({
       <View className="flex-row gap-2">
         <Button variant="outline" className="flex-1" onPress={onEdit}>
           <View className="flex-row items-center gap-1">
-            <Ionicons name="pencil" size={14} color="#6B7280" />
-            <Text className="text-sm">{t('network.nodeDetail.edit')}</Text>
+            <Ionicons name="pencil" size={14} color="#6b7280" />
+            <Text className="text-sm">Edit</Text>
           </View>
         </Button>
 
         {node.type === 'ODP' && (
           <Button variant="outline" className="flex-1" onPress={onConnect}>
             <View className="flex-row items-center gap-1">
-              <Ionicons name="link" size={14} color={COLORS.brand.primary} />
-              <Text className="text-sm text-blue-500">{t('network.nodeDetail.connect')}</Text>
+              <Ionicons name="link" size={14} color="#3b82f6" />
+              <Text className="text-sm text-blue-500">Connect</Text>
             </View>
           </Button>
         )}
@@ -153,10 +150,40 @@ export function NodeDetailSheet({
         <Button variant="destructive" className="flex-1" onPress={handleDelete}>
           <View className="flex-row items-center gap-1">
             <Ionicons name="trash" size={14} color="white" />
-            <Text className="text-sm text-white">{t('network.nodeDetail.remove')}</Text>
+            <Text className="text-sm text-white">Hapus</Text>
           </View>
         </Button>
       </View>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus {typeLabel}</DialogTitle>
+            <DialogDescription>
+              Yakin ingin menghapus &quot;{node.name}&quot;?
+              {isServer
+                ? ' ODP yang terhubung akan kehilangan parent server.'
+                : ' Semua koneksi ke customer akan dihapus.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onPress={() => setShowDeleteDialog(false)}>
+              <Text className="text-sm">Batal</Text>
+            </Button>
+            <Button
+              variant="destructive"
+              onPress={confirmDelete}
+              disabled={deleteNode.isPending}
+              size="sm"
+            >
+              <Text className="text-sm text-white">
+                {deleteNode.isPending ? 'Menghapus...' : 'Hapus'}
+              </Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </BottomSheet>
   );
 }

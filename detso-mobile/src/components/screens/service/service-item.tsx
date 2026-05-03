@@ -12,7 +12,7 @@ import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { ServiceConnection } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
-import { getColor } from "@/src/lib/colors";
+import { getColor, COLORS } from "@/src/lib/colors";
 
 interface ServiceItemProps {
   item: ServiceConnection;
@@ -120,14 +120,14 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
             key: "edit",
             label: t("service.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "delete",
             label: t("service.deleteBtn"),
             onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />,
+            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
             variant: "destructive",
             isLoading: isDeleting,
             disabled: isDeleting,

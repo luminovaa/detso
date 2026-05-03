@@ -25,6 +25,7 @@ import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { ServiceConnection } from "@/src/lib/types";
 
+import { COLORS } from '@/src/lib/colors';
 export default function ServiceScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
@@ -75,7 +76,7 @@ export default function ServiceScreen() {
 
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const primaryColor = "hsl(var(--primary))";
+  const primaryColor = COLORS.brand.primary;
 
   return (
     <ScreenWrapper headerTitle={t("service.title")} showBackButton isLoading={isLoading}>
@@ -132,7 +133,7 @@ export default function ServiceScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color="hsl(var(--primary))" />
+                <ActivityIndicator color={COLORS.brand.primary} />
               </View>
             ) : null
           }

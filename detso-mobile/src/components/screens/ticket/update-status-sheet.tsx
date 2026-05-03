@@ -11,6 +11,7 @@ import { useUpdateTicketStatus } from "@/src/features/ticket/hooks";
 import { TicketStatus } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 
+import { COLORS } from '@/src/lib/colors';
 interface UpdateStatusSheetProps {
   ticketId: string;
   currentStatus: TicketStatus;
@@ -104,8 +105,8 @@ function UpdateStatusSheetInner(
         ref={ref}
         snapPoints={["65%"]}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: "hsl(var(--background))" }}
-        handleIndicatorStyle={{ backgroundColor: "hsl(var(--muted-foreground))" }}
+        backgroundStyle={{ backgroundColor: COLORS.neutral.white }}
+        handleIndicatorStyle={{ backgroundColor: COLORS.neutral.gray[500] }}
       >
         <BottomSheetView className="flex-1 px-6 pt-2 pb-6">
           {/* Title */}
@@ -151,7 +152,7 @@ function UpdateStatusSheetInner(
             multiline
             numberOfLines={2}
             className="border border-border rounded-xl p-3 text-sm text-foreground mb-3"
-            placeholderTextColor="hsl(var(--muted-foreground))"
+            placeholderTextColor={COLORS.neutral.gray[500]}
             style={{ textAlignVertical: "top", minHeight: 60 }}
           />
 
@@ -182,14 +183,14 @@ function UpdateStatusSheetInner(
                     onPress={handleTakePhoto}
                     className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
                   >
-                    <Ionicons name="camera-outline" size={24} color="hsl(var(--muted-foreground))" />
+                    <Ionicons name="camera-outline" size={24} color={COLORS.neutral.gray[500]} />
                     <Text className="text-xs text-muted-foreground mt-1">Camera</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handlePickPhoto}
                     className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
                   >
-                    <Ionicons name="image-outline" size={24} color="hsl(var(--muted-foreground))" />
+                    <Ionicons name="image-outline" size={24} color={COLORS.neutral.gray[500]} />
                     <Text className="text-xs text-muted-foreground mt-1">Gallery</Text>
                   </TouchableOpacity>
                 </View>

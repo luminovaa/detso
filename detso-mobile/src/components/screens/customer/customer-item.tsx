@@ -13,6 +13,7 @@ import { useT } from "@/src/features/i18n/store";
 import { CustomerListItem } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
 
+import { COLORS } from '@/src/lib/colors';
 interface CustomerItemProps {
   item: CustomerListItem;
   searchQuery?: string;
@@ -68,7 +69,7 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
         >
           {/* Icon */}
           <View className="w-12 h-12 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
-            <Ionicons name="person" size={24} color="hsl(var(--primary))" />
+            <Ionicons name="person" size={24} color={COLORS.brand.primary} />
           </View>
 
           <View className="flex-1 ml-3">
@@ -114,21 +115,21 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
             key: "detail",
             label: "Detail",
             onPress: handlePress,
-            icon: <Ionicons name="eye-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "edit",
             label: t("customer.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "delete",
             label: t("customer.deleteBtn"),
             onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />,
+            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
             variant: "destructive",
             isLoading: isDeleting,
             disabled: isDeleting,

@@ -15,6 +15,7 @@ import { CustomerTicketsTab } from "@/src/components/screens/customer/customer-t
 import { CustomerDocumentsTab } from "@/src/components/screens/customer/customer-documents-tab";
 import { getWhatsAppUrl, getTelUrl } from "@/src/lib/phone-utils";
 
+import { COLORS } from '@/src/lib/colors';
 const TAB_OPTIONS = ["Info", "Tiket", "Dokumen"];
 
 export default function CustomerDetailScreen() {
@@ -79,7 +80,7 @@ export default function CustomerDetailScreen() {
   // Header right: Edit button
   const headerRight = (
     <TouchableOpacity onPress={handleEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-      <Ionicons name="create-outline" size={22} color="hsl(var(--foreground))" />
+      <Ionicons name="create-outline" size={22} color={COLORS.neutral.gray[900]} />
     </TouchableOpacity>
   );
 
@@ -102,7 +103,7 @@ export default function CustomerDetailScreen() {
     return (
       <ScreenWrapper headerTitle="Detail Customer" showBackButton>
         <View className="flex-1 items-center justify-center p-4">
-          <Ionicons name="alert-circle-outline" size={48} color="hsl(var(--muted-foreground))" />
+          <Ionicons name="alert-circle-outline" size={48} color={COLORS.neutral.gray[500]} />
           <Text className="text-base text-muted-foreground mt-3">Customer tidak ditemukan</Text>
         </View>
       </ScreenWrapper>
@@ -142,7 +143,7 @@ export default function CustomerDetailScreen() {
               onPress={handleCall}
               className="w-11 h-11 rounded-full border border-primary items-center justify-center"
             >
-              <Ionicons name="logo-whatsapp" size={20} color="hsl(var(--primary))" />
+              <Ionicons name="logo-whatsapp" size={20} color={COLORS.brand.primary} />
             </TouchableOpacity>
           )}
 
@@ -160,7 +161,7 @@ export default function CustomerDetailScreen() {
             onPress={handleDelete}
             className="w-11 h-11 rounded-full border border-destructive items-center justify-center"
           >
-            <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />
+            <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />
           </TouchableOpacity>
         </View>
       </View>

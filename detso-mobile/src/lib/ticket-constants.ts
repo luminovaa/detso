@@ -31,8 +31,8 @@ export const TICKET_PRIORITY_VARIANTS: Record<TicketPriority, BadgeVariantKey> =
  * - URGENT: Red error
  */
 export const TICKET_PRIORITY_COLORS: Record<TicketPriority, string> = {
-  LOW: 'hsl(var(--muted-foreground))',
-  MEDIUM: 'hsl(var(--primary))', // Now teal!
+  LOW: '#64748B',
+  MEDIUM: '#0F766E', // Now teal!
   HIGH: '#f59e0b', // amber-500
   URGENT: '#ef4444', // red-500
 };

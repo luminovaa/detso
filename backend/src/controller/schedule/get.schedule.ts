@@ -6,6 +6,7 @@ import { prisma } from "../../utils/prisma";
 import { formatWIB } from "../../utils/time-fromat";
 import { responseData } from "../../utils/response-handler";
 import { getParam } from '../../utils/request.utils';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const getAllSchedules = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -98,13 +99,19 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
         }
     });
 
-    // Format response untuk kalender
+    // Format response konsisten dengan Schedule type di frontend
     const formattedSchedules = schedules.map(schedule => ({
         id: schedule.id,
         title: schedule.ticket ? schedule.ticket.title : schedule.title || schedule.notes,
-        start: formatWIB(schedule.start_time),
-        end: schedule.end_time ? formatWIB(schedule.end_time) : null,
+        start_time: formatWIB(schedule.start_time),
+        end_time: schedule.end_time ? formatWIB(schedule.end_time) : null,
         status: schedule.status,
+        notes: schedule.notes || null,
+        image: generateFullUrl(schedule.image),
+        technician_id: schedule.technician_id,
+        ticket_id: schedule.ticket_id || null,
+        created_at: formatWIB(schedule.created_at),
+        updated_at: schedule.updated_at ? formatWIB(schedule.updated_at) : null,
         technician: {
             id: schedule.technician.id,
             username: schedule.technician.username,
@@ -118,7 +125,6 @@ export const getAllSchedules = asyncHandler(async (req: Request, res: Response):
             status: schedule.ticket.status,
             customer: schedule.ticket.customer
         } : null,
-        allDay: !schedule.end_time
     }));
 
     // Hitung statistik (gunakan whereClause yang sama agar konsisten)
@@ -218,10 +224,13 @@ export const getScheduleById = asyncHandler(async (req: Request, res: Response):
     const formattedSchedule = {
         id: schedule.id,
         title: schedule.ticket ? schedule.ticket.title : schedule.title || schedule.notes,
-        start: formatWIB(schedule.start_time),
-        end: schedule.end_time ? formatWIB(schedule.end_time) : null,
+        start_time: formatWIB(schedule.start_time),
+        end_time: schedule.end_time ? formatWIB(schedule.end_time) : null,
         status: schedule.status,
         notes: schedule.notes || null,
+        image: generateFullUrl(schedule.image),
+        technician_id: schedule.technician_id,
+        ticket_id: schedule.ticket_id || null,
         technician: {
             id: schedule.technician.id,
             username: schedule.technician.username,
@@ -237,7 +246,6 @@ export const getScheduleById = asyncHandler(async (req: Request, res: Response):
                 customer: schedule.ticket.customer,
             }
             : null,
-        allDay: !schedule.end_time,
         created_at: formatWIB(schedule.created_at),
         updated_at: schedule.updated_at ? formatWIB(schedule.updated_at) : null,
     };

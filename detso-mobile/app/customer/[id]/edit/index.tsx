@@ -19,6 +19,7 @@ import { useT } from "@/src/features/i18n/store";
 import { updateCustomerSchema, UpdateCustomerInput } from "@/src/features/customer/schema";
 import { useCustomer, useUpdateCustomer } from "@/src/features/customer/hooks";
 
+import { COLORS } from '@/src/lib/colors';
 export default function CustomerEditScreen() {
   const { t } = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -84,7 +85,7 @@ export default function CustomerEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("customer.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );

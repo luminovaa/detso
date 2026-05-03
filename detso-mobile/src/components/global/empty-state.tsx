@@ -5,6 +5,7 @@ import { Text } from "./text";
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
 
+import { COLORS } from '@/src/lib/colors';
 export interface EmptyStateProps extends ViewProps {
   icon?: keyof typeof Ionicons.glyphMap;
   title: string;
@@ -32,7 +33,7 @@ export function EmptyState({
       {/* Icon Container */}
       <View className="w-24 h-24 bg-muted/50 rounded-full items-center justify-center mb-6 border border-border/50">
         <View className="w-16 h-16 bg-muted rounded-full items-center justify-center">
-          <Ionicons name={icon} size={40} color="hsl(var(--muted-foreground))" />
+          <Ionicons name={icon} size={40} color={COLORS.neutral.gray[500]} />
         </View>
       </View>
 

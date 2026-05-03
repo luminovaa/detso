@@ -73,3 +73,41 @@ export function useUpdateSchedule() {
     },
   });
 }
+
+/** Delete a work schedule. */
+export function useDeleteSchedule() {
+  const qc = useQueryClient();
+  const { t } = useT();
+
+  return useMutation({
+    mutationFn: (id: string) => scheduleService.delete(id),
+    onSuccess: (_res, id) => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.lists() });
+      eventBus.emit(EVENTS.SCHEDULE.DELETED, { scheduleId: id });
+      showToast.success(t('common.success'), t('schedule.deleteSuccess'));
+    },
+    onError: (error) => {
+      showErrorToast(error, t('schedule.deleteFailed'));
+    },
+  });
+}
+
+/** Complete a schedule (with optional photo upload). */
+export function useCompleteSchedule() {
+  const qc = useQueryClient();
+  const { t } = useT();
+
+  return useMutation({
+    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
+      scheduleService.complete(id, formData),
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: scheduleKeys.detail(id) });
+      qc.invalidateQueries({ queryKey: scheduleKeys.lists() });
+      eventBus.emit(EVENTS.SCHEDULE.UPDATED, { scheduleId: id });
+      showToast.success(t('common.success'), t('schedule.completeSuccess'));
+    },
+    onError: (error) => {
+      showErrorToast(error, t('schedule.completeFailed'));
+    },
+  });
+}

@@ -11,6 +11,7 @@ import { RecentTenant } from "@/src/features/dashboard/types";
 import { formatRelativeTime } from "@/src/lib/format-date";
 import { useT, useLanguageStore } from "@/src/features/i18n/store";
 
+import { COLORS } from '@/src/lib/colors';
 interface RecentTenantItemProps {
   item: RecentTenant;
 }
@@ -50,19 +51,19 @@ export function RecentTenantItem({ item }: RecentTenantItemProps) {
               </View>
 
               <View className="flex-row items-center mb-1">
-                <Ionicons name="people-outline" size={14} color="hsl(var(--muted-foreground))" />
+                <Ionicons name="people-outline" size={14} color={COLORS.neutral.gray[500]} />
                 <Text className="text-sm text-muted-foreground ml-1">
                   {item._count.customers} {t("isp.customers")}
                 </Text>
                 <Text className="text-sm text-muted-foreground mx-1">•</Text>
-                <Ionicons name="person-outline" size={14} color="hsl(var(--muted-foreground))" />
+                <Ionicons name="person-outline" size={14} color={COLORS.neutral.gray[500]} />
                 <Text className="text-sm text-muted-foreground ml-1">
                   {item._count.users} {t("common.user")}
                 </Text>
               </View>
 
               <View className="flex-row items-center">
-                <Ionicons name="time-outline" size={14} color="hsl(var(--muted-foreground))" />
+                <Ionicons name="time-outline" size={14} color={COLORS.neutral.gray[500]} />
                 <Text className="text-xs text-muted-foreground ml-1">
                   {timeAgo}
                 </Text>

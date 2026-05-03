@@ -26,6 +26,7 @@ import { useCreateCustomer } from "@/src/features/customer/hooks";
 import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
 
+import { COLORS } from '@/src/lib/colors';
 const TOTAL_STEPS = 5;
 
 interface PhotoState {
@@ -329,7 +330,7 @@ export default function CustomerCreateScreen() {
               {/* NIK checking indicator */}
               {nikChecking && (
                 <View className="flex-row items-center gap-x-2 px-1">
-                  <ActivityIndicator size="small" color="hsl(var(--primary))" />
+                  <ActivityIndicator size="small" color={COLORS.brand.primary} />
                   <Text className="text-xs text-muted-foreground">Memeriksa NIK...</Text>
                 </View>
               )}
@@ -338,7 +339,7 @@ export default function CustomerCreateScreen() {
               {existingCustomer && !nikChecking && (
                 <View className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <View className="flex-row items-center gap-x-2 mb-2">
-                    <Ionicons name="information-circle" size={20} color="hsl(var(--primary))" />
+                    <Ionicons name="information-circle" size={20} color={COLORS.brand.primary} />
                     <Text weight="semibold" className="text-sm text-primary">NIK Sudah Terdaftar</Text>
                   </View>
                   <Text className="text-sm text-foreground">

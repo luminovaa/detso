@@ -16,6 +16,7 @@ import { Button } from "@/src/components/global/button";
 import { usePackage, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
 
+import { COLORS } from '@/src/lib/colors';
 interface PackageData {
   id: string;
   name: string;
@@ -109,7 +110,7 @@ export default function PackageDetailScreen() {
       showBackButton
       headerRightNode={
         <Button variant="ghost" size="sm" onPress={handleEdit}>
-          <Ionicons name="pencil" size={20} color="hsl(var(--primary))" />
+          <Ionicons name="pencil" size={20} color={COLORS.brand.primary} />
         </Button>
       }
     >
@@ -121,15 +122,15 @@ export default function PackageDetailScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            colors={["hsl(var(--primary))"]}
-            tintColor="hsl(var(--primary))"
+            colors={[COLORS.brand.primary]}
+            tintColor={COLORS.brand.primary}
           />
         }
       >
         {/* Package Icon & Name */}
         <View className="items-center mb-8">
           <View className="w-24 h-24 rounded-3xl bg-primary/10 items-center justify-center border border-primary/20 mb-4">
-            <Ionicons name="cube" size={48} color="hsl(var(--primary))" />
+            <Ionicons name="cube" size={48} color={COLORS.brand.primary} />
           </View>
           <Text weight="bold" className="text-2xl text-foreground text-center">
             {packageData?.name}

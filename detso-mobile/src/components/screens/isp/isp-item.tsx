@@ -9,6 +9,7 @@ import { Tenant } from "@/src/lib/types";
 import { useT } from "@/src/features/i18n/store";
 import { router } from "expo-router";
 
+import { COLORS } from '@/src/lib/colors';
 export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
   const { t } = useT();
 
@@ -72,7 +73,7 @@ export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
         <Ionicons
           name="chevron-forward"
           size={18}
-          color="hsl(var(--muted-foreground))"
+          color={COLORS.neutral.gray[500]}
           className="ml-2"
         />
       </TouchableOpacity>

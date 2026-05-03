@@ -191,6 +191,7 @@ export type Schedule = {
   end_time?: string | null;
   status: ScheduleStatus;
   notes?: string | null;
+  image?: string | null;
   created_at: string;
   updated_at: string;
   technician?: {
@@ -202,5 +203,18 @@ export type Schedule = {
   ticket?: {
     id: string;
     title: string;
+    description?: string | null;
+    priority?: TicketPriority;
+    status?: TicketStatus;
+    customer?: {
+      id: string;
+      name: string;
+      phone: string | null;
+      address?: string | null;
+    };
+    service?: {
+      id: string;
+      address: string | null;
+    } | null;
   } | null;
 };

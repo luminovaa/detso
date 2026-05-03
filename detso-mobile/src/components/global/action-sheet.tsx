@@ -13,6 +13,7 @@ import { Text } from "./text";
 import { cn } from "@/src/lib/utils";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useT } from "@/src/features/i18n/store";
+import { COLORS } from "@/src/lib/colors";
 
 export interface ActionSheetItem {
   key: string;
@@ -79,7 +80,7 @@ export const ActionSheet = forwardRef<BottomSheetModal, ActionSheetProps>(
                 {action.isLoading && (
                   <ActivityIndicator 
                     size="small" 
-                    color={action.variant === "destructive" ? "hsl(var(--destructive))" : "hsl(var(--primary))"} 
+                    color={action.variant === "destructive" ? COLORS.status.error : COLORS.brand.primary} 
                     className="mr-3"
                   />
                 )}
@@ -97,7 +98,7 @@ export const ActionSheet = forwardRef<BottomSheetModal, ActionSheetProps>(
                 <Ionicons 
                   name="chevron-forward" 
                   size={18} 
-                  color={action.variant === "destructive" ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))"} 
+                  color={action.variant === "destructive" ? COLORS.status.error : COLORS.neutral.gray[500]} 
                 />
               </TouchableOpacity>
             ))}

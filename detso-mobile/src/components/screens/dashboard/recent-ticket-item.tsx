@@ -11,6 +11,7 @@ import { formatRelativeTime } from "@/src/lib/format-date";
 import { TICKET_PRIORITY_COLORS } from "@/src/lib/ticket-constants";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
+import { COLORS } from '@/src/lib/colors';
 interface RecentTicketItemProps {
   item: RecentTicket;
 }
@@ -66,7 +67,7 @@ export const RecentTicketItem = React.memo(function RecentTicketItem({ item }: R
 
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
-              <Ionicons name="person-outline" size={14} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="person-outline" size={14} color={COLORS.neutral.gray[500]} />
               <Text className="text-xs text-muted-foreground ml-1" numberOfLines={1}>
                 {item.customer.name}
               </Text>
@@ -76,7 +77,7 @@ export const RecentTicketItem = React.memo(function RecentTicketItem({ item }: R
               <Ionicons 
                 name="flag" 
                 size={12} 
-                color={TICKET_PRIORITY_COLORS[item.priority] || "hsl(var(--muted-foreground))"} 
+                color={TICKET_PRIORITY_COLORS[item.priority] || COLORS.neutral.gray[500]} 
               />
               <Text className="text-xs text-muted-foreground ml-1">
                 {priorityLabels[item.priority] || item.priority}
@@ -84,7 +85,7 @@ export const RecentTicketItem = React.memo(function RecentTicketItem({ item }: R
             </View>
 
             <View className="flex-row items-center ml-3">
-              <Ionicons name="time-outline" size={12} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="time-outline" size={12} color={COLORS.neutral.gray[500]} />
               <Text className="text-xs text-muted-foreground ml-1">
                 {timeAgo}
               </Text>
@@ -93,7 +94,7 @@ export const RecentTicketItem = React.memo(function RecentTicketItem({ item }: R
 
           {item.technician && (
             <View className="flex-row items-center mt-2 pt-2 border-t border-border">
-              <Ionicons name="construct-outline" size={14} color="hsl(var(--primary))" />
+              <Ionicons name="construct-outline" size={14} color={COLORS.brand.primary} />
               <Text className="text-xs text-primary ml-1">
                 {item.technician.profile?.full_name || item.technician.username}
               </Text>

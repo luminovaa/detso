@@ -11,6 +11,7 @@ import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { Package } from "@/src/lib/types";
 
+import { COLORS } from '@/src/lib/colors';
 interface PackageItemProps {
   item: Package;
   searchQuery?: string;
@@ -74,7 +75,7 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
         >
           {/* Icon Package */}
           <View className="w-14 h-14 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
-            <Ionicons name="cube" size={28} color="hsl(var(--primary))" />
+            <Ionicons name="cube" size={28} color={COLORS.brand.primary} />
           </View>
 
           <View className="flex-1 ml-4">
@@ -88,7 +89,7 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
             </View>
 
             <View className="flex-row items-center mb-2">
-              <Ionicons name="speedometer-outline" size={14} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="speedometer-outline" size={14} color={COLORS.neutral.gray[500]} />
               <View className="ml-1 flex-1">
                 <HighlightedText
                   text={item.speed}
@@ -109,7 +110,7 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
           <Ionicons
             name="ellipsis-vertical"
             size={20}
-            color="hsl(var(--muted-foreground))"
+            color={COLORS.neutral.gray[500]}
             className="ml-2"
           />
         </TouchableOpacity>
@@ -126,21 +127,21 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
             key: "detail",
             label: t("package.detailTitle"),
             onPress: handleDetail,
-            icon: <Ionicons name="eye-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "edit",
             label: t("package.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "delete",
             label: t("package.deleteBtn"),
             onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />,
+            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
             variant: "destructive",
             isLoading: isDeleting,
             disabled: isDeleting,

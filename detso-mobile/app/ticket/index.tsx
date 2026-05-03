@@ -26,6 +26,7 @@ import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { Ticket, TicketPriority } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 
+import { COLORS } from '@/src/lib/colors';
 const PRIORITY_OPTIONS: { value: TicketPriority | undefined; labelKey: string; variant: BadgeVariantKey }[] = [
   { value: undefined, labelKey: "ticket.allPriorities", variant: "neutral" },
   { value: "URGENT", labelKey: "ticket.priorityUrgent", variant: "error" },
@@ -86,7 +87,7 @@ export default function TicketScreen() {
 
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const primaryColor = "hsl(var(--primary))";
+  const primaryColor = COLORS.brand.primary;
 
   return (
     <ScreenWrapper headerTitle={t("ticket.title")} showBackButton isLoading={isLoading}>
@@ -161,7 +162,7 @@ export default function TicketScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color="hsl(var(--primary))" />
+                <ActivityIndicator color={COLORS.brand.primary} />
               </View>
             ) : null
           }

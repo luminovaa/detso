@@ -18,6 +18,7 @@ import { useUser, useUpdateUser } from "@/src/features/user/hooks";
 import { Detso_Role } from "@/src/features/auth/schema";
 import { TeamMember } from "@/src/lib/types";
 
+import { COLORS } from '@/src/lib/colors';
 type RoleOption = {
   value: string;
   label: string;
@@ -90,7 +91,7 @@ export default function TeamEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("team.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );

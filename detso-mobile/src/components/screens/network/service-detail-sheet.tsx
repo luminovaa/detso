@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
@@ -7,6 +7,14 @@ import {
   BottomSheetHeader,
   BottomSheetTitle,
 } from '@/src/components/global/bottom-sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/src/components/global/dialog';
 import { Text } from '@/src/components/global/text';
 import { Badge } from '@/src/components/global/badge';
 import { Button } from '@/src/components/global/button';
@@ -30,6 +38,7 @@ export function ServiceDetailSheet({
 }: ServiceDetailSheetProps) {
   const { t } = useT();
   const deleteLink = useDeleteLink();
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
 
   if (!service) return null;
 
@@ -42,37 +51,26 @@ export function ServiceDetailSheet({
 
   const statusColor =
     service.status === 'ACTIVE'
-      ? COLORS.network.serviceActive
+      ? '#10b981'
       : service.status === 'INACTIVE'
-      ? COLORS.network.serviceInactive
-      : COLORS.network.serviceSuspended;
+      ? '#ef4444'
+      : '#f59e0b';
 
   const statusLabel =
     service.status === 'ACTIVE'
-      ? t('network.serviceDetail.active')
+      ? 'Aktif'
       : service.status === 'INACTIVE'
-      ? t('network.serviceDetail.inactive')
-      : t('network.serviceDetail.suspended');
+      ? 'Nonaktif'
+      : 'Suspended';
 
-  const handleDisconnect = () => {
+  const confirmDisconnect = () => {
     if (!link) return;
-
-    Alert.alert(
-      t('network.serviceDetail.disconnectTitle'),
-      t('network.serviceDetail.disconnectMessage', { customer: service.customer_name, node: connectedNode?.name || 'ODP' }),
-      [
-        { text: t('network.serviceDetail.cancel'), style: 'cancel' },
-        {
-          text: t('network.serviceDetail.disconnect'),
-          style: 'destructive',
-          onPress: () => {
-            deleteLink.mutate(link.id, {
-              onSuccess: () => sheetRef.current?.dismiss(),
-            });
-          },
-        },
-      ]
-    );
+    deleteLink.mutate(link.id, {
+      onSuccess: () => {
+        setShowDisconnectDialog(false);
+        sheetRef.current?.dismiss();
+      },
+    });
   };
 
   return (
@@ -132,13 +130,39 @@ export function ServiceDetailSheet({
 
       {/* Actions */}
       {link && (
-        <Button variant="destructive" onPress={handleDisconnect}>
+        <Button variant="destructive" onPress={() => setShowDisconnectDialog(true)}>
           <View className="flex-row items-center gap-1">
             <Ionicons name="unlink" size={14} color="white" />
-            <Text className="text-sm text-white">{t('network.serviceDetail.disconnectBtn', { name: connectedNode?.name || 'ODP' })}</Text>
+            <Text className="text-sm text-white">Putuskan dari {connectedNode?.name || 'ODP'}</Text>
           </View>
         </Button>
       )}
+
+      {/* Disconnect Confirmation Dialog */}
+      <Dialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Putuskan Koneksi</DialogTitle>
+            <DialogDescription>
+              Yakin ingin memutuskan "{service.customer_name}" dari {connectedNode?.name || 'ODP'}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onPress={() => setShowDisconnectDialog(false)}>
+              <Text className="text-sm">Batal</Text>
+            </Button>
+            <Button
+              variant="destructive"
+              onPress={confirmDisconnect}
+              disabled={deleteLink.isPending}
+            >
+              <Text className="text-sm text-white">
+                {deleteLink.isPending ? 'Memutuskan...' : 'Putuskan'}
+              </Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </BottomSheet>
   );
 }

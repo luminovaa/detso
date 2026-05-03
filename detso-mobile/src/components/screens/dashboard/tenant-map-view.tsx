@@ -64,7 +64,7 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
     return (
       <Card className="mt-4">
         <CardContent className="p-6 items-center">
-          <Ionicons name="map-outline" size={48} color="hsl(var(--muted-foreground))" />
+          <Ionicons name="map-outline" size={48} color={COLORS.neutral.gray[500]} />
           <Text className="text-muted-foreground mt-2 text-center">
             {t("dashboard.mapEmpty")}
           </Text>

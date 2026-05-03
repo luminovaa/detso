@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Mapbox from '@rnmapbox/maps';
@@ -7,6 +7,14 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Text } from '@/src/components/global/text';
 import { Button } from '@/src/components/global/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/src/components/global/dialog';
 import { NetworkMapView } from '@/src/components/screens/network/network-map-view';
 import { MapFilterBar } from '@/src/components/screens/network/map-filter-bar';
 import { MapLegend } from '@/src/components/screens/network/map-legend';
@@ -99,6 +107,7 @@ export default function NetworkMap() {
   // ─── Local State ───────────────────────────────────────────────
   const [editingNode, setEditingNode] = useState<NetworkNode | null>(null);
   const [allServices, setAllServices] = useState<any[]>([]);
+  const [showAddTypeDialog, setShowAddTypeDialog] = useState(false);
 
   // ─── Handlers ──────────────────────────────────────────────────
 
@@ -145,18 +154,8 @@ export default function NetworkMap() {
   );
 
   const handleAddNode = useCallback(() => {
-    Alert.alert(t('network.addNode.title'), t('network.addNode.selectType'), [
-      {
-        text: t('network.legend.server'),
-        onPress: () => startAddNode('SERVER'),
-      },
-      {
-        text: t('network.legend.odp'),
-        onPress: () => startAddNode('ODP'),
-      },
-      { text: t('common.cancel'), style: 'cancel' },
-    ]);
-  }, [startAddNode, t]);
+    setShowAddTypeDialog(true);
+  }, []);
 
   const handleEditNode = useCallback(() => {
     nodeDetailRef.current?.dismiss();
@@ -316,6 +315,59 @@ export default function NetworkMap() {
         allServices={allServices}
         onDismiss={handleDismissConnect}
       />
+
+      {/* Add Node Type Selector Dialog */}
+      <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Node</DialogTitle>
+            <DialogDescription>
+              Pilih tipe node yang ingin ditambahkan
+            </DialogDescription>
+          </DialogHeader>
+          <View className="gap-3 mt-2">
+            <Button
+              variant="outline"
+              onPress={() => {
+                setShowAddTypeDialog(false);
+                startAddNode('SERVER');
+              }}
+            >
+              <View className="flex-row items-center gap-2">
+                <View className="w-8 h-8 rounded-full bg-[#8b5cf6] items-center justify-center">
+                  <Ionicons name="server" size={16} color="white" />
+                </View>
+                <View className="flex-1">
+                  <Text weight="medium" className="text-foreground text-sm">Server</Text>
+                  <Text className="text-xs text-muted-foreground">Titik pusat jaringan (BTS/POP)</Text>
+                </View>
+              </View>
+            </Button>
+            <Button
+              variant="outline"
+              onPress={() => {
+                setShowAddTypeDialog(false);
+                startAddNode('ODP');
+              }}
+            >
+              <View className="flex-row items-center gap-2">
+                <View className="w-8 h-8 rounded-full bg-[#3b82f6] items-center justify-center">
+                  <Ionicons name="cube" size={16} color="white" />
+                </View>
+                <View className="flex-1">
+                  <Text weight="medium" className="text-foreground text-sm">ODP</Text>
+                  <Text className="text-xs text-muted-foreground">Optical Distribution Point</Text>
+                </View>
+              </View>
+            </Button>
+          </View>
+          <DialogFooter>
+            <Button variant="ghost" onPress={() => setShowAddTypeDialog(false)}>
+              <Text className="text-sm text-muted-foreground">Batal</Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </View>
   );
 }

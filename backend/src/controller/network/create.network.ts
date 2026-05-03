@@ -68,6 +68,18 @@ export const createNode = asyncHandler(async (req: Request, res: Response): Prom
     },
   });
 
+  // Auto-create FIBER link dari Server ke ODP baru
+  if (type === 'ODP' && parent_id) {
+    await prisma.detso_Network_Link.create({
+      data: {
+        tenant_id,
+        from_node_id: parent_id,
+        to_node_id: node.id,
+        type: 'FIBER',
+      },
+    });
+  }
+
   responseData(res, 201, `${type === 'SERVER' ? 'Server' : 'ODP'} berhasil dibuat`, node);
 });
 

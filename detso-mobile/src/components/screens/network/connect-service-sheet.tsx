@@ -8,9 +8,9 @@ import {
   BottomSheetTitle,
   BottomSheetDescription,
 } from '@/src/components/global/bottom-sheet';
+import { BottomSheetInput } from '@/src/components/global/bottom-sheet-input';
 import { Text } from '@/src/components/global/text';
 import { Badge } from '@/src/components/global/badge';
-import { Input } from '@/src/components/global/input';
 import { NetworkNode, NetworkTopology } from '@/src/features/network/types';
 import { useCreateLink } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
@@ -75,7 +75,7 @@ export function ConnectServiceSheet({
   if (!node) return null;
 
   return (
-    <BottomSheet ref={sheetRef} snapPoints={['70%']} onDismiss={onDismiss} enableScroll={false}>
+    <BottomSheet ref={sheetRef} snapPoints={['85%']} onDismiss={onDismiss} enableScroll={false}>
       <BottomSheetHeader>
         <BottomSheetTitle>{t('network.connectService.title')}</BottomSheetTitle>
         <BottomSheetDescription>
@@ -86,7 +86,7 @@ export function ConnectServiceSheet({
 
       {/* Search */}
       <View className="mb-3">
-        <Input
+        <BottomSheetInput
           placeholder={t('network.connectService.searchPlaceholder')}
           value={search}
           onChangeText={setSearch}

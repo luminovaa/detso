@@ -25,5 +25,6 @@ export const updateScheduleSchema = z.object({
   end_time: z.string().datetime('Format waktu tidak valid').optional().nullable(),
   status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED']).optional(),
   notes: z.string().optional().nullable(),
-  ticket_id: z.string().optional().nullable()
+  ticket_id: z.string().optional().nullable(),
+  image: z.string().optional().nullable()
 });

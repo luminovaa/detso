@@ -24,6 +24,7 @@ import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { Package } from "@/src/lib/types";
 
+import { COLORS } from '@/src/lib/colors';
 export default function PackageScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
@@ -76,7 +77,7 @@ export default function PackageScreen() {
 
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const primaryColor = "hsl(var(--primary))";
+  const primaryColor = COLORS.brand.primary;
 
   return (
     <ScreenWrapper 
@@ -136,7 +137,7 @@ export default function PackageScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color="hsl(var(--primary))" />
+                <ActivityIndicator color={COLORS.brand.primary} />
               </View>
             ) : null
           }

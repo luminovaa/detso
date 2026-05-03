@@ -14,6 +14,7 @@ import { Ticket, TicketPriority, TicketStatus } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
 import { formatRelativeTime } from "@/src/lib/format-date";
 
+import { COLORS } from '@/src/lib/colors';
 interface TicketItemProps {
   item: Ticket;
   searchQuery?: string;
@@ -101,7 +102,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
 
           {/* Customer + Service */}
           <View className="flex-row items-center mb-0.5">
-            <Ionicons name="person-outline" size={12} color="hsl(var(--muted-foreground))" />
+            <Ionicons name="person-outline" size={12} color={COLORS.neutral.gray[500]} />
             <HighlightedText
               text={`${item.customer.name}${item.service ? ` • ${item.service.package_name}` : ""}`}
               searchQuery={searchQuery}
@@ -113,7 +114,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
           {/* Technician */}
           {item.technician && (
             <View className="flex-row items-center mb-0.5">
-              <Ionicons name="construct-outline" size={12} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="construct-outline" size={12} color={COLORS.neutral.gray[500]} />
               <Text className="text-xs text-muted-foreground ml-1">
                 {item.technician.profile?.full_name || item.technician.username}
               </Text>
@@ -122,7 +123,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
 
           {/* Created Time */}
           <View className="flex-row items-center mt-1.5">
-            <Ionicons name="time-outline" size={11} color="hsl(var(--muted-foreground))" />
+            <Ionicons name="time-outline" size={11} color={COLORS.neutral.gray[500]} />
             <Text className="text-[11px] text-muted-foreground ml-1">
               {formatRelativeTime(item.created_at)}
             </Text>
@@ -141,21 +142,21 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
             key: "detail",
             label: t("ticket.detailTitle"),
             onPress: handlePress,
-            icon: <Ionicons name="eye-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "edit",
             label: t("ticket.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "delete",
             label: t("ticket.deleteBtn"),
             onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />,
+            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
             variant: "destructive",
             isLoading: isDeleting,
             disabled: isDeleting,

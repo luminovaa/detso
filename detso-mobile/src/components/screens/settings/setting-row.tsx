@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "@/src/components/global/text";
 import { cn } from "@/src/lib/utils";
 
+import { COLORS } from '@/src/lib/colors';
 interface SettingRowProps {
   label: string;
   iconName: keyof typeof Ionicons.glyphMap;
@@ -61,7 +62,7 @@ export function SettingRow({
           <Ionicons 
             name="chevron-forward" 
             size={18} 
-            color={destructive ? "hsl(var(--destructive))" : "hsl(var(--primary))"} 
+            color={destructive ? COLORS.status.error : COLORS.brand.primary} 
             style={destructive ? { opacity: 0.5 } : {}}
           />
         )}
@@ -112,7 +113,7 @@ export function SelectionItem({
         </Text>
       </View>
       {isActive && (
-        <Ionicons name="checkmark-circle" size={22} color="hsl(var(--primary))" />
+        <Ionicons name="checkmark-circle" size={22} color={COLORS.brand.primary} />
       )}
     </TouchableOpacity>
   );

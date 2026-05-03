@@ -25,6 +25,7 @@ import { TicketPriority, TicketType } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 import api from "@/src/lib/api";
 
+import { COLORS } from '@/src/lib/colors';
 const PRIORITY_OPTIONS: { value: TicketPriority; labelKey: string; variant: BadgeVariantKey }[] = [
   { value: "LOW", labelKey: "ticket.priorityLow", variant: "neutral" },
   { value: "MEDIUM", labelKey: "ticket.priorityMedium", variant: "info" },
@@ -115,7 +116,7 @@ export default function TicketEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("ticket.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );

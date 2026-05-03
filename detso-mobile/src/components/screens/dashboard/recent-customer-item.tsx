@@ -10,6 +10,7 @@ import { RecentCustomer } from "@/src/features/dashboard/types";
 import { formatRelativeTime } from "@/src/lib/format-date";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 
+import { COLORS } from '@/src/lib/colors';
 interface RecentCustomerItemProps {
   item: RecentCustomer;
 }
@@ -42,7 +43,7 @@ export const RecentCustomerItem = React.memo(function RecentCustomerItem({ item 
 
               {item.phone && (
                 <View className="flex-row items-center mb-1">
-                  <Ionicons name="call-outline" size={12} color="hsl(var(--muted-foreground))" />
+                  <Ionicons name="call-outline" size={12} color={COLORS.neutral.gray[500]} />
                   <Text className="text-xs text-muted-foreground ml-1">
                     {item.phone}
                   </Text>
@@ -50,12 +51,12 @@ export const RecentCustomerItem = React.memo(function RecentCustomerItem({ item 
               )}
 
               <View className="flex-row items-center">
-                <Ionicons name="wifi-outline" size={12} color="hsl(var(--primary))" />
+                <Ionicons name="wifi-outline" size={12} color={COLORS.brand.primary} />
                 <Text className="text-xs text-primary ml-1">
                   {item._count.service} {t("tenantDashboard.services")}
                 </Text>
                 <Text className="text-xs text-muted-foreground mx-1">•</Text>
-                <Ionicons name="time-outline" size={12} color="hsl(var(--muted-foreground))" />
+                <Ionicons name="time-outline" size={12} color={COLORS.neutral.gray[500]} />
                 <Text className="text-xs text-muted-foreground ml-1">
                   {timeAgo}
                 </Text>
@@ -65,7 +66,7 @@ export const RecentCustomerItem = React.memo(function RecentCustomerItem({ item 
             <Ionicons
               name="chevron-forward"
               size={18}
-              color="hsl(var(--muted-foreground))"
+              color={COLORS.neutral.gray[500]}
             />
           </View>
         </CardContent>

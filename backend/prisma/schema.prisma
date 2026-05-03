@@ -258,6 +258,7 @@ model Detso_Work_Schedule {
   end_time      DateTime?
   status        ScheduleStatus @default(SCHEDULED)
   notes         String?
+  image         String?
   created_at    DateTime       @default(now())
   updated_at    DateTime?
   technician    Detso_User     @relation(fields: [technician_id], references: [id])

@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { cn } from "../../lib/utils";
 import { useT } from "@/src/features/i18n/store";
+import { COLORS } from "@/src/lib/colors";
 
 export interface SearchBarProps {
   value: string;
@@ -70,7 +71,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
         <Ionicons
           name="search"
           size={20}
-          color={isFocused ? "hsl(var(--primary))" : "#94a3b8"}
+          color={isFocused ? COLORS.brand.primary : COLORS.neutral.gray[400]}
           className="mr-2"
         />
 

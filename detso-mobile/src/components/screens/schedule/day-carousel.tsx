@@ -15,7 +15,7 @@
  * - After snap animation completes → update selectedDate, reset offset to center
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -60,6 +60,14 @@ export function DayCarousel({
   const translateX = useSharedValue(0);
   const isAnimating = useSharedValue(false);
 
+  // ─── Reset position when selectedDate changes ──────────────────
+  // This ensures translateX is reset after navigation completes,
+  // preventing Reanimated warnings about writing during render
+  useEffect(() => {
+    translateX.value = 0;
+    isAnimating.value = false;
+  }, [selectedDate]);
+
   // ─── Navigation callbacks (called from UI thread via runOnJS) ──
   const goToPrev = useCallback(() => {
     onDateChange(addDays(selectedDate, -1));
@@ -100,8 +108,7 @@ export function DayCarousel({
           { duration: SNAP_DURATION, easing: SNAP_EASING },
           (finished) => {
             if (finished) {
-              translateX.value = 0;
-              isAnimating.value = false;
+              // Reset will be handled by useEffect when selectedDate changes
               runOnJS(goToNext)();
             }
           },
@@ -114,14 +121,14 @@ export function DayCarousel({
           { duration: SNAP_DURATION, easing: SNAP_EASING },
           (finished) => {
             if (finished) {
-              translateX.value = 0;
-              isAnimating.value = false;
+              // Reset will be handled by useEffect when selectedDate changes
               runOnJS(goToPrev)();
             }
           },
         );
       } else {
         // Cancel — snap back to center
+        isAnimating.value = false;
         translateX.value = withTiming(0, {
           duration: 200,
           easing: SNAP_EASING,

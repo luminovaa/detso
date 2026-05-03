@@ -24,6 +24,7 @@ import { customerService } from "@/src/features/customer/service";
 import { ServiceConnection } from "@/src/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
+import { COLORS } from '@/src/lib/colors';
 type StatusOption = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
 const STATUS_OPTIONS: StatusOption[] = ["ACTIVE", "INACTIVE", "SUSPENDED"];
@@ -137,7 +138,7 @@ export default function ServiceEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("service.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );

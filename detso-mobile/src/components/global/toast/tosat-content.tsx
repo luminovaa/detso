@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "../text"; // Pastikan path ini mengarah ke komponen Text global kamu
 
+import { COLORS } from '@/src/lib/colors';
 interface ToastContentProps {
   toast: {
     id: string;
@@ -86,7 +87,7 @@ export function ToastContent({ toast, onPress, duration }: ToastContentProps) {
       </View>
 
       {/* Close Hint */}
-      <Ionicons name="close" size={18} color="hsl(var(--muted-foreground))" />
+      <Ionicons name="close" size={18} color={COLORS.neutral.gray[500]} />
 
       {/* Progress bar */}
       <View className="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent">

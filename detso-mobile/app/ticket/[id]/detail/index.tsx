@@ -24,6 +24,7 @@ import { BadgeVariantKey } from "@/src/lib/badge-variants";
 import { formatRelativeTime } from "@/src/lib/format-date";
 import { UpdateStatusSheet } from "@/src/components/screens/ticket/update-status-sheet";
 
+import { COLORS } from '@/src/lib/colors';
 const getStatusVariant = (status: TicketStatus): BadgeVariantKey => {
   switch (status) {
     case "OPEN": return "info";
@@ -104,7 +105,7 @@ export default function TicketDetailScreen() {
     return (
       <ScreenWrapper headerTitle={t("ticket.detailTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );
@@ -192,7 +193,7 @@ export default function TicketDetailScreen() {
               </Text>
 
               <View className="flex-row items-center mb-2">
-                <Ionicons name="person-outline" size={16} color="hsl(var(--muted-foreground))" />
+                <Ionicons name="person-outline" size={16} color={COLORS.neutral.gray[500]} />
                 <Text weight="medium" className="text-sm text-foreground ml-2">
                   {ticket.service.customer.name}
                 </Text>
@@ -200,7 +201,7 @@ export default function TicketDetailScreen() {
 
               {ticket.service.customer.phone && (
                 <View className="flex-row items-center mb-2">
-                  <Ionicons name="call-outline" size={16} color="hsl(var(--muted-foreground))" />
+                  <Ionicons name="call-outline" size={16} color={COLORS.neutral.gray[500]} />
                   <Text className="text-sm text-muted-foreground ml-2">
                     {ticket.service.customer.phone}
                   </Text>
@@ -209,7 +210,7 @@ export default function TicketDetailScreen() {
 
               {ticket.service.address && (
                 <View className="flex-row items-center mb-2">
-                  <Ionicons name="location-outline" size={16} color="hsl(var(--muted-foreground))" />
+                  <Ionicons name="location-outline" size={16} color={COLORS.neutral.gray[500]} />
                   <Text className="text-sm text-muted-foreground ml-2 flex-1">
                     {ticket.service.address}
                   </Text>
@@ -218,7 +219,7 @@ export default function TicketDetailScreen() {
 
               {ticket.service.package_name && (
                 <View className="flex-row items-center">
-                  <Ionicons name="wifi-outline" size={16} color="hsl(var(--muted-foreground))" />
+                  <Ionicons name="wifi-outline" size={16} color={COLORS.neutral.gray[500]} />
                   <Text className="text-sm text-muted-foreground ml-2">
                     {ticket.service.package_name}
                     {ticket.service.package_speed ? ` (${ticket.service.package_speed})` : ""}
@@ -286,7 +287,7 @@ export default function TicketDetailScreen() {
                       <Ionicons
                         name={getActionIcon(history.action) as any}
                         size={14}
-                        color="hsl(var(--muted-foreground))"
+                        color={COLORS.neutral.gray[500]}
                       />
                     </View>
                     {index < histories.length - 1 && (
@@ -344,7 +345,7 @@ export default function TicketDetailScreen() {
             onPress={handleEdit}
             className="h-11 w-11 rounded-xl bg-muted items-center justify-center"
           >
-            <Ionicons name="pencil-outline" size={18} color="hsl(var(--foreground))" />
+            <Ionicons name="pencil-outline" size={18} color={COLORS.neutral.gray[900]} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -352,7 +353,7 @@ export default function TicketDetailScreen() {
             onPress={handleDelete}
             className="h-11 w-11 rounded-xl bg-destructive/10 items-center justify-center"
           >
-            <Ionicons name="trash-outline" size={18} color="hsl(var(--destructive))" />
+            <Ionicons name="trash-outline" size={18} color={COLORS.status.error} />
           </TouchableOpacity>
         </View>
       </View>

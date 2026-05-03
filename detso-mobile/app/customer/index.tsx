@@ -24,6 +24,7 @@ import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { CustomerListItem } from "@/src/lib/types";
 
+import { COLORS } from '@/src/lib/colors';
 export default function CustomerScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
@@ -72,7 +73,7 @@ export default function CustomerScreen() {
     });
   }, [deleteCustomer]);
 
-  const primaryColor = "hsl(var(--primary))";
+  const primaryColor = COLORS.brand.primary;
 
   return (
     <ScreenWrapper headerTitle={t("customer.title")} showBackButton isLoading={isLoading}>
@@ -126,7 +127,7 @@ export default function CustomerScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color="hsl(var(--primary))" />
+                <ActivityIndicator color={COLORS.brand.primary} />
               </View>
             ) : null
           }

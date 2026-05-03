@@ -50,3 +50,10 @@ export const tenantUpload = createUploadMiddleware({
     maxFileSize: 5 * 1024 * 1024,
     fieldName: 'image'
 })
+
+export const scheduleUpload = createUploadMiddleware({
+    destination: 'storage/public/schedules',
+    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
+    maxFileSize: 5 * 1024 * 1024,
+    fieldName: 'image'
+})

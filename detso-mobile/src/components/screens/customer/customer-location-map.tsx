@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../../global/card';
 import { Text } from '../../global/text';
 
+import { COLORS } from '@/src/lib/colors';
 interface Service {
   id: string;
   lat: string | null;
@@ -149,7 +150,7 @@ export function CustomerLocationMap({ services }: CustomerLocationMapProps) {
                   <View className="relative">
                     {/* Pin Icon */}
                     <View className="w-8 h-8 items-center justify-center">
-                      <Ionicons name="location" size={28} color="hsl(var(--primary))" />
+                      <Ionicons name="location" size={28} color={COLORS.brand.primary} />
                     </View>
 
                     {/* Badge for multiple services */}

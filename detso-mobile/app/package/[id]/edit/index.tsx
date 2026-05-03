@@ -15,6 +15,7 @@ import { useT } from "@/src/features/i18n/store";
 import { updatePackageSchema, UpdatePackageInput } from "@/src/features/package/schema";
 import { usePackage, useUpdatePackage } from "@/src/features/package/hooks";
 
+import { COLORS } from '@/src/lib/colors';
 interface PackageData {
   id: string;
   name: string;
@@ -90,7 +91,7 @@ export default function PackageEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("package.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="hsl(var(--primary))" />
+          <ActivityIndicator size="large" color={COLORS.brand.primary} />
         </View>
       </ScreenWrapper>
     );

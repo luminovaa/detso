@@ -3,6 +3,8 @@ import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } fro
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { createWorkScheduleSchema } from './validation/validation.schedule';
+import { formatWIB } from '../../utils/time-fromat';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const createWorkSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id dari user yang login (Admin/Owner/Dispatcher)
@@ -105,5 +107,30 @@ export const createWorkSchedule = asyncHandler(async (req: Request, res: Respons
     }
   });
 
-  responseData(res, 201, 'Jadwal kerja berhasil dibuat', schedule);
+  // Format response konsisten dengan Schedule type di frontend
+  const data = {
+    id: schedule.id,
+    title: schedule.ticket ? schedule.ticket.title : schedule.title || schedule.notes,
+    start_time: formatWIB(schedule.start_time),
+    end_time: schedule.end_time ? formatWIB(schedule.end_time) : null,
+    status: schedule.status,
+    notes: schedule.notes || null,
+    image: generateFullUrl(schedule.image),
+    technician_id: schedule.technician_id,
+    ticket_id: schedule.ticket_id || null,
+    created_at: formatWIB(schedule.created_at),
+    updated_at: schedule.updated_at ? formatWIB(schedule.updated_at) : null,
+    technician: schedule.technician ? {
+      id: schedule.technician.id,
+      username: schedule.technician.username,
+      full_name: schedule.technician.profile?.full_name || 'N/A',
+    } : null,
+    ticket: schedule.ticket ? {
+      id: schedule.ticket.id,
+      title: schedule.ticket.title,
+      status: schedule.ticket.status,
+    } : null,
+  };
+
+  responseData(res, 201, 'Jadwal kerja berhasil dibuat', data);
 });

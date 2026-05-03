@@ -92,6 +92,36 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
     data: updateData,
   });
 
+  // Jika parent_id berubah pada ODP → update FIBER link
+  if (
+    parent_id !== undefined &&
+    existingNode.type === 'ODP' &&
+    parent_id !== existingNode.parent_id
+  ) {
+    // Hapus link lama dari old parent ke ODP ini
+    if (existingNode.parent_id) {
+      await prisma.detso_Network_Link.deleteMany({
+        where: {
+          from_node_id: existingNode.parent_id,
+          to_node_id: nodeId,
+          type: 'FIBER',
+        },
+      });
+    }
+
+    // Buat link baru dari new parent ke ODP ini
+    if (parent_id) {
+      await prisma.detso_Network_Link.create({
+        data: {
+          tenant_id,
+          from_node_id: parent_id,
+          to_node_id: nodeId,
+          type: 'FIBER',
+        },
+      });
+    }
+  }
+
   responseData(res, 200, 'Node berhasil diperbarui', updatedNode);
 });
 

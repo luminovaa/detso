@@ -8,6 +8,7 @@ import {
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "../../lib/utils";
 import { CustomTextProps, Text } from "./text";
 
@@ -32,6 +33,8 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   ) => {
     // Jika snapPoints tidak diberikan → dynamic sizing (auto-fit content)
     const useDynamic = !snapPoints;
+    const insets = useSafeAreaInsets();
+    const bottomPadding = insets.bottom + 16;
 
     // 1. Backdrop (Latar Belakang Gelap)
     const renderBackdrop = useCallback(
@@ -70,6 +73,9 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         enableContentPanningGesture={enableDrag}
         enableHandlePanningGesture={enableDrag}
         enableOverDrag={enableDrag}
+        keyboardBehavior="fillParent"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
         backgroundComponent={renderBackground}
         handleIndicatorStyle={{
@@ -79,11 +85,14 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         }}
       >
         {enableScroll ? (
-          <BottomSheetScrollView className="flex-1 px-6 pb-6 pt-2">
+          <BottomSheetScrollView 
+            contentContainerStyle={{ paddingBottom: bottomPadding }}
+            className="flex-1 px-6 pt-2"
+          >
             {children}
           </BottomSheetScrollView>
         ) : (
-          <BottomSheetView className="px-6 pb-6 pt-2">
+          <BottomSheetView style={{ paddingBottom: bottomPadding }} className="px-6 pt-2">
             {children}
           </BottomSheetView>
         )}

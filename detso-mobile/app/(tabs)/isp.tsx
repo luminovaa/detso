@@ -21,6 +21,7 @@ import { ISPSkeletonLoading } from "@/src/components/screens/isp/skeleton-loadin
 import { ISPItem } from "@/src/components/screens/isp/isp-item";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
+import { COLORS } from '@/src/lib/colors';
 export default function IspScreen() {
   const { t } = useT();
   const { contentPaddingBottom, fabBottom } = useTabBarHeight();
@@ -86,7 +87,7 @@ export default function IspScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color="hsl(var(--primary))" />
+                <ActivityIndicator color={COLORS.brand.primary} />
               </View>
             ) : null
           }

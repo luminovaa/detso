@@ -4,6 +4,9 @@ import { updateScheduleSchema } from './validation/validation.schedule';
 import { prisma } from '../../utils/prisma';
 import { responseData } from '../../utils/response-handler';
 import { getParam } from '../../utils/request.utils';
+import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
+import { generateFullUrl } from '../../utils/generate-full-url';
+import { formatWIB } from '../../utils/time-fromat';
 
 export const editSchedule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   // [NEW] 1. Ambil tenant_id
@@ -15,9 +18,28 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
 
   const scheduleId = getParam(req.params.id);
 
-  const validationResult = updateScheduleSchema.safeParse(req.body);
+  // Handle file cleanup on error
+  const cleanupUploadedFile = async () => {
+    if (req.file) {
+      await deleteFile(req.file.path).catch(err =>
+        console.error('Gagal menghapus file:', err)
+      );
+    }
+  };
+
+  // Get uploaded file info if exists
+  let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
+  if (req.file) {
+    uploadedImage = getUploadedFileInfo(req.file, 'storage/public/schedules');
+  }
+
+  const validationResult = updateScheduleSchema.safeParse({
+    ...req.body,
+    image: uploadedImage?.path
+  });
 
   if (!validationResult.success) {
+    await cleanupUploadedFile();
     throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
@@ -28,7 +50,8 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
     title,
     status,
     notes,
-    ticket_id
+    ticket_id,
+    image
   } = validationResult.data;
 
   // [NEW] 2. Cek Schedule (Wajib milik Tenant ini)
@@ -45,6 +68,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
   });
 
   if (!existingSchedule) {
+    await cleanupUploadedFile();
     throw new NotFoundError('Schedule tidak ditemukan atau akses ditolak');
   }
 
@@ -59,6 +83,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
     });
 
     if (!technician) {
+      await cleanupUploadedFile();
       throw new NotFoundError('Teknisi tidak ditemukan di data perusahaan Anda');
     }
   }
@@ -75,6 +100,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
       });
 
       if (!ticket) {
+        await cleanupUploadedFile();
         throw new NotFoundError('Tiket tidak ditemukan');
       }
 
@@ -88,6 +114,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
       });
 
       if (existingTicketSchedule) {
+        await cleanupUploadedFile();
         throw new ValidationError('Tiket sudah memiliki jadwal lain');
       }
     }
@@ -106,6 +133,7 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
         status: status !== undefined ? status : undefined,
         notes: notes !== undefined ? notes : undefined,
         ticket_id: ticket_id !== undefined ? ticket_id : undefined,
+        image: image !== undefined ? image : undefined,
         updated_at: new Date()
       },
       include: {
@@ -213,16 +241,19 @@ export const editSchedule = asyncHandler(async (req: Request, res: Response): Pr
     return schedule;
   });
 
+  // Format response konsisten dengan Schedule type di frontend
   const data = {
     id: updatedSchedule.id,
+    title: updatedSchedule.ticket ? updatedSchedule.ticket.title : updatedSchedule.title || updatedSchedule.notes,
     technician_id: updatedSchedule.technician_id,
-    ticket_id: updatedSchedule.ticket_id,
-    start_time: updatedSchedule.start_time,
-    end_time: updatedSchedule.end_time,
+    ticket_id: updatedSchedule.ticket_id || null,
+    start_time: formatWIB(updatedSchedule.start_time),
+    end_time: updatedSchedule.end_time ? formatWIB(updatedSchedule.end_time) : null,
     status: updatedSchedule.status,
     notes: updatedSchedule.notes,
-    created_at: updatedSchedule.created_at,
-    updated_at: updatedSchedule.updated_at,
+    image: generateFullUrl(updatedSchedule.image),
+    created_at: formatWIB(updatedSchedule.created_at),
+    updated_at: updatedSchedule.updated_at ? formatWIB(updatedSchedule.updated_at) : null,
     technician: updatedSchedule.technician ? {
       id: updatedSchedule.technician.id,
       username: updatedSchedule.technician.username,

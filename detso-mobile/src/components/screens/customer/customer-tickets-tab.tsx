@@ -14,6 +14,7 @@ import { Ticket } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
 import { formatRelativeTime } from "@/src/lib/format-date";
 
+import { COLORS } from '@/src/lib/colors';
 interface CustomerTicketsTabProps {
   customerId: string;
 }
@@ -52,14 +53,14 @@ const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
         <View className="flex-row items-center gap-x-3">
           {item.technician && (
             <View className="flex-row items-center">
-              <Ionicons name="construct-outline" size={11} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="construct-outline" size={11} color={COLORS.neutral.gray[500]} />
               <Text className="text-[11px] text-muted-foreground ml-1">
                 {item.technician.profile?.full_name || item.technician.username}
               </Text>
             </View>
           )}
           <View className="flex-row items-center">
-            <Ionicons name="time-outline" size={11} color="hsl(var(--muted-foreground))" />
+            <Ionicons name="time-outline" size={11} color={COLORS.neutral.gray[500]} />
             <Text className="text-[11px] text-muted-foreground ml-1">
               {formatRelativeTime(item.created_at)}
             </Text>

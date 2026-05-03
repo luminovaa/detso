@@ -32,6 +32,7 @@ import { LanguageSheet } from "@/src/components/screens/settings/language-sheet"
 import { ThemeSheet } from "@/src/components/screens/settings/theme-sheet";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
+import { COLORS } from '@/src/lib/colors';
 export default function SettingsScreen() {
   const { user, logout, refreshUserData } = useAuthStore();
   const { locale, setLocale } = useLanguageStore();
@@ -134,7 +135,7 @@ export default function SettingsScreen() {
                 onPress={() => router.push("/settings/edit-profile")}
                 className="w-10 h-10 bg-muted rounded-full items-center justify-center border border-border/50"
               >
-                <Ionicons name="pencil" size={18} color="hsl(var(--foreground))" />
+                <Ionicons name="pencil" size={18} color={COLORS.neutral.gray[900]} />
               </TouchableOpacity>
             </CardContent>
           </Card>
@@ -249,10 +250,11 @@ export default function SettingsScreen() {
             <DialogDescription>{t("settings.logoutConfirmDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button title={t("common.cancel")} variant="outline" onPress={() => setIsLogoutDialogOpen(false)} />
+            <Button title={t("common.cancel")} variant="outline" size="sm" onPress={() => setIsLogoutDialogOpen(false)} />
             <Button 
               title={t("settings.logout")} 
               variant="destructive" 
+              size="sm"
               onPress={async () => {
                 setIsLogoutDialogOpen(false);
                 await logout();

@@ -14,6 +14,7 @@ import { CustomerDocument, ServicePhoto } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
 import { formatDate } from "@/src/lib/format-date";
 
+import { COLORS } from '@/src/lib/colors';
 interface CustomerData {
   id: string;
   name: string;
@@ -80,13 +81,13 @@ export function CustomerInfoTab({ data }: CustomerInfoTabProps) {
             <View className="flex-row items-center gap-x-4 mt-3">
               {data.phone && (
                 <TouchableOpacity onPress={handleCall} className="flex-row items-center gap-x-1">
-                  <Ionicons name="call-outline" size={14} color="hsl(var(--primary))" />
+                  <Ionicons name="call-outline" size={14} color={COLORS.brand.primary} />
                   <Text className="text-sm text-primary">{data.phone}</Text>
                 </TouchableOpacity>
               )}
               {data.email && (
                 <TouchableOpacity onPress={handleEmail} className="flex-row items-center gap-x-1">
-                  <Ionicons name="mail-outline" size={14} color="hsl(var(--primary))" />
+                  <Ionicons name="mail-outline" size={14} color={COLORS.brand.primary} />
                   <Text className="text-sm text-primary" numberOfLines={1}>{data.email}</Text>
                 </TouchableOpacity>
               )}
@@ -137,7 +138,7 @@ export function CustomerInfoTab({ data }: CustomerInfoTabProps) {
                   {/* Package + Status */}
                   <View className="flex-row items-center justify-between mb-2">
                     <View className="flex-row items-center gap-x-2">
-                      <Ionicons name="wifi" size={16} color="hsl(var(--primary))" />
+                      <Ionicons name="wifi" size={16} color={COLORS.brand.primary} />
                       <Text weight="semibold" className="text-base text-foreground">
                         {service.package_name}
                       </Text>
@@ -149,14 +150,14 @@ export function CustomerInfoTab({ data }: CustomerInfoTabProps) {
 
                   {/* Speed */}
                   <View className="flex-row items-center mb-1">
-                    <Ionicons name="speedometer-outline" size={12} color="hsl(var(--muted-foreground))" />
+                    <Ionicons name="speedometer-outline" size={12} color={COLORS.neutral.gray[500]} />
                     <Text className="text-xs text-muted-foreground ml-1">{service.package_speed}</Text>
                   </View>
 
                   {/* Address */}
                   {service.address && (
                     <View className="flex-row items-center mb-1">
-                      <Ionicons name="location-outline" size={12} color="hsl(var(--muted-foreground))" />
+                      <Ionicons name="location-outline" size={12} color={COLORS.neutral.gray[500]} />
                       <Text className="text-xs text-muted-foreground ml-1 flex-1" numberOfLines={2}>
                         {service.address}
                       </Text>
@@ -204,7 +205,7 @@ export function CustomerInfoTab({ data }: CustomerInfoTabProps) {
         {data.services.length === 0 && (
           <Card className="mb-4 border-border/40">
             <View className="p-6 items-center">
-              <Ionicons name="wifi-outline" size={32} color="hsl(var(--muted-foreground))" />
+              <Ionicons name="wifi-outline" size={32} color={COLORS.neutral.gray[500]} />
               <Text className="text-sm text-muted-foreground mt-2">Belum ada layanan terdaftar</Text>
             </View>
           </Card>

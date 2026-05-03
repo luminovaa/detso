@@ -13,6 +13,7 @@ import { useT } from "@/src/features/i18n/store";
 import { TeamMember } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 
+import { COLORS } from '@/src/lib/colors';
 interface TeamItemProps {
   item: TeamMember;
   searchQuery?: string;
@@ -122,14 +123,14 @@ export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", o
             key: "edit",
             label: t("team.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color="hsl(var(--primary))" />,
+            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
             variant: "default",
           },
           {
             key: "delete",
             label: t("team.deleteBtn"),
             onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color="hsl(var(--destructive))" />,
+            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
             variant: "destructive",
             isLoading: isDeleting,
             disabled: isDeleting,

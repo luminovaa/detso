@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { View, Keyboard } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import {
   BottomSheetTitle,
   BottomSheetDescription,
 } from '@/src/components/global/bottom-sheet';
-import { Input } from '@/src/components/global/input';
+import { BottomSheetInput } from '@/src/components/global/bottom-sheet-input';
 import { Label } from '@/src/components/global/label';
 import { Button } from '@/src/components/global/button';
 import { Text } from '@/src/components/global/text';
@@ -79,6 +79,15 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
     }
   }, [editNode, reset]);
 
+  // Workaround: keyboardBlurBehavior="restore" broken di v5 (issue #2465)
+  // Manual restore sheet position saat keyboard dismiss
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      sheetRef.current?.snapToIndex(0);
+    });
+    return () => sub.remove();
+  }, [sheetRef]);
+
   const servers = serversData?.data?.nodes || [];
 
   const onSubmit = (data: AddNodeForm) => {
@@ -137,7 +146,12 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
     : '-';
 
   return (
-    <BottomSheet ref={sheetRef} snapPoints={['65%']} onDismiss={onDismiss} enableScroll>
+    <BottomSheet 
+      ref={sheetRef} 
+      snapPoints={['90%']} 
+      onDismiss={onDismiss} 
+      enableScroll
+    >
       <BottomSheetHeader>
         <BottomSheetTitle>{title}</BottomSheetTitle>
         <BottomSheetDescription>
@@ -153,7 +167,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
             control={control}
             name="name"
             render={({ field: { onChange, value } }) => (
-              <Input
+              <BottomSheetInput
                 placeholder={isODP ? t('network.addNode.namePlaceholderODP') : t('network.addNode.namePlaceholderServer')}
                 value={value}
                 onChangeText={onChange}
@@ -170,7 +184,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
             control={control}
             name="address"
             render={({ field: { onChange, value } }) => (
-              <Input
+              <BottomSheetInput
                 placeholder={t('network.addNode.addressPlaceholder')}
                 value={value}
                 onChangeText={onChange}
@@ -187,7 +201,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
               control={control}
               name="slot"
               render={({ field: { onChange, value } }) => (
-                <Input
+                <BottomSheetInput
                   placeholder={t('network.addNode.slotPlaceholder')}
                   value={value}
                   onChangeText={onChange}
@@ -236,7 +250,7 @@ export function AddNodeSheet({ sheetRef, editNode, onDismiss }: AddNodeSheetProp
             control={control}
             name="notes"
             render={({ field: { onChange, value } }) => (
-              <Input
+              <BottomSheetInput
                 placeholder={t('network.addNode.notesPlaceholder')}
                 value={value}
                 onChangeText={onChange}
