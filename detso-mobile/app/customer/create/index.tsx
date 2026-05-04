@@ -25,6 +25,7 @@ import { createCustomerSchema, CreateCustomerInput } from "@/src/features/custom
 import { useCreateCustomer } from "@/src/features/customer/hooks";
 import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
+import { networkService } from "@/src/features/network/service";
 
 import { COLORS } from '@/src/lib/colors';
 const TOTAL_STEPS = 5;
@@ -155,6 +156,24 @@ export default function CustomerCreateScreen() {
     [],
   );
 
+  const fetchOdpNodes = useCallback(
+    async (search: string, _page: number) => {
+      const res = await networkService.getNodes({ type: 'ODP' });
+      const nodes = res?.data?.nodes || [];
+      const filtered = search
+        ? nodes.filter((n: any) => n.name.toLowerCase().includes(search.toLowerCase()))
+        : nodes;
+      return {
+        data: filtered.map((n: any) => ({
+          label: `${n.name}${n.address ? ` • ${n.address}` : ''}${n.slot ? ` (${n.used_slot || 0}/${n.slot})` : ''}`,
+          value: n.id,
+        })),
+        hasNextPage: false,
+      };
+    },
+    [],
+  );
+
   const handleNext = async () => {
     // Validate current step fields before proceeding
     let fieldsToValidate: (keyof CreateCustomerInput)[] = [];
@@ -219,6 +238,7 @@ export default function CustomerCreateScreen() {
     if (data.ip_address) formData.append("ip_address", data.ip_address);
     if (data.mac_address) formData.append("mac_address", data.mac_address);
     if (data.notes) formData.append("notes", data.notes);
+    if (data.odp_id) formData.append("odp_id", data.odp_id);
 
     // Documents (KTP)
     if (ktpPhoto) {
@@ -437,6 +457,16 @@ export default function CustomerCreateScreen() {
             <View className="gap-y-3">
               <FormInput control={control} name="ip_address" label={t("customer.ipLabel")} placeholder={t("customer.ipPlaceholder")} keyboardType="numeric" />
               <FormInput control={control} name="mac_address" label={t("customer.macLabel")} placeholder={t("customer.macPlaceholder")} autoCapitalize="characters" />
+
+              {/* ODP Selector (Optional) */}
+              <AsyncSelect
+                control={control}
+                name="odp_id"
+                label={t("customer.odpLabel")}
+                placeholder={t("customer.odpPlaceholder")}
+                fetchOptions={fetchOdpNodes}
+                highlightSearch
+              />
             </View>
           )}
 

@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useCallback } from "react";
-import { View, TouchableOpacity, TextInput, Image } from "react-native";
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import { View, TouchableOpacity, Image } from "react-native";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 
@@ -145,7 +145,7 @@ function UpdateStatusSheetInner(
           </View>
 
           {/* Note Input */}
-          <TextInput
+          <BottomSheetTextInput
             placeholder={t("ticket.noteOptional")}
             value={note}
             onChangeText={setNote}

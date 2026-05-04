@@ -86,6 +86,7 @@ export const createCustomerSchema = z.object({
   notes: z.string().optional(),
   documents: z.array(documentSchema).optional(),
   photos: z.array(photoSchema).optional(),
+  odp_id: z.string().optional().or(z.literal('')),
 });
 
 export const paginationSchema = z.object({

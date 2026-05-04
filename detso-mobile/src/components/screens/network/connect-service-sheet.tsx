@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { View, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, TouchableOpacity, FlatList, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import {
@@ -33,6 +33,14 @@ export function ConnectServiceSheet({
   const { t } = useT();
   const [search, setSearch] = useState('');
   const createLink = useCreateLink();
+
+  // Workaround: restore sheet position saat keyboard dismiss
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      sheetRef.current?.snapToIndex(0);
+    });
+    return () => sub.remove();
+  }, [sheetRef]);
 
   // Get IDs of already-linked services
   const linkedServiceIds = useMemo(() => {

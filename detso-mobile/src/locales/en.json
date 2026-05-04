@@ -271,7 +271,9 @@
     "photoCustomer": "Photo with Customer",
     "photoDevice": "Device Photo",
     "photoHint": "Tap to take photo or select from gallery",
-    "photoRequired": "This photo is required"
+    "photoRequired": "This photo is required",
+    "odpLabel": "Connect to ODP",
+    "odpPlaceholder": "Select ODP (optional)"
   },
 
   "_comment_service": "Service Connection Management Screens (app/service/)",
@@ -313,7 +315,9 @@
     "statusLabel": "Status",
     "statusActive": "Active",
     "statusInactive": "Inactive",
-    "statusSuspended": "Suspended"
+    "statusSuspended": "Suspended",
+    "odpLabel": "Connect to ODP",
+    "odpPlaceholder": "Select ODP (optional)"
   },
 
   "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
@@ -844,5 +848,53 @@
     "server": "A server error occurred. Please try again later.",
     "unknown": "An unexpected error occurred.",
     "unexpected": "An unexpected error occurred."
+  },
+
+  "_comment_allMenu": "All Menu Screen (app/all-menu/index.tsx)",
+  "allMenu": {
+    "title": "All Menu",
+    "mainFeatures": "Main Features",
+    "settingsAccount": "Settings & Account",
+    "services": "Services",
+    "customers": "Customers",
+    "packages": "Packages",
+    "tickets": "Tickets",
+    "odp": "ODP",
+    "team": "Team",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "editCompany": "Edit Company",
+    "helpCenter": "Help Center"
+  },
+
+  "odp": {
+    "title": "ODP Management",
+    "emptyTitle": "No ODP",
+    "emptyDesc": "No ODP nodes registered yet.",
+    "searchPlaceholder": "Search ODP...",
+    "createTitle": "Add ODP",
+    "editTitle": "Edit ODP",
+    "nameLabel": "ODP Name",
+    "namePlaceholder": "e.g. ODP Cluster A",
+    "nameRequired": "ODP name is required",
+    "addressLabel": "Address",
+    "addressPlaceholder": "ODP location address",
+    "slotLabel": "Slot Capacity",
+    "slotPlaceholder": "e.g. 8",
+    "parentServerLabel": "Parent Server",
+    "parentServerPlaceholder": "Select server (optional)",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Additional notes (optional)",
+    "saveBtn": "Save ODP",
+    "saving": "Saving...",
+    "deleteConfirm": "Delete ODP",
+    "deleteMessage": "Are you sure you want to delete this ODP? All connections will be removed.",
+    "deleteBtn": "Delete",
+    "connectedServices": "Connected Services",
+    "noConnections": "No services connected to this ODP yet.",
+    "parentServer": "Parent Server",
+    "slotUsage": "Slot Usage",
+    "detail": "ODP Detail",
+    "refresh": "Refresh"
   }
 }

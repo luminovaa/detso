@@ -38,7 +38,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     const {
         name, phone, email, nik, package_id, address, address_service,
         ip_address, lat, long, mac_address, birth_date, birth_place,
-        notes, documents, photos
+        notes, documents, photos, odp_id,
     } = validationResult.data;
 
     const documentFiles = files.documents;
@@ -124,6 +124,35 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     created_at: new Date()
                 }
             });
+
+            // Create DROP_CABLE link to ODP if odp_id provided
+            if (odp_id) {
+                const odpNode = await tx.detso_Network_Node.findFirst({
+                    where: { id: odp_id, tenant_id, deleted_at: null },
+                });
+                if (!odpNode) {
+                    throw new NotFoundError('ODP tidak ditemukan');
+                }
+
+                // Check slot capacity
+                if (odpNode.slot) {
+                    const currentLinks = await tx.detso_Network_Link.count({
+                        where: { from_node_id: odp_id, to_service_id: { not: null } },
+                    });
+                    if (currentLinks >= odpNode.slot) {
+                        throw new ValidationError('Slot ODP sudah penuh');
+                    }
+                }
+
+                await tx.detso_Network_Link.create({
+                    data: {
+                        tenant_id,
+                        from_node_id: odp_id,
+                        to_service_id: serviceConnection.id,
+                        type: 'DROP_CABLE',
+                    },
+                });
+            }
 
             // Upload documents (Code tetap sama, relasi ke customer sudah aman)
             const createdDocuments = [];

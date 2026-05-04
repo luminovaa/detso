@@ -39,9 +39,12 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
     // package_speed, // [SECURITY] Kita ignore input ini jika package_id berubah
     ip_address,
     mac_address,
+    lat,
+    long: lng,
     notes,
     status,
-    photos
+    photos,
+    odp_id,
   } = validationResult.data;
 
   // [NEW] 2. Cari Service Existing dengan Filter Tenant
@@ -114,6 +117,8 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
           package_price: finalPackagePrice,
 
           address: address || existingService.address,
+          lat: lat || existingService.lat,
+          long: lng || existingService.long,
           ip_address: ip_address || existingService.ip_address,
           mac_address: mac_address || existingService.mac_address,
           notes: notes || existingService.notes,
@@ -131,6 +136,75 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
           }
         }
       });
+
+      // Handle ODP link change
+      if (odp_id) {
+        // Check if service already linked to an ODP
+        const existingLink = await tx.detso_Network_Link.findFirst({
+          where: { to_service_id: serviceId },
+        });
+
+        if (existingLink) {
+          // If same ODP, do nothing. If different, delete old and create new.
+          if (existingLink.from_node_id !== odp_id) {
+            await tx.detso_Network_Link.delete({ where: { id: existingLink.id } });
+
+            // Validate new ODP
+            const odpNode = await tx.detso_Network_Node.findFirst({
+              where: { id: odp_id, tenant_id, deleted_at: null },
+            });
+            if (!odpNode) {
+              throw new NotFoundError('ODP tidak ditemukan');
+            }
+
+            // Check slot capacity
+            if (odpNode.slot) {
+              const currentLinks = await tx.detso_Network_Link.count({
+                where: { from_node_id: odp_id, to_service_id: { not: null } },
+              });
+              if (currentLinks >= odpNode.slot) {
+                throw new ValidationError('Slot ODP sudah penuh');
+              }
+            }
+
+            await tx.detso_Network_Link.create({
+              data: {
+                tenant_id,
+                from_node_id: odp_id,
+                to_service_id: serviceId,
+                type: 'DROP_CABLE',
+              },
+            });
+          }
+        } else {
+          // No existing link, create new one
+          const odpNode = await tx.detso_Network_Node.findFirst({
+            where: { id: odp_id, tenant_id, deleted_at: null },
+          });
+          if (!odpNode) {
+            throw new NotFoundError('ODP tidak ditemukan');
+          }
+
+          // Check slot capacity
+          if (odpNode.slot) {
+            const currentLinks = await tx.detso_Network_Link.count({
+              where: { from_node_id: odp_id, to_service_id: { not: null } },
+            });
+            if (currentLinks >= odpNode.slot) {
+              throw new ValidationError('Slot ODP sudah penuh');
+            }
+          }
+
+          await tx.detso_Network_Link.create({
+            data: {
+              tenant_id,
+              from_node_id: odp_id,
+              to_service_id: serviceId,
+              type: 'DROP_CABLE',
+            },
+          });
+        }
+      }
 
       // Logic Update Foto (Sama seperti sebelumnya)
       if (photos !== undefined) {

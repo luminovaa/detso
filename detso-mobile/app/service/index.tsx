@@ -16,8 +16,7 @@ import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { EmptyState } from "@/src/components/global/empty-state";
 import { SearchBar } from "@/src/components/global/search-bar";
 
-import { useInfiniteCustomers } from "@/src/features/customer/hooks";
-import { useDeleteServiceConnection } from "@/src/features/connection-service/hooks";
+import { useInfiniteServices, useDeleteServiceConnection } from "@/src/features/connection-service/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { ServiceItem } from "@/src/components/screens/service/service-item";
 import { ServiceSkeletonLoading } from "@/src/components/screens/service/skeleton-loading";
@@ -44,12 +43,12 @@ export default function ServiceScreen() {
     isFetchingNextPage,
     refetch,
     isRefetching,
-  } = useInfiniteCustomers({
+  } = useInfiniteServices({
     limit: 10,
     search: debouncedSearch || undefined,
   });
 
-  // Flatten all pages — GET /customer returns services[]
+  // Flatten all pages — GET /service-connection returns services[]
   const services: ServiceConnection[] = useMemo(
     () => data?.pages.flatMap((page: any) => page?.data?.services || []) ?? [],
     [data?.pages],

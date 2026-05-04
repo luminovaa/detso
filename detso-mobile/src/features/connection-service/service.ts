@@ -1,7 +1,30 @@
 import api from '@/src/lib/api';
 import { UpdateServiceConnectionInput } from './schema';
 
+interface GetAllServicesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+}
+
 export const connectionService = {
+  /**
+   * Get all service connections with pagination, search, and filter.
+   */
+  getAll: async (params: GetAllServicesParams = {}) => {
+    const response = await api.get('/service-connection', { params });
+    return response.data;
+  },
+
+  /**
+   * Get a single service connection by ID.
+   */
+  getById: async (id: string) => {
+    const response = await api.get(`/service-connection/${id}`);
+    return response.data;
+  },
+
   /**
    * Create a new service connection (Installation).
    * Since this usually involves uploading photos, data should be passed as FormData from the screen.

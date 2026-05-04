@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { View, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, TouchableOpacity, Image } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -119,7 +120,7 @@ export function CompleteScheduleSection({
         <Text className="text-sm text-muted-foreground mb-2">
           {t('schedule.completeNotesLabel')}
         </Text>
-        <TextInput
+        <BottomSheetTextInput
           className="border border-border rounded-lg p-3 text-foreground min-h-[80px]"
           placeholder={t('schedule.completeNotesPlaceholder')}
           placeholderTextColor={COLORS.neutral.gray[400]}
@@ -127,7 +128,7 @@ export function CompleteScheduleSection({
           onChangeText={setNotes}
           multiline
           numberOfLines={3}
-          textAlignVertical="top"
+          style={{ textAlignVertical: "top" }}
         />
       </View>
 

@@ -17,10 +17,10 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
 import { updateServiceConnectionSchema, UpdateServiceConnectionInput } from "@/src/features/connection-service/schema";
-import { useUpdateServiceConnection } from "@/src/features/connection-service/hooks";
-import { useInfiniteCustomers } from "@/src/features/customer/hooks";
+import { useUpdateServiceConnection, useService } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
+import { networkService } from "@/src/features/network/service";
 import { ServiceConnection } from "@/src/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
@@ -35,22 +35,20 @@ export default function ServiceEditScreen() {
   const [showMap, setShowMap] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<StatusOption>("ACTIVE");
   const [serviceData, setServiceData] = useState<ServiceConnection | null>(null);
+  const [location, setLocation] = useState<{ lat: string; lng: string } | null>(null);
 
-  // Fetch service data from customer list (since there's no GET /service-connection/:id)
-  const { data: listResponse, isLoading: isLoadingData } = useInfiniteCustomers({ limit: 100 });
+  // Fetch service data from dedicated endpoint
+  const { data: serviceResponse, isLoading: isLoadingData } = useService(id!);
 
-  // Find the specific service from the list
+  // Set service data when response arrives
   useEffect(() => {
-    if (listResponse?.pages) {
-      const allServices: ServiceConnection[] = listResponse.pages.flatMap(
-        (page: any) => page?.data?.services || []
-      );
-      const found = allServices.find((s) => s.id === id);
-      if (found) {
-        setServiceData(found);
+    if (serviceResponse?.data) {
+      setServiceData(serviceResponse.data);
+      if (serviceResponse.data.lat && serviceResponse.data.long) {
+        setLocation({ lat: serviceResponse.data.lat, lng: serviceResponse.data.long });
       }
     }
-  }, [listResponse, id]);
+  }, [serviceResponse]);
 
   const updateService = useUpdateServiceConnection();
   const isSubmitting = updateService.isPending;
@@ -69,7 +67,7 @@ export default function ServiceEditScreen() {
 
   useEffect(() => {
     if (serviceData) {
-      setValue("package_id", serviceData.package_details ? undefined : undefined);
+      setValue("package_id", serviceData.package_details?.id || "");
       setValue("address", serviceData.address || "");
       setValue("ip_address", serviceData.ip_address || "");
       setValue("mac_address", serviceData.mac_address || "");
@@ -97,6 +95,24 @@ export default function ServiceEditScreen() {
     [],
   );
 
+  const fetchOdpNodes = useCallback(
+    async (search: string, _page: number) => {
+      const res = await networkService.getNodes({ type: 'ODP' });
+      const nodes = res?.data?.nodes || [];
+      const filtered = search
+        ? nodes.filter((n: any) => n.name.toLowerCase().includes(search.toLowerCase()))
+        : nodes;
+      return {
+        data: filtered.map((n: any) => ({
+          label: `${n.name}${n.address ? ` • ${n.address}` : ''}${n.slot ? ` (${n.used_slot || 0}/${n.slot})` : ''}`,
+          value: n.id,
+        })),
+        hasNextPage: false,
+      };
+    },
+    [],
+  );
+
   const getStatusLabel = (status: StatusOption) => {
     switch (status) {
       case "ACTIVE": return t("service.statusActive");
@@ -115,21 +131,30 @@ export default function ServiceEditScreen() {
   };
 
   const onSubmit = (data: UpdateServiceConnectionInput) => {
-    const payload: UpdateServiceConnectionInput = {
-      address: data.address || undefined,
-      ip_address: data.ip_address || undefined,
-      mac_address: data.mac_address || undefined,
-      notes: data.notes || undefined,
-      status: selectedStatus,
-    };
+    const formData = new FormData();
+
+    if (data.address) formData.append("address", data.address);
+    if (location) {
+      formData.append("lat", location.lat);
+      formData.append("long", location.lng);
+    }
+    if (data.ip_address) formData.append("ip_address", data.ip_address);
+    if (data.mac_address) formData.append("mac_address", data.mac_address);
+    if (data.notes) formData.append("notes", data.notes);
+    formData.append("status", selectedStatus);
 
     // Only include package_id if changed
     if (data.package_id) {
-      payload.package_id = data.package_id;
+      formData.append("package_id", data.package_id);
+    }
+
+    // Include odp_id if selected
+    if (data.odp_id) {
+      formData.append("odp_id", data.odp_id);
     }
 
     updateService.mutate(
-      { id: id!, data: payload },
+      { id: id!, data: formData },
       { onSuccess: () => router.back() },
     );
   };
@@ -170,6 +195,7 @@ export default function ServiceEditScreen() {
 
             {/* Package Selector */}
             <AsyncSelect
+              key={`package-${serviceData?.id}`}
               control={control}
               name="package_id"
               label={t("service.packageLabel")}
@@ -183,18 +209,9 @@ export default function ServiceEditScreen() {
               }}
             />
 
-            {/* Installation Address */}
-            <FormInput
-              control={control}
-              name="address"
-              label={t("service.addressLabel")}
-              placeholder={t("service.addressPlaceholder")}
-              isTextarea
-            />
-
-            {/* Map Picker */}
+            {/* Map Picker (sets address automatically) */}
             <View>
-              <Label>{t("service.selectOnMap")}</Label>
+              <Label>{t("service.addressLabel")}</Label>
               <TouchableOpacity
                 onPress={() => setShowMap(true)}
                 activeOpacity={0.7}
@@ -248,6 +265,16 @@ export default function ServiceEditScreen() {
               isTextarea
             />
 
+            {/* ODP Selector (Optional) */}
+            <AsyncSelect
+              control={control}
+              name="odp_id"
+              label={t("service.odpLabel")}
+              placeholder={t("service.odpPlaceholder")}
+              fetchOptions={fetchOdpNodes}
+              highlightSearch
+            />
+
             {/* Status Selector */}
             <View className="mb-2">
               <Label>{t("service.statusLabel")}</Label>
@@ -291,6 +318,7 @@ export default function ServiceEditScreen() {
         visible={showMap}
         onClose={() => setShowMap(false)}
         onLocationSelected={(lat, lng, addressText) => {
+          setLocation({ lat: lat.toString(), lng: lng.toString() });
           if (addressText) {
             setValue("address", addressText);
           }

@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect } from 'react';
-import { View } from 'react-native';
+import { View, Keyboard } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 import { Text } from '@/src/components/global/text';
 import { Button } from '@/src/components/global/button';
-import { FormInput } from '@/src/components/global/form-input';
+import { FormBottomSheetInput } from '@/src/components/global/form-bottom-sheet-input';
 import { FormDatePicker } from '@/src/components/global/date-picker';
 import { AsyncSelect } from '@/src/components/global/select-searchable';
 import { useT, useLanguageStore } from '@/src/features/i18n/store';
@@ -73,6 +73,16 @@ function EditScheduleSheetInner(
       });
     }
   }, [schedule, reset]);
+
+  // Workaround: restore sheet position saat keyboard dismiss
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      if (ref && typeof ref !== 'function' && ref.current) {
+        ref.current.snapToIndex(0);
+      }
+    });
+    return () => sub.remove();
+  }, [ref]);
 
   const onSubmit = async (data: EditScheduleFormData) => {
     if (!schedule) return;
@@ -152,6 +162,9 @@ function EditScheduleSheetInner(
       enableDismissOnClose
       enableContentPanningGesture={false}
       enableHandlePanningGesture={true}
+      keyboardBehavior="fillParent"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
       <View className="flex-1">
         {/* Header */}
@@ -168,7 +181,7 @@ function EditScheduleSheetInner(
           contentContainerStyle={{ paddingBottom: contentPaddingBottom }}
         >
           {/* Title (Optional) */}
-          <FormInput
+          <FormBottomSheetInput
             control={control}
             name="title"
             label={t('schedule.form.title')}
@@ -207,7 +220,7 @@ function EditScheduleSheetInner(
           />
 
           {/* Notes (Optional) */}
-          <FormInput
+          <FormBottomSheetInput
             control={control}
             name="notes"
             label={t('schedule.form.notes')}

@@ -10,7 +10,7 @@ import { MetricCard } from "@/src/components/screens/dashboard/metric-card";
 import { RecentTicketItem } from "@/src/components/screens/dashboard/recent-ticket-item";
 import { RecentCustomerItem } from "@/src/components/screens/dashboard/recent-customer-item";
 import { DashboardSkeletonLoading } from "@/src/components/screens/dashboard/skeleton-loading";
-import { QuickMenuCard } from "@/src/components/screens/dashboard/quick-menu-card";
+import { QuickMenuSection } from "@/src/components/screens/dashboard/quick-menu-section";
 
 import { TenantDashboardData } from "@/src/features/dashboard/types";
 import { useTenantDashboard } from "@/src/features/dashboard/hooks";
@@ -122,45 +122,41 @@ export default function TenantOwnerDashboard() {
             </View>
 
             {/* Quick Menu Section */}
-            <View className="mb-6">
-              <Text weight="bold" className="text-xl text-foreground mb-3">
-                {t("tenantDashboard.quickMenu")}
-              </Text>
-              <View className="flex-row gap-3 mb-3">
-                <QuickMenuCard
-                  icon="wifi"
-                  label={t("tenantDashboard.services")}
-                  onPress={() => router.push("/service")}
-                />
-                <QuickMenuCard
-                  icon="people"
-                  label={t("tenantDashboard.customers")}
-                  onPress={() => router.push("/customer")}
-                />
-                <QuickMenuCard
-                  icon="pricetag"
-                  label={t("tenantDashboard.packages")}
-                  onPress={() => router.push("/package")}
-                />
-              </View>
-              <View className="flex-row gap-3">
-                <QuickMenuCard
-                  icon="document-text"
-                  label={t("tenantDashboard.tickets")}
-                  onPress={() => router.push("/ticket")}
-                />
-                <QuickMenuCard
-                  icon="person"
-                  label={t("tenantDashboard.users")}
-                  onPress={() => router.push("/team")}
-                />
-                <QuickMenuCard
-                  icon="apps"
-                  label={t("tenantDashboard.allMenu")}
-                  onPress={() => console.log("Navigate to All Menu")}
-                />
-              </View>
-            </View>
+            <QuickMenuSection
+              title={t("tenantDashboard.quickMenu")}
+              items={[
+                {
+                  icon: "wifi",
+                  label: t("tenantDashboard.services"),
+                  onPress: () => router.push("/service"),
+                },
+                {
+                  icon: "people",
+                  label: t("tenantDashboard.customers"),
+                  onPress: () => router.push("/customer"),
+                },
+                {
+                  icon: "pricetag",
+                  label: t("tenantDashboard.packages"),
+                  onPress: () => router.push("/package"),
+                },
+                {
+                  icon: "document-text",
+                  label: t("tenantDashboard.tickets"),
+                  onPress: () => router.push("/ticket"),
+                },
+                {
+                  icon: "person",
+                  label: t("tenantDashboard.users"),
+                  onPress: () => router.push("/team"),
+                },
+                {
+                  icon: "apps",
+                  label: t("tenantDashboard.allMenu"),
+                  onPress: () => router.push("/all-menu"),
+                },
+              ]}
+            />
 
             {/* Recent Tickets Section */}
             {data.recent_tickets.length > 0 && (

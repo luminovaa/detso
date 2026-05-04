@@ -7,7 +7,6 @@ import { router } from 'expo-router';
 import { Text } from '@/src/components/global/text';
 import { Badge } from '@/src/components/global/badge';
 import { Button } from '@/src/components/global/button';
-import { Card } from '@/src/components/global/card';
 import { CompleteScheduleSection } from './complete-schedule-section';
 
 import { useT, useLanguageStore } from '@/src/features/i18n/store';
@@ -27,29 +26,6 @@ interface ScheduleDetailSheetProps {
   onDismiss?: () => void;
   onEdit?: (schedule: Schedule) => void;
   onSuccess?: () => void;
-}
-
-interface InfoRowProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  label?: string;
-  value: string;
-  compact?: boolean;
-}
-
-function InfoRow({ icon, label, value, compact }: InfoRowProps) {
-  return (
-    <View className={compact ? 'flex-row items-center gap-2' : 'gap-1'}>
-      <View className="flex-row items-center gap-2">
-        <Ionicons name={icon} size={compact ? 14 : 16} color={COLORS.neutral.gray[500]} />
-        {label && !compact && (
-          <Text className="text-xs text-muted-foreground">{label}</Text>
-        )}
-      </View>
-      <Text className={compact ? 'text-xs text-muted-foreground flex-1' : 'text-sm text-foreground ml-6'}>
-        {value}
-      </Text>
-    </View>
-  );
 }
 
 function ScheduleDetailSheetInner(
@@ -88,8 +64,8 @@ function ScheduleDetailSheetInner(
   const isAdminOrOwner = user?.role === 'TENANT_OWNER' || user?.role === 'TENANT_ADMIN';
   
   const canComplete = schedule?.status === 'SCHEDULED' && (isAdminOrOwner || isOwnSchedule);
-  const canEdit = isAdminOrOwner;
-  const canDelete = isAdminOrOwner;
+  const canEdit = isAdminOrOwner && schedule?.status === 'SCHEDULED';
+  const canDelete = isAdminOrOwner && schedule?.status === 'SCHEDULED';
 
   const handleComplete = useCallback(async () => {
     if (!schedule) return;
@@ -235,60 +211,84 @@ function ScheduleDetailSheetInner(
           <Text className="text-muted-foreground">{t('common.loading')}</Text>
         </View>
       ) : (
-        <BottomSheetScrollView className="flex-1">
-          {/* Header */}
-          <View className="px-4 py-3 border-b border-border">
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
-                <Ionicons name="calendar" size={20} color={COLORS.brand.primary} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-semibold">
+        <BottomSheetScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+          {/* Header - Title + Status */}
+          <View className="px-5 pt-4 pb-3">
+            <View className="flex-row items-start justify-between">
+              <View className="flex-1 mr-3">
+                <Text weight="bold" className="text-xl text-foreground">
                   {schedule.title || t('schedule.untitled')}
                 </Text>
-                <Badge colorVariant={getScheduleStatusVariant(schedule.status)}>
-                  {schedule.status}
-                </Badge>
+              </View>
+              <Badge colorVariant={getScheduleStatusVariant(schedule.status)}>
+                {schedule.status}
+              </Badge>
+            </View>
+          </View>
+
+          {/* Time Card - Most Important Info */}
+          <View className="px-5 pb-4">
+            <View className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
+              <View className="flex-row items-center gap-3">
+                <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
+                  <Ionicons name="time" size={20} color={COLORS.brand.primary} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs text-muted-foreground">{t('schedule.timeLabel')}</Text>
+                  <Text weight="semibold" className="text-sm text-foreground mt-0.5">
+                    {formatScheduleTime(schedule.start_time, schedule.end_time, locale as 'en' | 'id')}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* Schedule Info */}
-          <View className="px-4 py-4 gap-3">
+          {/* Info Section */}
+          <View className="px-5 gap-4">
             {/* Technician */}
-            <InfoRow
-              icon="person"
-              label={t('schedule.technicianLabel')}
-              value={schedule.technician?.full_name || schedule.technician?.username || '-'}
-            />
-
-            {/* Time */}
-            <InfoRow
-              icon="time"
-              label={t('schedule.timeLabel')}
-              value={formatScheduleTime(schedule.start_time, schedule.end_time, locale as 'en' | 'id')}
-            />
+            <View className="flex-row items-center gap-3">
+              <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 items-center justify-center">
+                <Ionicons name="person" size={16} color="#3B82F6" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs text-muted-foreground">{t('schedule.technicianLabel')}</Text>
+                <Text weight="medium" className="text-sm text-foreground">
+                  {schedule.technician?.full_name || schedule.technician?.username || '-'}
+                </Text>
+              </View>
+            </View>
 
             {/* Notes */}
             {schedule.notes && (
-              <InfoRow
-                icon="document-text"
-                label={t('schedule.notesLabel')}
-                value={schedule.notes}
-              />
+              <View className="flex-row items-start gap-3">
+                <View className="w-9 h-9 rounded-full bg-amber-50 dark:bg-amber-900/30 items-center justify-center">
+                  <Ionicons name="document-text" size={16} color="#F59E0B" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs text-muted-foreground">{t('schedule.notesLabel')}</Text>
+                  <Text className="text-sm text-foreground mt-0.5">
+                    {schedule.notes}
+                  </Text>
+                </View>
+              </View>
             )}
           </View>
 
           {/* Ticket Info (if exists) */}
           {schedule.ticket && (
-            <View className="px-4 py-4 border-t border-border">
-              <Text className="text-sm font-semibold mb-3">
-                {t('schedule.ticketLabel')}
-              </Text>
+            <View className="px-5 mt-5">
+              <View className="flex-row items-center gap-2 mb-3">
+                <Ionicons name="ticket" size={16} color={COLORS.neutral.gray[500]} />
+                <Text weight="semibold" className="text-sm text-foreground">
+                  {t('schedule.ticketLabel')}
+                </Text>
+              </View>
               
               {/* Ticket Card */}
-              <Card className="p-3">
-                <Text className="font-semibold mb-2">{schedule.ticket.title}</Text>
+              <View className="bg-muted/30 border border-border/50 rounded-2xl p-4">
+                <Text weight="semibold" className="text-sm text-foreground mb-2">
+                  {schedule.ticket.title}
+                </Text>
                 
                 {/* Badges */}
                 <View className="flex-row gap-2 mb-3">
@@ -306,25 +306,22 @@ function ScheduleDetailSheetInner(
 
                 {/* Customer Info */}
                 {schedule.ticket.customer && (
-                  <View className="gap-2">
-                    <InfoRow
-                      icon="person"
-                      value={schedule.ticket.customer.name}
-                      compact
-                    />
+                  <View className="gap-2 pt-2 border-t border-border/30">
+                    <View className="flex-row items-center gap-2">
+                      <Ionicons name="person-outline" size={14} color={COLORS.neutral.gray[400]} />
+                      <Text className="text-xs text-foreground">{schedule.ticket.customer.name}</Text>
+                    </View>
                     {schedule.ticket.customer.phone && (
-                      <InfoRow
-                        icon="call"
-                        value={schedule.ticket.customer.phone}
-                        compact
-                      />
+                      <View className="flex-row items-center gap-2">
+                        <Ionicons name="call-outline" size={14} color={COLORS.neutral.gray[400]} />
+                        <Text className="text-xs text-muted-foreground">{schedule.ticket.customer.phone}</Text>
+                      </View>
                     )}
                     {schedule.ticket.service?.address && (
-                      <InfoRow
-                        icon="location"
-                        value={schedule.ticket.service.address}
-                        compact
-                      />
+                      <View className="flex-row items-center gap-2">
+                        <Ionicons name="location-outline" size={14} color={COLORS.neutral.gray[400]} />
+                        <Text className="text-xs text-muted-foreground" numberOfLines={2}>{schedule.ticket.service.address}</Text>
+                      </View>
                     )}
                   </View>
                 )}
@@ -340,39 +337,43 @@ function ScheduleDetailSheetInner(
                 >
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="eye-outline" size={16} color={COLORS.brand.primary} />
-                    <Text className="text-primary">{t('schedule.viewTicketBtn')}</Text>
+                    <Text className="text-primary text-sm">{t('schedule.viewTicketBtn')}</Text>
                   </View>
                 </Button>
-              </Card>
+              </View>
             </View>
           )}
 
           {/* Complete Section (if SCHEDULED & has access) */}
           {canComplete && (
-            <CompleteScheduleSection
-              schedule={schedule}
-              photo={photo}
-              setPhoto={setPhoto}
-              notes={notes}
-              setNotes={setNotes}
-              onComplete={handleComplete}
-              isLoading={isCompleting}
-            />
+            <View className="mt-4">
+              <CompleteScheduleSection
+                schedule={schedule}
+                photo={photo}
+                setPhoto={setPhoto}
+                notes={notes}
+                setNotes={setNotes}
+                onComplete={handleComplete}
+                isLoading={isCompleting}
+              />
+            </View>
           )}
 
-          {/* Action Buttons (Admin/Owner only) */}
-          {canEdit && (
-            <View className="px-4 py-4 border-t border-border flex-row gap-3 mb-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onPress={handleEdit}
-              >
-                <View className="flex-row items-center gap-2">
-                  <Ionicons name="pencil" size={16} color={COLORS.brand.primary} />
-                  <Text className="text-primary">{t('schedule.editBtn')}</Text>
-                </View>
-              </Button>
+          {/* Action Buttons (Admin/Owner only, SCHEDULED status) */}
+          {(canEdit || canDelete) && (
+            <View className="px-5 pt-4 mt-2 border-t border-border/50 flex-row gap-3">
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onPress={handleEdit}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="pencil" size={16} color={COLORS.brand.primary} />
+                    <Text className="text-primary text-sm">{t('schedule.editBtn')}</Text>
+                  </View>
+                </Button>
+              )}
 
               {canDelete && (
                 <Button
@@ -383,7 +384,7 @@ function ScheduleDetailSheetInner(
                 >
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="trash" size={16} color="white" />
-                    <Text className="text-white">{t('schedule.deleteBtn')}</Text>
+                    <Text className="text-white text-sm">{t('schedule.deleteBtn')}</Text>
                   </View>
                 </Button>
               )}

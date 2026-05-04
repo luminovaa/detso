@@ -271,7 +271,9 @@
     "photoCustomer": "Foto dengan Pelanggan",
     "photoDevice": "Foto Alat",
     "photoHint": "Ketuk untuk ambil foto atau pilih dari galeri",
-    "photoRequired": "Foto ini wajib diisi"
+    "photoRequired": "Foto ini wajib diisi",
+    "odpLabel": "Hubungkan ke ODP",
+    "odpPlaceholder": "Pilih ODP (opsional)"
   },
 
   "_comment_service": "Service Connection Management Screens (app/service/)",
@@ -313,7 +315,9 @@
     "statusLabel": "Status",
     "statusActive": "Aktif",
     "statusInactive": "Nonaktif",
-    "statusSuspended": "Ditangguhkan"
+    "statusSuspended": "Ditangguhkan",
+    "odpLabel": "Hubungkan ke ODP",
+    "odpPlaceholder": "Pilih ODP (opsional)"
   },
 
   "_comment_map": "Map Location Picker Component (src/components/global/map-picker.tsx)",
@@ -844,5 +848,53 @@
     "server": "Terjadi kesalahan pada server. Coba lagi nanti.",
     "unknown": "Terjadi kesalahan yang tidak terduga.",
     "unexpected": "Terjadi kesalahan yang tidak terduga."
+  },
+
+  "_comment_allMenu": "All Menu Screen (app/all-menu/index.tsx)",
+  "allMenu": {
+    "title": "Semua Menu",
+    "mainFeatures": "Fitur Utama",
+    "settingsAccount": "Pengaturan & Akun",
+    "services": "Layanan",
+    "customers": "Pelanggan",
+    "packages": "Paket",
+    "tickets": "Tiket",
+    "odp": "ODP",
+    "team": "Tim",
+    "editProfile": "Edit Profil",
+    "changePassword": "Ubah Password",
+    "editCompany": "Edit Perusahaan",
+    "helpCenter": "Pusat Bantuan"
+  },
+
+  "odp": {
+    "title": "Kelola ODP",
+    "emptyTitle": "Belum Ada ODP",
+    "emptyDesc": "Belum ada ODP yang terdaftar.",
+    "searchPlaceholder": "Cari ODP...",
+    "createTitle": "Tambah ODP",
+    "editTitle": "Edit ODP",
+    "nameLabel": "Nama ODP",
+    "namePlaceholder": "Contoh: ODP Cluster A",
+    "nameRequired": "Nama ODP wajib diisi",
+    "addressLabel": "Alamat",
+    "addressPlaceholder": "Alamat lokasi ODP",
+    "slotLabel": "Kapasitas Slot",
+    "slotPlaceholder": "Contoh: 8",
+    "parentServerLabel": "Server Induk",
+    "parentServerPlaceholder": "Pilih server (opsional)",
+    "notesLabel": "Catatan",
+    "notesPlaceholder": "Catatan tambahan (opsional)",
+    "saveBtn": "Simpan ODP",
+    "saving": "Menyimpan...",
+    "deleteConfirm": "Hapus ODP",
+    "deleteMessage": "Apakah Anda yakin ingin menghapus ODP ini? Semua koneksi akan dihapus.",
+    "deleteBtn": "Hapus",
+    "connectedServices": "Layanan Terhubung",
+    "noConnections": "Belum ada layanan yang terhubung ke ODP ini.",
+    "parentServer": "Server Induk",
+    "slotUsage": "Penggunaan Slot",
+    "detail": "Detail ODP",
+    "refresh": "Muat Ulang"
   }
 }

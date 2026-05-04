@@ -16,7 +16,8 @@ export const createServiceConnectionSchema = z.object({
         message: 'Format MAC address tidak valid'
     }).optional().or(z.literal('')),
     notes: z.string().optional(),
-    photos: z.array(photoSchema).optional()
+    photos: z.array(photoSchema).optional(),
+    odp_id: z.string().optional().or(z.literal('')),
 });
 
 export const updateServiceConnectionSchema = z.object({
@@ -31,7 +32,10 @@ export const updateServiceConnectionSchema = z.object({
     })
     .optional()
     .or(z.literal('')),
+  lat: z.string().optional(),
+  long: z.string().optional(),
   notes: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
-  photos: z.array(photoSchema).optional()
+  photos: z.array(photoSchema).optional(),
+  odp_id: z.string().optional().or(z.literal('')),
 });

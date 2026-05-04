@@ -101,6 +101,7 @@ export type ServiceConnection = {
   notes: string | null;
   customer: CustomerInfo;
   package_details: {
+    id?: string;
     name: string;
     speed: string;
     price: number;

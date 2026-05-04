@@ -20,6 +20,7 @@ import { createServiceConnectionSchema, CreateServiceConnectionInput } from "@/s
 import { useCreateServiceConnection } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
+import { networkService } from "@/src/features/network/service";
 
 export default function ServiceCreateScreen() {
   const { t } = useT();
@@ -27,6 +28,7 @@ export default function ServiceCreateScreen() {
   const isSubmitting = createService.isPending;
   const [showMap, setShowMap] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [location, setLocation] = useState<{ lat: string; lng: string } | null>(null);
 
   const { control, handleSubmit, setValue, watch } = useForm<CreateServiceConnectionInput>({
     resolver: zodResolver(createServiceConnectionSchema) as any,
@@ -75,6 +77,24 @@ export default function ServiceCreateScreen() {
     [],
   );
 
+  const fetchOdpNodes = useCallback(
+    async (search: string, _page: number) => {
+      const res = await networkService.getNodes({ type: 'ODP' });
+      const nodes = res?.data?.nodes || [];
+      const filtered = search
+        ? nodes.filter((n: any) => n.name.toLowerCase().includes(search.toLowerCase()))
+        : nodes;
+      return {
+        data: filtered.map((n: any) => ({
+          label: `${n.name}${n.address ? ` • ${n.address}` : ''}${n.slot ? ` (${n.used_slot || 0}/${n.slot})` : ''}`,
+          value: n.id,
+        })),
+        hasNextPage: false,
+      };
+    },
+    [],
+  );
+
   const onSubmit = (data: CreateServiceConnectionInput) => {
     const formData = new FormData();
     formData.append("customer_id", data.customer_id);
@@ -82,9 +102,14 @@ export default function ServiceCreateScreen() {
     formData.append("address", data.address);
     formData.append("package_name", data.package_name || selectedPackage?.name || "");
     formData.append("package_speed", data.package_speed || selectedPackage?.speed || "");
+    if (location) {
+      formData.append("lat", location.lat);
+      formData.append("long", location.lng);
+    }
     if (data.ip_address) formData.append("ip_address", data.ip_address);
     if (data.mac_address) formData.append("mac_address", data.mac_address);
     if (data.notes) formData.append("notes", data.notes);
+    if (data.odp_id) formData.append("odp_id", data.odp_id);
 
     createService.mutate(formData, {
       onSuccess: () => router.back(),
@@ -127,18 +152,9 @@ export default function ServiceCreateScreen() {
               }}
             />
 
-            {/* Installation Address */}
-            <FormInput
-              control={control}
-              name="address"
-              label={t("service.addressLabel")}
-              placeholder={t("service.addressPlaceholder")}
-              isTextarea
-            />
-
-            {/* Map Picker */}
+            {/* Map Picker (sets address automatically) */}
             <View>
-              <Label>{t("service.selectOnMap")}</Label>
+              <Label>{t("service.addressLabel")}</Label>
               <TouchableOpacity
                 onPress={() => setShowMap(true)}
                 activeOpacity={0.7}
@@ -161,6 +177,16 @@ export default function ServiceCreateScreen() {
                 </View>
               </TouchableOpacity>
             </View>
+
+            {/* ODP Selector (Optional) */}
+            <AsyncSelect
+              control={control}
+              name="odp_id"
+              label={t("service.odpLabel")}
+              placeholder={t("service.odpPlaceholder")}
+              fetchOptions={fetchOdpNodes}
+              highlightSearch
+            />
 
             {/* Technical Info */}
             <FormInput
@@ -206,6 +232,7 @@ export default function ServiceCreateScreen() {
         visible={showMap}
         onClose={() => setShowMap(false)}
         onLocationSelected={(lat, lng, addressText) => {
+          setLocation({ lat: lat.toString(), lng: lng.toString() });
           if (addressText) {
             setValue("address", addressText);
           }

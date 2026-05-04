@@ -41,7 +41,8 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
         ip_address,
         mac_address,
         notes,
-        photos
+        photos,
+        odp_id,
     } = validationResult.data;
 
     const servicePhotoFiles = files.photos;
@@ -136,7 +137,36 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
                 }
             });
 
-            // 5. Upload Photos (Sama seperti sebelumnya)
+            // 5. Create DROP_CABLE link to ODP if odp_id provided
+            if (odp_id) {
+                const odpNode = await tx.detso_Network_Node.findFirst({
+                    where: { id: odp_id, tenant_id, deleted_at: null },
+                });
+                if (!odpNode) {
+                    throw new NotFoundError('ODP tidak ditemukan');
+                }
+
+                // Check slot capacity
+                if (odpNode.slot) {
+                    const currentLinks = await tx.detso_Network_Link.count({
+                        where: { from_node_id: odp_id, to_service_id: { not: null } },
+                    });
+                    if (currentLinks >= odpNode.slot) {
+                        throw new ValidationError('Slot ODP sudah penuh');
+                    }
+                }
+
+                await tx.detso_Network_Link.create({
+                    data: {
+                        tenant_id,
+                        from_node_id: odp_id,
+                        to_service_id: serviceConnection.id,
+                        type: 'DROP_CABLE',
+                    },
+                });
+            }
+
+            // 6. Upload Photos (Sama seperti sebelumnya)
             if (photos && servicePhotoFiles) {
                 await Promise.all(photos.map(async (photo, index) => {
                     const file = servicePhotoFiles[index];

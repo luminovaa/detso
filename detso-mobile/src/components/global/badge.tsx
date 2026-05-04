@@ -34,7 +34,7 @@ function Badge({
         {...props}
       >
         {children ? (
-          typeof children === "string" ? (
+          typeof children === "string" || typeof children === "number" || Array.isArray(children) ? (
             <Text
               weight="semibold"
               className={cn("text-xs", getBadgeTextClass(colorVariant))}
@@ -87,7 +87,7 @@ function Badge({
     >
       {/* Memastikan children (teks) selalu dibungkus komponen <Text> */}
       {children ? (
-        typeof children === "string" ? (
+        typeof children === "string" || typeof children === "number" || Array.isArray(children) ? (
           <Text
             weight="semibold"
             className={cn("text-xs", textVariants[variant])}
