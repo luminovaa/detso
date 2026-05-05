@@ -712,6 +712,11 @@
     "linkUpdateFailed": "Gagal memperbarui jalur",
     "linkDeleteSuccess": "Koneksi berhasil dihapus",
     "linkDeleteFailed": "Gagal menghapus koneksi",
+    "waypoint": {
+      "hint": "Tap di peta untuk menambah titik jalur. Gunakan 'Hapus terakhir' untuk membatalkan.",
+      "saveSuccess": "Jalur berhasil disimpan",
+      "saveFailed": "Gagal menyimpan jalur"
+    },
     "mapScreen": {
       "loading": "Memuat peta jaringan...",
       "preparing": "Menyiapkan peta jaringan...",
@@ -722,25 +727,7 @@
       "locationNotSet": "Lokasi ISP Belum Diatur",
       "locationNotSetDesc": "Atur lokasi ISP Anda terlebih dahulu untuk memulai peta jaringan. Server pertama akan otomatis dibuat di lokasi tersebut.",
       "setLocation": "Atur Lokasi ISP"
-    },
-    "editLine": "Edit Jalur Kabel",
-    "editWaypoints": "Edit Waypoints",
-    "editingWaypoints": "Mengedit Waypoints",
-    "saveChanges": "Simpan Perubahan",
-    "deleteLine": "Hapus Jalur",
-    "deleteLineConfirm": "Hapus Jalur",
-    "deleteLineMessage": "Yakin ingin menghapus koneksi ini?",
-    "from": "Dari",
-    "to": "Ke",
-    "linkType": "Tipe",
-    "dragInstruction": "Drag titik biru untuk menggeser jalur kabel",
-    "addInstruction": "Tap titik abu-abu untuk menambah waypoint",
-    "deleteInstruction": "Long-press titik biru untuk menghapus waypoint",
-    "waypointCount": "Waypoints",
-    "maxReached": "Maks",
-    "waypointAdded": "Waypoint ditambahkan",
-    "waypointDeleted": "Waypoint dihapus",
-    "maxWaypointsReached": "Maksimal 20 waypoints per jalur"
+    }
   },
 
   "_comment_editTenant": "Edit Tenant Screen (app/settings/edit-tenant/index.tsx)",
