@@ -23,7 +23,8 @@ import { NodeDetailSheet } from '@/src/components/screens/network/node-detail-sh
 import { ServiceDetailSheet } from '@/src/components/screens/network/service-detail-sheet';
 import { AddNodeSheet } from '@/src/components/screens/network/add-node-sheet';
 import { ConnectServiceSheet } from '@/src/components/screens/network/connect-service-sheet';
-import { EditLineSheet } from '@/src/components/screens/network/edit-line-sheet';
+import { WaypointEditor } from '@/src/components/screens/network/waypoint-editor';
+import { WaypointToolbar } from '@/src/components/screens/network/waypoint-toolbar';
 
 import { useNetworkTopology, useCreateNode } from '@/src/features/network/hooks';
 import { networkService } from '@/src/features/network/service';
@@ -91,22 +92,22 @@ export default function NetworkMap() {
     mode,
     selectedNode,
     selectedService,
-    selectedLinkId,
+    draftWaypoints,
     selectNode,
     selectService,
-    selectLink,
     clearSelection,
     startAddNode,
     placeNode,
     cancelAdd,
+    startEditWaypoints,
+    addWaypoint,
   } = useNetworkMapStore();
 
   // ─── Sheet Refs ────────────────────────────────────────────────
-  const nodeDetailRef = useRef<BottomSheetModal>(null);
-  const serviceDetailRef = useRef<BottomSheetModal>(null);
-  const addNodeRef = useRef<BottomSheetModal>(null);
-  const connectServiceRef = useRef<BottomSheetModal>(null);
-  const editLineRef = useRef<BottomSheetModal>(null);
+  const nodeDetailRef = useRef<BottomSheetModal | null>(null);
+  const serviceDetailRef = useRef<BottomSheetModal | null>(null);
+  const addNodeRef = useRef<BottomSheetModal | null>(null);
+  const connectServiceRef = useRef<BottomSheetModal | null>(null);
 
   // ─── Local State ───────────────────────────────────────────────
   const [editingNode, setEditingNode] = useState<NetworkNode | null>(null);
@@ -121,12 +122,15 @@ export default function NetworkMap() {
         // Place node at tapped location
         placeNode(lat, lng);
         addNodeRef.current?.present();
+      } else if (mode === 'edit_waypoints') {
+        // Tap on map = add new waypoint at tapped position
+        addWaypoint(draftWaypoints.length, [lng, lat]);
       } else {
         // Clear selection when tapping empty area
         clearSelection();
       }
     },
-    [mode, placeNode, clearSelection]
+    [mode, placeNode, clearSelection, addWaypoint, draftWaypoints.length]
   );
 
   const handleNodePress = useCallback(
@@ -145,12 +149,21 @@ export default function NetworkMap() {
     [selectService]
   );
 
-  const handleLinePress = useCallback(
+  const handleLinkPress = useCallback(
     (linkId: string) => {
-      selectLink(linkId);
-      editLineRef.current?.present();
+      if (!topology) return;
+      const link = topology.links.find((l: any) => l.id === linkId);
+      if (!link) return;
+
+      // Convert existing waypoints from [lat, lng] to Mapbox [lng, lat]
+      // If no waypoints, start with empty array (straight line)
+      const currentWaypoints: [number, number][] = link.waypoints
+        ? link.waypoints.map((wp: number[]) => [wp[1], wp[0]] as [number, number])
+        : [];
+
+      startEditWaypoints(linkId, currentWaypoints);
     },
-    [selectLink]
+    [topology, startEditWaypoints]
   );
 
   const handleLocateMe = useCallback(
@@ -290,14 +303,23 @@ export default function NetworkMap() {
         onMapPress={handleMapPress}
         onNodePress={handleNodePress}
         onServicePress={handleServicePress}
-        onLinePress={handleLinePress}
-      />
+        onLinkPress={handleLinkPress}
+      >
+        {mode === 'edit_waypoints' && <WaypointEditor topology={topology} />}
+      </NetworkMapView>
 
       {/* Overlays */}
-      <MapFilterBar />
-      <AddNodeBanner />
-      <MapLegend />
-      <MapControls onLocateMe={handleLocateMe} onAddNode={handleAddNode} />
+      {mode !== 'edit_waypoints' && (
+        <>
+          <MapFilterBar />
+          <AddNodeBanner />
+          <MapLegend />
+          <MapControls onLocateMe={handleLocateMe} onAddNode={handleAddNode} />
+        </>
+      )}
+
+      {/* Waypoint Editing Toolbar */}
+      <WaypointToolbar />
 
       {/* Bottom Sheets */}
       <NodeDetailSheet
@@ -327,11 +349,6 @@ export default function NetworkMap() {
         topology={topology}
         allServices={allServices}
         onDismiss={handleDismissConnect}
-      />
-
-      <EditLineSheet
-        sheetRef={editLineRef as React.RefObject<BottomSheetModal>}
-        topology={topology}
       />
 
       {/* Add Node Type Selector Dialog */}

@@ -92,4 +92,4 @@ export interface EditLinkInput {
 
 export type MapFilterType = 'ALL' | 'SERVER' | 'ODP' | 'ONT';
 
-export type MapMode = 'view' | 'add_node' | 'connect' | 'edit_line';
+export type MapMode = 'view' | 'add_node' | 'connect' | 'edit_waypoints';

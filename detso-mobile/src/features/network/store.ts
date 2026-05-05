@@ -14,8 +14,9 @@ interface NetworkMapState {
   addNodeType: 'SERVER' | 'ODP' | null;
   placedCoordinate: { lat: number; lng: number } | null;
 
-  // ─── Edit Line State ─────────────────────────────────────────────
-  editingWaypoints: number[][] | null;
+  // ─── Waypoint Editing State ──────────────────────────────────────
+  editingLinkId: string | null;
+  draftWaypoints: [number, number][]; // [[lng, lat], ...] in Mapbox order
 
   // ─── Filter & Style State ────────────────────────────────────────
   filterType: MapFilterType;
@@ -32,12 +33,13 @@ interface NetworkMapState {
   placeNode: (lat: number, lng: number) => void;
   cancelAdd: () => void;
 
-  // Edit line actions
-  startEditLine: (linkId: string, waypoints: number[][] | null) => void;
+  // Waypoint editing actions
+  startEditWaypoints: (linkId: string, currentWaypoints: [number, number][]) => void;
   updateWaypoint: (index: number, coord: [number, number]) => void;
-  insertWaypoint: (index: number, coord: [number, number]) => void;
+  addWaypoint: (index: number, coord: [number, number]) => void;
   removeWaypoint: (index: number) => void;
-  cancelEditLine: () => void;
+  resetWaypoints: () => void;
+  cancelEditWaypoints: () => void;
 
   setFilter: (filter: MapFilterType) => void;
   toggleMapStyle: () => void;
@@ -52,7 +54,8 @@ export const useNetworkMapStore = create<NetworkMapState>((set) => ({
   mode: 'view',
   addNodeType: null,
   placedCoordinate: null,
-  editingWaypoints: null,
+  editingLinkId: null,
+  draftWaypoints: [],
   filterType: 'ALL',
   mapStyle: 'satellite',
 
@@ -75,39 +78,38 @@ export const useNetworkMapStore = create<NetworkMapState>((set) => ({
   cancelAdd: () =>
     set({ mode: 'view', addNodeType: null, placedCoordinate: null }),
 
-  // Edit line
-  startEditLine: (linkId, waypoints) =>
-    set({ 
-      mode: 'edit_line', 
-      selectedLinkId: linkId, 
-      editingWaypoints: waypoints ? [...waypoints] : null,
+  // Waypoint editing
+  startEditWaypoints: (linkId, currentWaypoints) =>
+    set({
+      mode: 'edit_waypoints',
+      editingLinkId: linkId,
+      draftWaypoints: currentWaypoints,
       selectedNode: null,
       selectedService: null,
+      selectedLinkId: null,
     }),
   updateWaypoint: (index, coord) =>
     set((state) => {
-      if (!state.editingWaypoints) return state;
-      const updated = [...state.editingWaypoints];
+      const updated = [...state.draftWaypoints];
       updated[index] = coord;
-      return { editingWaypoints: updated };
+      return { draftWaypoints: updated };
     }),
-  insertWaypoint: (index, coord) =>
+  addWaypoint: (index, coord) =>
     set((state) => {
-      const waypoints = state.editingWaypoints || [];
-      if (waypoints.length >= 20) return state; // Max 20 waypoints
-      const updated = [...waypoints];
+      const updated = [...state.draftWaypoints];
       updated.splice(index, 0, coord);
-      return { editingWaypoints: updated };
+      return { draftWaypoints: updated };
     }),
   removeWaypoint: (index) =>
     set((state) => {
-      if (!state.editingWaypoints) return state;
-      const updated = [...state.editingWaypoints];
+      const updated = [...state.draftWaypoints];
       updated.splice(index, 1);
-      return { editingWaypoints: updated };
+      return { draftWaypoints: updated };
     }),
-  cancelEditLine: () =>
-    set({ mode: 'view', selectedLinkId: null, editingWaypoints: null }),
+  resetWaypoints: () =>
+    set({ draftWaypoints: [] }),
+  cancelEditWaypoints: () =>
+    set({ mode: 'view', editingLinkId: null, draftWaypoints: [] }),
 
   // Filter & Style
   setFilter: (filter) => set({ filterType: filter }),
@@ -123,7 +125,8 @@ export const useNetworkMapStore = create<NetworkMapState>((set) => ({
       mode: 'view',
       addNodeType: null,
       placedCoordinate: null,
-      editingWaypoints: null,
+      editingLinkId: null,
+      draftWaypoints: [],
       filterType: 'ALL',
     }),
 }));

@@ -82,9 +82,10 @@ export function getLinkCoordinates(
 
   if (!toCoord) return null;
 
-  // If waypoints exist, use them (convert from [lat, lng] to [lng, lat])
+  // If waypoints exist, build full path: [from] → waypoints → [to]
   if (link.waypoints && link.waypoints.length > 0) {
-    return link.waypoints.map(([lat, lng]) => [lng, lat] as [number, number]);
+    const waypointCoords = link.waypoints.map(([lat, lng]) => [lng, lat] as [number, number]);
+    return [fromCoord, ...waypointCoords, toCoord];
   }
 
   // Otherwise straight line

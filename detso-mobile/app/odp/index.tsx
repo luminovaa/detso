@@ -84,7 +84,7 @@ export default function OdpListScreen() {
         activeOpacity={0.7}
         onPress={() => router.push(`/odp/${item.id}`)}
         onLongPress={() => handleDelete(item)}
-        className="mx-4 mb-3 p-4 bg-card rounded-2xl border border-border/50"
+        className="mb-3 p-4 bg-card rounded-2xl border border-border/50"
         style={{ opacity: deletingId === item.id ? 0.5 : 1 }}
       >
         <View className="flex-row items-center justify-between">
