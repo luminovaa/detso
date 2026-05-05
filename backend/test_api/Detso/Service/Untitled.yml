@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: ""
+  url: "{{BASE_URL}}/service-connection"
   auth: inherit
 
 settings:

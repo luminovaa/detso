@@ -68,8 +68,8 @@ export function useCreateServiceConnection() {
     mutationFn: (data: FormData) => connectionService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: serviceKeys.lists() });
-      // Also refresh customer detail since service count changes
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
+      qc.invalidateQueries({ queryKey: customerKeys.details() });
       eventBus.emit(EVENTS.SERVICE.CREATED, { serviceId: res?.data?.id ?? '' });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'service_created' });
       showToast.success(t('common.success'), t('service.createSuccess'));
@@ -92,6 +92,7 @@ export function useUpdateServiceConnection() {
       qc.invalidateQueries({ queryKey: serviceKeys.detail(id) });
       qc.invalidateQueries({ queryKey: serviceKeys.lists() });
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
+      qc.invalidateQueries({ queryKey: customerKeys.details() });
       eventBus.emit(EVENTS.SERVICE.UPDATED, { serviceId: id });
       showToast.success(t('common.success'), t('service.updateSuccess'));
     },
@@ -112,6 +113,7 @@ export function useDeleteServiceConnection() {
       qc.removeQueries({ queryKey: serviceKeys.detail(id) });
       qc.invalidateQueries({ queryKey: serviceKeys.lists() });
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
+      qc.invalidateQueries({ queryKey: customerKeys.details() });
       eventBus.emit(EVENTS.SERVICE.DELETED, { serviceId: id });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'service_deleted' });
       showToast.success(t('common.success'), t('service.deleteSuccess'));

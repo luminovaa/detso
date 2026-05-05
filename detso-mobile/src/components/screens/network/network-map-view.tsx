@@ -12,6 +12,7 @@ import {
   getCenter,
   getZoomForPoints,
 } from '@/src/lib/map-utils';
+import { WaypointMarkers } from './waypoint-markers';
 import { COLORS } from '@/src/lib/colors';
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
@@ -22,6 +23,7 @@ interface NetworkMapViewProps {
   onMapPress: (lat: number, lng: number) => void;
   onNodePress: (node: NetworkNode) => void;
   onServicePress: (service: NetworkService) => void;
+  onLinePress?: (linkId: string) => void;
 }
 
 export function NetworkMapView({
@@ -30,8 +32,9 @@ export function NetworkMapView({
   onMapPress,
   onNodePress,
   onServicePress,
+  onLinePress,
 }: NetworkMapViewProps) {
-  const { filterType, mode, mapStyle } = useNetworkMapStore();
+  const { filterType, mode, mapStyle, selectedLinkId } = useNetworkMapStore();
 
   const styleURL = mapStyle === 'satellite'
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
@@ -95,6 +98,16 @@ export function NetworkMapView({
     [topology.services, onServicePress]
   );
 
+  const handleLinePress = useCallback(
+    (event: any) => {
+      const feature = event?.features?.[0];
+      if (feature?.properties?.id && onLinePress) {
+        onLinePress(feature.properties.id);
+      }
+    },
+    [onLinePress]
+  );
+
   return (
     <View style={StyleSheet.absoluteFill}>
       <Mapbox.MapView
@@ -114,37 +127,66 @@ export function NetworkMapView({
         />
 
         {/* ─── Lines Layer ─────────────────────────────────────────── */}
-        {showLines && (
-          <Mapbox.ShapeSource id="links-source" shape={linksGeoJSON as any}>
-            {/* Fiber lines (teal, thicker) */}
-            <Mapbox.LineLayer
-              id="fiber-lines"
-              filter={['==', ['get', 'type'], 'FIBER']}
-              style={{
-                lineColor: COLORS.network.fiberLine,
-                lineWidth: 3,
-                lineOpacity: 0.85,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            {/* Drop cable lines (cyan, thinner) */}
-            <Mapbox.LineLayer
-              id="drop-lines"
-              filter={['==', ['get', 'type'], 'DROP_CABLE']}
-              style={{
-                lineColor: COLORS.network.dropCable,
-                lineWidth: 2,
-                lineOpacity: 0.8,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
+        {showLines ? (
+          <Mapbox.ShapeSource 
+            id="links-source" 
+            shape={linksGeoJSON as any}
+            onPress={handleLinePress}
+            hitbox={{ width: 20, height: 20 }}
+          >
+            <>
+              {/* Fiber lines (teal, thicker) */}
+              <Mapbox.LineLayer
+                id="fiber-lines"
+                filter={['all', 
+                  ['==', ['get', 'type'], 'FIBER'],
+                  ['!=', ['get', 'id'], selectedLinkId || '___none___']
+                ] as any}
+                style={{
+                  lineColor: COLORS.network.fiberLine,
+                  lineWidth: 3,
+                  lineOpacity: 0.85,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+              {/* Drop cable lines (cyan, thinner) */}
+              <Mapbox.LineLayer
+                id="drop-lines"
+                filter={['all',
+                  ['==', ['get', 'type'], 'DROP_CABLE'],
+                  ['!=', ['get', 'id'], selectedLinkId || '___none___']
+                ] as any}
+                style={{
+                  lineColor: COLORS.network.dropCable,
+                  lineWidth: 2,
+                  lineOpacity: 0.8,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+              {/* Selected line (orange highlight) */}
+              {selectedLinkId && (
+                <>
+                  <Mapbox.LineLayer
+                    id="selected-line"
+                    filter={['==', ['get', 'id'], selectedLinkId] as any}
+                    style={{
+                      lineColor: '#f97316', // orange-500
+                      lineWidth: 5,
+                      lineOpacity: 1,
+                      lineCap: 'round',
+                      lineJoin: 'round',
+                    }}
+                  />
+                </>
+              )}
+            </>
           </Mapbox.ShapeSource>
-        )}
+        ) : null}
 
         {/* ─── Service/ONT Markers ─────────────────────────────────── */}
-        {filteredServices.length > 0 && (
+        {filteredServices.length > 0 ? (
           <Mapbox.ShapeSource
             id="services-source"
             shape={servicesGeoJSON as any}
@@ -185,10 +227,10 @@ export function NetworkMapView({
               }}
             />
           </Mapbox.ShapeSource>
-        )}
+        ) : null}
 
         {/* ─── Node Markers (Server + ODP) ─────────────────────────── */}
-        {filteredNodes.length > 0 && (
+        {filteredNodes.length > 0 ? (
           <Mapbox.ShapeSource
             id="nodes-source"
             shape={nodesGeoJSON as any}
@@ -218,10 +260,10 @@ export function NetworkMapView({
               }}
             />
           </Mapbox.ShapeSource>
-        )}
+        ) : null}
 
         {/* ─── Node Labels ─────────────────────────────────────────── */}
-        {filteredNodes.length > 0 && (
+        {filteredNodes.length > 0 ? (
           <Mapbox.ShapeSource id="node-labels-source" shape={nodesGeoJSON as any}>
             <Mapbox.SymbolLayer
               id="node-labels"
@@ -238,10 +280,13 @@ export function NetworkMapView({
               }}
             />
           </Mapbox.ShapeSource>
-        )}
+        ) : null}
 
         {/* User location puck */}
         <Mapbox.LocationPuck puckBearingEnabled puckBearing="heading" />
+
+        {/* Waypoint Markers (only in edit_line mode) */}
+        {mode === 'edit_line' && <WaypointMarkers topology={topology} />}
       </Mapbox.MapView>
     </View>
   );

@@ -722,7 +722,25 @@
       "locationNotSet": "ISP Location Not Set",
       "locationNotSetDesc": "Set your ISP location first to start the network map. The first server will be automatically created at that location.",
       "setLocation": "Set ISP Location"
-    }
+    },
+    "editLine": "Edit Cable Line",
+    "editWaypoints": "Edit Waypoints",
+    "editingWaypoints": "Editing Waypoints",
+    "saveChanges": "Save Changes",
+    "deleteLine": "Delete Line",
+    "deleteLineConfirm": "Delete Line",
+    "deleteLineMessage": "Are you sure you want to delete this connection?",
+    "from": "From",
+    "to": "To",
+    "linkType": "Type",
+    "dragInstruction": "Drag blue dots to adjust the cable path",
+    "addInstruction": "Tap gray dots to add waypoints",
+    "deleteInstruction": "Long-press blue dots to remove waypoints",
+    "waypointCount": "Waypoints",
+    "maxReached": "Max",
+    "waypointAdded": "Waypoint added",
+    "waypointDeleted": "Waypoint removed",
+    "maxWaypointsReached": "Maximum 20 waypoints per line"
   },
 
   "_comment_editTenant": "Edit Tenant Screen (app/settings/edit-tenant/index.tsx)",

@@ -23,6 +23,7 @@ import { NodeDetailSheet } from '@/src/components/screens/network/node-detail-sh
 import { ServiceDetailSheet } from '@/src/components/screens/network/service-detail-sheet';
 import { AddNodeSheet } from '@/src/components/screens/network/add-node-sheet';
 import { ConnectServiceSheet } from '@/src/components/screens/network/connect-service-sheet';
+import { EditLineSheet } from '@/src/components/screens/network/edit-line-sheet';
 
 import { useNetworkTopology, useCreateNode } from '@/src/features/network/hooks';
 import { networkService } from '@/src/features/network/service';
@@ -90,8 +91,10 @@ export default function NetworkMap() {
     mode,
     selectedNode,
     selectedService,
+    selectedLinkId,
     selectNode,
     selectService,
+    selectLink,
     clearSelection,
     startAddNode,
     placeNode,
@@ -99,10 +102,11 @@ export default function NetworkMap() {
   } = useNetworkMapStore();
 
   // ─── Sheet Refs ────────────────────────────────────────────────
-  const nodeDetailRef = useRef<BottomSheetModal | null>(null);
-  const serviceDetailRef = useRef<BottomSheetModal | null>(null);
-  const addNodeRef = useRef<BottomSheetModal | null>(null);
-  const connectServiceRef = useRef<BottomSheetModal | null>(null);
+  const nodeDetailRef = useRef<BottomSheetModal>(null);
+  const serviceDetailRef = useRef<BottomSheetModal>(null);
+  const addNodeRef = useRef<BottomSheetModal>(null);
+  const connectServiceRef = useRef<BottomSheetModal>(null);
+  const editLineRef = useRef<BottomSheetModal>(null);
 
   // ─── Local State ───────────────────────────────────────────────
   const [editingNode, setEditingNode] = useState<NetworkNode | null>(null);
@@ -139,6 +143,14 @@ export default function NetworkMap() {
       serviceDetailRef.current?.present();
     },
     [selectService]
+  );
+
+  const handleLinePress = useCallback(
+    (linkId: string) => {
+      selectLink(linkId);
+      editLineRef.current?.present();
+    },
+    [selectLink]
   );
 
   const handleLocateMe = useCallback(
@@ -278,6 +290,7 @@ export default function NetworkMap() {
         onMapPress={handleMapPress}
         onNodePress={handleNodePress}
         onServicePress={handleServicePress}
+        onLinePress={handleLinePress}
       />
 
       {/* Overlays */}
@@ -314,6 +327,11 @@ export default function NetworkMap() {
         topology={topology}
         allServices={allServices}
         onDismiss={handleDismissConnect}
+      />
+
+      <EditLineSheet
+        sheetRef={editLineRef as React.RefObject<BottomSheetModal>}
+        topology={topology}
       />
 
       {/* Add Node Type Selector Dialog */}

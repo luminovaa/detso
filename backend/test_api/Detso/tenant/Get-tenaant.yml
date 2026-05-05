@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/tenant"
+  url: "{{BASE_URL}}/tenant?search=maryadi"
+  params:
+    - name: search
+      value: maryadi
+      type: query
   auth: inherit
 
 settings:
