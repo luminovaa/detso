@@ -28,6 +28,7 @@ model Detso_Tenant {
   schedules         Detso_Work_Schedule[]
   network_nodes     Detso_Network_Node[]
   network_links     Detso_Network_Link[]
+  mikrotik_routers  Detso_Mikrotik_Router[]
 
   @@index([deleted_at])
   @@map("detso_tenants")
@@ -383,4 +384,89 @@ model Detso_Network_Link {
   @@index([to_node_id])
   @@index([to_service_id])
   @@map("detso_network_links")
+}
+
+// ==========================================
+// MIKROTIK MONITORING MODELS
+// ==========================================
+
+model Detso_Mikrotik_Router {
+  id                String                      @id @default(cuid())
+  tenant_id         String
+  name              String                      // "Router Pusat", "Router Cabang A"
+  host              String                      // IP address or hostname
+  api_port          Int                         @default(8728)
+  api_username      String
+  api_password      String                      // Encrypted with AES-256
+  is_active         Boolean                     @default(true)
+  is_online         Boolean                     @default(false)
+  last_seen_at      DateTime?
+  board_name        String?                     // "RB750Gr3", "CCR1036-12G-4S"
+  routeros_version  String?                     // "7.14"
+  architecture      String?                     // "x86_64", "arm"
+  cpu_model         String?                     // "Intel Xeon", "AMD"
+  cpu_count         Int?                        // Number of CPU cores
+  created_at        DateTime                    @default(now())
+  updated_at        DateTime                    @updatedAt
+  deleted_at        DateTime?
+  
+  tenant            Detso_Tenant                @relation(fields: [tenant_id], references: [id])
+  monitoring_logs   Detso_Mikrotik_Monitoring[]
+  interfaces        Detso_Mikrotik_Interface[]
+  
+  @@index([tenant_id])
+  @@index([is_active])
+  @@index([is_online])
+  @@index([deleted_at])
+  @@index([last_seen_at])
+  @@map("detso_mikrotik_routers")
+}
+
+model Detso_Mikrotik_Monitoring {
+  id                String                 @id @default(cuid())
+  router_id         String
+  cpu_load          Float                  // Percentage (0-100)
+  memory_used       BigInt                 // Bytes
+  memory_total      BigInt                 // Bytes
+  disk_used         BigInt                 // Bytes
+  disk_total        BigInt                 // Bytes
+  uptime            String                 // "15d7h23m45s"
+  active_sessions   Int                    @default(0) // PPPoE active sessions count
+  temperature       Float?                 // Celsius (if hardware supports)
+  voltage           Float?                 // Volts (if hardware supports)
+  recorded_at       DateTime               @default(now())
+  
+  router            Detso_Mikrotik_Router  @relation(fields: [router_id], references: [id], onDelete: Cascade)
+  
+  @@index([router_id, recorded_at])
+  @@index([recorded_at]) // For cleanup queries (delete old data)
+  @@map("detso_mikrotik_monitoring")
+}
+
+model Detso_Mikrotik_Interface {
+  id                String                 @id @default(cuid())
+  router_id         String
+  interface_name    String                 // "ether1", "ether2", "pppoe-out1"
+  interface_type    String                 // "ether", "pppoe", "bridge", "vlan"
+  mac_address       String?                // "00:0C:42:12:34:56"
+  mtu               Int?                   // Maximum Transmission Unit
+  is_running        Boolean                @default(false)
+  is_disabled       Boolean                @default(false)
+  rx_bytes          BigInt                 @default(0) // Total received bytes
+  tx_bytes          BigInt                 @default(0) // Total transmitted bytes
+  rx_packets        BigInt                 @default(0) // Total received packets
+  tx_packets        BigInt                 @default(0) // Total transmitted packets
+  rx_errors         Int                    @default(0)
+  tx_errors         Int                    @default(0)
+  rx_drops          Int                    @default(0)
+  tx_drops          Int                    @default(0)
+  rx_bps            BigInt                 @default(0) // Current RX bits per second
+  tx_bps            BigInt                 @default(0) // Current TX bits per second
+  recorded_at       DateTime               @default(now())
+  
+  router            Detso_Mikrotik_Router  @relation(fields: [router_id], references: [id], onDelete: Cascade)
+  
+  @@index([router_id, interface_name, recorded_at])
+  @@index([recorded_at]) // For cleanup queries
+  @@map("detso_mikrotik_interfaces")
 }
