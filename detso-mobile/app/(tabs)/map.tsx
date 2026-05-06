@@ -34,9 +34,11 @@ import { useAuthStore } from '@/src/features/auth/store';
 import { useTenant } from '@/src/features/tenant/hooks';
 import { Tenant } from '@/src/lib/types';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function NetworkMap() {
   const { t } = useT();
+  const colors = useThemeColor();
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   // ─── Data ──────────────────────────────────────────────────────
@@ -220,7 +222,7 @@ export default function NetworkMap() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text className="text-muted-foreground mt-3">{t('network.mapScreen.loading')}</Text>
       </View>
     );
@@ -230,7 +232,7 @@ export default function NetworkMap() {
   if (autoCreating) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text weight="medium" className="text-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         <Text className="text-muted-foreground mt-1 text-sm">
           {t('network.mapScreen.creatingServer', { name: tenant?.name || 'ISP' })}
@@ -243,7 +245,7 @@ export default function NetworkMap() {
   if (isError) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
-        <Ionicons name="cloud-offline" size={48} color="#ef4444" />
+        <Ionicons name="cloud-offline" size={48} color={colors.error} />
         <Text weight="bold" className="text-foreground mt-3 text-lg">{t('network.mapScreen.loadFailed')}</Text>
         <Text className="text-muted-foreground mt-1 text-center">
           {t('network.mapScreen.loadFailedDesc')}
@@ -263,7 +265,7 @@ export default function NetworkMap() {
     if (tenantHasLocation) {
       return (
         <View className="flex-1 items-center justify-center bg-background">
-          <ActivityIndicator size="large" color="#3b82f6" />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text className="text-muted-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         </View>
       );
@@ -273,7 +275,7 @@ export default function NetworkMap() {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
         <View className="w-20 h-20 rounded-full bg-amber-500/10 items-center justify-center mb-4">
-          <Ionicons name="location" size={40} color="#f59e0b" />
+          <Ionicons name="location" size={40} color={colors.warning} />
         </View>
         <Text weight="bold" className="text-foreground text-xl text-center">
           {t('network.mapScreen.locationNotSet')}

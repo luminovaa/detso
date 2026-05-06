@@ -13,6 +13,7 @@ import {
   getZoomForPoints,
 } from '@/src/lib/map-utils';
 import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
@@ -35,6 +36,7 @@ export function NetworkMapView({
   onLinkPress,
   children,
 }: NetworkMapViewProps) {
+  const colors = useThemeColor();
   const { filterType, mode, mapStyle, editingLinkId } = useNetworkMapStore();
 
   const styleURL = mapStyle === 'satellite'
@@ -166,7 +168,7 @@ export function NetworkMapView({
               id="editing-link-highlight"
               filter={['==', ['get', 'id'], editingLinkId || '__none__'] as any}
               style={{
-                lineColor: '#f59e0b',
+                lineColor: colors.warning,
                 lineWidth: 4,
                 lineOpacity: 0.4,
                 lineCap: 'round',
