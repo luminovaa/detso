@@ -42,6 +42,7 @@ import {
 } from "../../lib/camera-utils";
 import { PermissionScreen } from "./permission";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface CustomCameraProps {
   visible: boolean;
@@ -61,6 +62,7 @@ export function CustomCamera({
   allowClose = true,
 }: CustomCameraProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const { hasPermission: hasCameraPerm, requestPermission: reqCameraPerm } =
     useCameraPermission();
   const [cameraDenied, setCameraDenied] = useState(false); // <--- State untuk pantau penolakan kamera
@@ -357,7 +359,7 @@ export function CustomCamera({
                 <Ionicons
                   name={liveGeo ? "location" : "location-outline"}
                   size={12}
-                  color="#fff"
+                  color={colors.white}
                 />
                                 <Text
                   weight="bold"
@@ -438,7 +440,7 @@ export function CustomCamera({
         {geoError && !liveGeo && (
           <View className="absolute bottom-40 left-6 right-6 z-30">
             <View className="flex-row items-center gap-3 bg-black/80 rounded-xl p-3 border-l-4 border-amber-500">
-              <ActivityIndicator size="small" color="#f59e0b" />
+              <ActivityIndicator size="small" color={colors.warning} />
               <Text weight="medium" className="text-amber-500 text-sm flex-1">
                 {geoError}
               </Text>
@@ -465,7 +467,7 @@ export function CustomCamera({
                 disabled={isShutterDisabled}
               >
                 {isCapturing ? (
-                  <ActivityIndicator color="#fff" size="large" />
+                  <ActivityIndicator color={colors.white} size="large" />
                 ) : (
                   <View className="w-[66px] h-[66px] rounded-full bg-white" />
                 )}

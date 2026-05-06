@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useAuthStore } from "@/src/features/auth/store";
 import { useTabBarHeight, TAB_BAR_HEIGHT } from "@/src/hooks/use-tab-bar-height";
+import { useThemeColor, withOpacity } from "@/src/lib/theme-colors";
 
 interface TabItemProps {
   isFocused: boolean;
@@ -115,22 +116,21 @@ export function CustomTabBar({
   const { user } = useAuthStore();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
+  const colors = useThemeColor();
 
   const TOKENS = useMemo(
     () => ({
-      primary: isDark ? "hsl(180, 77%, 47%)" : "hsl(180, 84%, 25%)", // teal-400 : teal-700
-      primaryLight: isDark
-        ? "hsla(180, 77%, 47%, 0.15)"
-        : "hsla(180, 84%, 25%, 0.15)",
-      uiMuted: isDark ? "hsl(180, 10%, 70%)" : "hsl(180, 10%, 45%)",
+      primary: colors.primary,
+      primaryLight: withOpacity(colors.primary, 0.15),
+      uiMuted: colors.iconMuted,
       bgOverlay: isDark
-        ? "rgba(10, 10, 10, 0.85)"
-        : "rgba(255, 255, 255, 0.85)",
+        ? withOpacity(colors.black, 0.85)
+        : withOpacity(colors.white, 0.85),
       borderColor: isDark
-        ? "rgba(255, 255, 255, 0.15)"
-        : "rgba(0, 0, 0, 0.08)",
+        ? withOpacity(colors.white, 0.15)
+        : withOpacity(colors.black, 0.08),
     }),
-    [isDark],
+    [isDark, colors],
   );
 
   const visibleRouteNames = useMemo(() => {
@@ -155,12 +155,12 @@ export function CustomTabBar({
         backgroundColor:
           Platform.OS === "android"
             ? isDark
-              ? "#121212"
-              : "#ffffff"
+              ? colors.background
+              : colors.white
             : "transparent",
         // Shadows
         elevation: 8,
-        shadowColor: "#000",
+        shadowColor: colors.shadow,
         shadowOpacity: 0.1,
         shadowOffset: { height: 10, width: 0 },
         shadowRadius: 15,

@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Pressable, Text as RNText, StyleSheet } from "react-native";
+import { View, Pressable, Text as RNText } from "react-native";
+import { useThemeColor, createShadow } from "@/src/lib/theme-colors";
 
 export type SpeedUnit = "Mbps" | "Gbps";
 
@@ -16,17 +17,32 @@ const UNITS: SpeedUnit[] = ["Mbps", "Gbps"];
  * Uses pure StyleSheet to avoid NativeWind/Navigation context issues
  */
 export function SpeedUnitToggle({ value, onChange }: SpeedUnitToggleProps) {
+  const colors = useThemeColor();
+
   return (
-    <View style={styles.container}>
+    <View style={{ flexDirection: "row", backgroundColor: colors.input, borderRadius: 8, padding: 2 }}>
       {UNITS.map((unit) => {
         const isActive = value === unit;
         return (
           <Pressable
             key={unit}
             onPress={() => onChange(unit)}
-            style={[styles.pill, isActive && styles.pillActive]}
+            style={[
+              { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+              isActive && {
+                backgroundColor: colors.primary,
+                ...createShadow(colors.shadow, 0.1, 2, 2),
+                shadowOffset: { width: 0, height: 1 },
+              },
+            ]}
           >
-            <RNText style={[styles.text, isActive && styles.textActive]}>
+            <RNText
+              style={{
+                fontSize: 12,
+                fontWeight: "600",
+                color: isActive ? colors.white : colors.textMuted,
+              }}
+            >
               {unit}
             </RNText>
           </Pressable>
@@ -35,33 +51,3 @@ export function SpeedUnitToggle({ value, onChange }: SpeedUnitToggleProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    backgroundColor: "#f1f5f9",
-    borderRadius: 8,
-    padding: 2,
-  },
-  pill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  pillActive: {
-    backgroundColor: "hsl(221.2, 83.2%, 53.3%)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  text: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#94a3b8",
-  },
-  textActive: {
-    color: "#ffffff",
-  },
-});

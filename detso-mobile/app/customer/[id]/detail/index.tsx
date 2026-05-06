@@ -15,12 +15,13 @@ import { CustomerTicketsTab } from "@/src/components/screens/customer/customer-t
 import { CustomerDocumentsTab } from "@/src/components/screens/customer/customer-documents-tab";
 import { getWhatsAppUrl, getTelUrl } from "@/src/lib/phone-utils";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 const TAB_OPTIONS = ["Info", "Tiket", "Dokumen"];
 
 export default function CustomerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const colors = useThemeColor();
   const { bottom: safeBottom } = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState(TAB_OPTIONS[0]);
 
@@ -80,7 +81,7 @@ export default function CustomerDetailScreen() {
   // Header right: Edit button
   const headerRight = (
     <TouchableOpacity onPress={handleEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-      <Ionicons name="create-outline" size={22} color={COLORS.neutral.gray[900]} />
+      <Ionicons name="create-outline" size={22} color={colors.text} />
     </TouchableOpacity>
   );
 
@@ -103,7 +104,7 @@ export default function CustomerDetailScreen() {
     return (
       <ScreenWrapper headerTitle="Detail Customer" showBackButton>
         <View className="flex-1 items-center justify-center p-4">
-          <Ionicons name="alert-circle-outline" size={48} color={COLORS.neutral.gray[500]} />
+          <Ionicons name="alert-circle-outline" size={48} color={colors.iconMuted} />
           <Text className="text-base text-muted-foreground mt-3">Customer tidak ditemukan</Text>
         </View>
       </ScreenWrapper>
@@ -143,7 +144,7 @@ export default function CustomerDetailScreen() {
               onPress={handleCall}
               className="w-11 h-11 rounded-full border border-primary items-center justify-center"
             >
-              <Ionicons name="logo-whatsapp" size={20} color={COLORS.brand.primary} />
+              <Ionicons name="logo-whatsapp" size={20} color={colors.primary} />
             </TouchableOpacity>
           )}
 
@@ -152,7 +153,7 @@ export default function CustomerDetailScreen() {
             onPress={handleEdit}
             className="flex-1 flex-row items-center justify-center gap-x-2 h-11 rounded-full bg-primary"
           >
-            <Ionicons name="create-outline" size={18} color="#fff" />
+            <Ionicons name="create-outline" size={18} color={colors.white} />
             <Text weight="semibold" className="text-sm text-white">Edit Customer</Text>
           </TouchableOpacity>
 
@@ -161,7 +162,7 @@ export default function CustomerDetailScreen() {
             onPress={handleDelete}
             className="w-11 h-11 rounded-full border border-destructive items-center justify-center"
           >
-            <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />
+            <Ionicons name="trash-outline" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
       </View>

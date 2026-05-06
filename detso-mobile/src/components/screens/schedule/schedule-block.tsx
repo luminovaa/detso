@@ -4,26 +4,7 @@ import { Text } from '@/src/components/global/text';
 import { Schedule, ScheduleStatus } from '@/src/lib/types';
 import { HOUR_HEIGHT, TIME_LABEL_WIDTH, getBlockPosition } from '@/src/lib/calendar-utils';
 import { hexToRgba, hexToRgb } from '@/src/lib/colors';
-
-// ─── Status Colors ───────────────────────────────────────────────
-
-const STATUS_STYLES: Record<ScheduleStatus, { bg: string; border: string; text: string }> = {
-  SCHEDULED: {
-    bg: hexToRgba('#0F766E', 0.15), // teal-700/15
-    border: hexToRgb('#0F766E'), // teal-700
-    text: hexToRgb('#0D9488'), // teal-600
-  },
-  COMPLETED: {
-    bg: hexToRgba('#10B981', 0.15), // emerald-500/15
-    border: hexToRgb('#10B981'), // emerald-500
-    text: hexToRgb('#059669'), // emerald-600
-  },
-  CANCELLED: {
-    bg: hexToRgba('#9CA3AF', 0.15), // gray-400/15
-    border: hexToRgb('#9CA3AF'), // gray-400
-    text: hexToRgb('#6B7280'), // gray-500
-  },
-};
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 // ─── Time Formatter ──────────────────────────────────────────────
 
@@ -46,7 +27,27 @@ interface ScheduleBlockProps {
 }
 
 export const ScheduleBlock = React.memo(function ScheduleBlock({ schedule, segmentStart, segmentEnd, column, totalColumns, onPress }: ScheduleBlockProps) {
+  const colors = useThemeColor();
   const { top, height } = useMemo(() => getBlockPosition(segmentStart, segmentEnd), [segmentStart, segmentEnd]);
+
+  const STATUS_STYLES: Record<ScheduleStatus, { bg: string; border: string; text: string }> = useMemo(() => ({
+    SCHEDULED: {
+      bg: hexToRgba(colors.primary, 0.15),
+      border: hexToRgb(colors.primary),
+      text: hexToRgb(colors.primary),
+    },
+    COMPLETED: {
+      bg: hexToRgba(colors.success, 0.15),
+      border: hexToRgb(colors.success),
+      text: hexToRgb(colors.success),
+    },
+    CANCELLED: {
+      bg: hexToRgba(colors.textDisabled, 0.15),
+      border: hexToRgb(colors.textDisabled),
+      text: hexToRgb(colors.icon),
+    },
+  }), [colors]);
+
   const style = STATUS_STYLES[schedule.status] || STATUS_STYLES.SCHEDULED;
 
   // Calculate horizontal position for split columns

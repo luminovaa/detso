@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextInput, TextInputProps, View, Text } from "react-native";
 import { cn } from "../../lib/utils";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface TextareaProps extends TextInputProps {
   error?: string;
@@ -9,6 +10,7 @@ export interface TextareaProps extends TextInputProps {
 const Textarea = React.forwardRef<TextInput, TextareaProps>(
   ({ className, error, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
+    const colors = useThemeColor();
 
     return (
       <View className="mb-4">
@@ -16,7 +18,7 @@ const Textarea = React.forwardRef<TextInput, TextareaProps>(
           ref={ref}
           multiline={true}
           textAlignVertical="top"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={colors.textMuted}
           className={cn(
             "min-h-[120px] w-full rounded-2xl border bg-background px-4 py-4 text-base text-foreground leading-tight",
 

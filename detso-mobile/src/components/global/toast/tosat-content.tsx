@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "../text"; // Pastikan path ini mengarah ke komponen Text global kamu
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 interface ToastContentProps {
   toast: {
     id: string;
@@ -15,33 +15,35 @@ interface ToastContentProps {
   duration: number;
 }
 
-// 🎨 DISESUAIKAN DENGAN TEMA TAILWIND KAMU
-const TYPE_CONFIG = {
-  success: {
-    icon: "checkmark-circle" as const,
-    iconColor: "#10B981", // Emerald
-    bgClass: "border-emerald-500/50",
-  },
-  error: {
-    icon: "alert-circle" as const,
-    iconColor: "#EF4444", // Destructive
-    bgClass: "border-destructive/50",
-  },
-  warning: {
-    icon: "warning" as const,
-    iconColor: "#F59E0B", // Amber
-    bgClass: "border-amber-500/50",
-  },
-  info: {
-    icon: "information-circle" as const,
-    iconColor: "#3B82F6", // Blue
-    bgClass: "border-blue-500/50",
-  },
-};
-
 export function ToastContent({ toast, onPress, duration }: ToastContentProps) {
-  const config = TYPE_CONFIG[toast.type];
+  const colors = useThemeColor();
   const progress = useRef(new Animated.Value(1)).current;
+
+  // 🎨 Theme-aware type configuration
+  const TYPE_CONFIG = {
+    success: {
+      icon: "checkmark-circle" as const,
+      iconColor: colors.success,
+      bgClass: "border-emerald-500/50",
+    },
+    error: {
+      icon: "alert-circle" as const,
+      iconColor: colors.error,
+      bgClass: "border-destructive/50",
+    },
+    warning: {
+      icon: "warning" as const,
+      iconColor: colors.warning,
+      bgClass: "border-amber-500/50",
+    },
+    info: {
+      icon: "information-circle" as const,
+      iconColor: colors.info,
+      bgClass: "border-blue-500/50",
+    },
+  };
+
+  const config = TYPE_CONFIG[toast.type];
 
   useEffect(() => {
     Animated.timing(progress, {
@@ -63,7 +65,7 @@ export function ToastContent({ toast, onPress, duration }: ToastContentProps) {
       className={`flex-row items-center bg-card rounded-2xl px-4 py-4 border overflow-hidden ${config.bgClass}`}
       style={{
         elevation: 6,
-        shadowColor: "#000",
+        shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
@@ -87,7 +89,7 @@ export function ToastContent({ toast, onPress, duration }: ToastContentProps) {
       </View>
 
       {/* Close Hint */}
-      <Ionicons name="close" size={18} color={COLORS.neutral.gray[500]} />
+      <Ionicons name="close" size={18} color={colors.iconMuted} />
 
       {/* Progress bar */}
       <View className="absolute bottom-0 left-0 right-0 h-[3px] bg-transparent">

@@ -6,6 +6,7 @@ import { Text } from "./text";
 import { Button, ButtonProps } from "./button";
 import { cn } from "../../lib/utils";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export type PermissionType = "camera" | "location" | "location_service";
 //   | "notification";
@@ -34,6 +35,7 @@ export function PermissionScreen({
   isDenied = false,
 }: PermissionScreenProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   
   // Konfigurasi dinamis berdasarkan tipe permission
   const getConfig = (): PermissionConfig => {
@@ -42,7 +44,7 @@ export function PermissionScreen({
         return {
           icon: "camera-outline" as const,
           iconBg: "bg-emerald-500/10",
-          iconColor: "#10b981",
+          iconColor: colors.success,
           title: t("permission.camera.title"),
           desc: t("permission.camera.desc"),
           btn: isDenied ? t("permission.camera.btnSettings") : t("permission.camera.btnAllow"),
@@ -52,7 +54,7 @@ export function PermissionScreen({
         return {
           icon: "location-outline" as const,
           iconBg: "bg-blue-500/10",
-          iconColor: "#3B82F6",
+          iconColor: colors.info,
           title: t("permission.location.title"),
           desc: t("permission.location.desc"),
           btn: isDenied ? t("permission.location.btnSettings") : t("permission.location.btnAllow"),
@@ -62,7 +64,7 @@ export function PermissionScreen({
         return {
           icon: "navigate-outline" as const,
           iconBg: "bg-amber-500/10",
-          iconColor: "#F59E0B",
+          iconColor: colors.warning,
           title: t("permission.locationService.title"),
           desc: t("permission.locationService.desc"),
           btn: t("permission.locationService.btnSettings"),

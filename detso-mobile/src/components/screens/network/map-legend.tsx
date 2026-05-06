@@ -3,15 +3,17 @@ import { View } from 'react-native';
 import { Text } from '@/src/components/global/text';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export function MapLegend() {
+  const colors = useThemeColor();
   const { t } = useT();
   const { fabBottom } = useTabBarHeight();
 
   return (
     <View
       className="absolute bg-white/90 dark:bg-neutral-800/90 px-3 py-2 rounded-xl"
-      style={{ position: 'absolute', bottom: fabBottom, left: 12, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
+      style={{ position: 'absolute', bottom: fabBottom, left: 12, shadowColor: colors.shadow, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
     >
       {/* Node types */}
       <View className="flex-row items-center gap-3 mb-1">

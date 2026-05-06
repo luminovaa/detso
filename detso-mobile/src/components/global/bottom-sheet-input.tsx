@@ -8,6 +8,7 @@ import {
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { cn } from "../../lib/utils";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface BottomSheetInputProps extends Omit<TextInputProps, 'style'> {
   error?: string;
@@ -22,6 +23,7 @@ export interface BottomSheetInputProps extends Omit<TextInputProps, 'style'> {
  */
 const BottomSheetInput = React.forwardRef<any, BottomSheetInputProps>(
   ({ error, isPassword, prefix, suffixComponent, secureTextEntry, ...props }, ref) => {
+    const colors = useThemeColor();
     // State untuk toggle mata (show/hide password)
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -55,7 +57,7 @@ const BottomSheetInput = React.forwardRef<any, BottomSheetInputProps>(
           <BottomSheetTextInput
             ref={ref}
             className="flex-1 h-full text-base text-foreground leading-tight"
-            placeholderTextColor="#94a3b8" // Warna text-muted-foreground
+            placeholderTextColor={colors.textMuted}
             secureTextEntry={shouldHideText}
             onFocus={(e) => {
               setIsFocused(true);
@@ -85,7 +87,7 @@ const BottomSheetInput = React.forwardRef<any, BottomSheetInputProps>(
               <Ionicons
                 name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
                 size={22}
-                color="#64748b"
+                color={colors.icon}
               />
             </TouchableOpacity>
           )}

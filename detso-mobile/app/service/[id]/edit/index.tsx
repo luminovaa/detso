@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ScrollView, ActivityIndicator, TouchableOpacity, Pressable, StyleSheet } from "react-native";
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, Pressable } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,13 +24,14 @@ import { networkService } from "@/src/features/network/service";
 import { ServiceConnection } from "@/src/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 type StatusOption = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
 const STATUS_OPTIONS: StatusOption[] = ["ACTIVE", "INACTIVE", "SUSPENDED"];
 
 export default function ServiceEditScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [showMap, setShowMap] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<StatusOption>("ACTIVE");
@@ -122,11 +123,21 @@ export default function ServiceEditScreen() {
   };
 
   const getStatusStyle = (status: StatusOption, isActive: boolean) => {
-    if (!isActive) return styles.statusPill;
+    const baseStyle = {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.input,
+      alignItems: "center" as const,
+    };
+    if (!isActive) return baseStyle;
     switch (status) {
-      case "ACTIVE": return [styles.statusPill, styles.statusActive];
-      case "INACTIVE": return [styles.statusPill, styles.statusInactive];
-      case "SUSPENDED": return [styles.statusPill, styles.statusSuspended];
+      case "ACTIVE": return { ...baseStyle, backgroundColor: colors.serviceActive, borderColor: colors.serviceActive };
+      case "INACTIVE": return { ...baseStyle, backgroundColor: colors.icon, borderColor: colors.icon };
+      case "SUSPENDED": return { ...baseStyle, backgroundColor: colors.error, borderColor: colors.error };
     }
   };
 
@@ -163,7 +174,7 @@ export default function ServiceEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("service.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={COLORS.brand.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </ScreenWrapper>
     );
@@ -218,7 +229,7 @@ export default function ServiceEditScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {serviceData?.lat && serviceData?.long ? (
                       <View>
@@ -235,7 +246,7 @@ export default function ServiceEditScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -334,27 +345,4 @@ export default function ServiceEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  statusPill: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#e2e8f0",
-    backgroundColor: "#f8fafc",
-    alignItems: "center",
-  },
-  statusActive: {
-    backgroundColor: "#16a34a",
-    borderColor: "#16a34a",
-  },
-  statusInactive: {
-    backgroundColor: "#6b7280",
-    borderColor: "#6b7280",
-  },
-  statusSuspended: {
-    backgroundColor: "#dc2626",
-    borderColor: "#dc2626",
-  },
-});
+

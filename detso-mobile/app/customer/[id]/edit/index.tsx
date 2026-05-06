@@ -19,9 +19,11 @@ import { useT } from "@/src/features/i18n/store";
 import { updateCustomerSchema, UpdateCustomerInput } from "@/src/features/customer/schema";
 import { useCustomer, useUpdateCustomer } from "@/src/features/customer/hooks";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
+
 export default function CustomerEditScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [showMap, setShowMap] = useState(false);
   const [serviceAddress, setServiceAddress] = useState("");
@@ -85,7 +87,7 @@ export default function CustomerEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("customer.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={COLORS.brand.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </ScreenWrapper>
     );
@@ -123,7 +125,7 @@ export default function CustomerEditScreen() {
                   className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
                 >
                   <View className="flex-row items-center flex-1">
-                    <Ionicons name="location-outline" size={20} color="#64748b" />
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
                     <View className="ml-2 flex-1">
                       {lat && long ? (
                         <View>
@@ -140,7 +142,7 @@ export default function CustomerEditScreen() {
                     </View>
                   </View>
                   <View className="bg-primary/10 p-2 rounded-lg">
-                    <Ionicons name="map" size={20} color="#1E40AF" />
+                    <Ionicons name="map" size={20} color={colors.info} />
                   </View>
                 </TouchableOpacity>
               </View>

@@ -27,10 +27,12 @@ import {
 import { Tenant } from "@/src/lib/types";
 import { useTenant, useUpdateTenant } from "@/src/features/tenant/hooks";
 import { showErrorToast } from "@/src/lib/api-error";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ISPEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const colors = useThemeColor();
 
   const { data: tenantResponse, isLoading: isFetching } = useTenant(id!);
   const tenant = tenantResponse?.data as Tenant | undefined;
@@ -178,7 +180,7 @@ export default function ISPEditScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {watch("address") ? (
                       <View>
@@ -197,7 +199,7 @@ export default function ISPEditScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -213,8 +215,8 @@ export default function ISPEditScreen() {
               <Switch
                 value={isActive}
                 onValueChange={(val) => setValue("is_active", val)}
-                trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={isActive ? "#3b82f6" : "#94a3b8"}
+                trackColor={{ false: colors.border, true: "#bfdbfe" }}
+                thumbColor={isActive ? colors.info : colors.textMuted}
               />
             </View>
           </View>

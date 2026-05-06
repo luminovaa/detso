@@ -24,9 +24,11 @@ import {
 import { Tenant } from "@/src/lib/types";
 import { useTenant, useUpdateTenant } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function EditTenantScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const { user } = useAuthStore();
   const tenantId = user?.tenant_id;
 
@@ -174,7 +176,7 @@ export default function EditTenantScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {watch("address") ? (
                       <View>
@@ -193,7 +195,7 @@ export default function EditTenantScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>

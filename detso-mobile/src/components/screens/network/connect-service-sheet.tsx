@@ -14,6 +14,7 @@ import { Badge } from '@/src/components/global/badge';
 import { NetworkNode, NetworkTopology } from '@/src/features/network/types';
 import { useCreateLink } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface ConnectServiceSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -30,6 +31,7 @@ export function ConnectServiceSheet({
   allServices,
   onDismiss,
 }: ConnectServiceSheetProps) {
+  const colors = useThemeColor();
   const { t } = useT();
   const [search, setSearch] = useState('');
   const createLink = useCreateLink();
@@ -116,7 +118,7 @@ export function ConnectServiceSheet({
               className="flex-row items-center py-3 px-2 border-b border-border"
             >
               <View className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mr-3">
-                <Ionicons name="person" size={16} color="#10B981" />
+                <Ionicons name="person" size={16} color={colors.serviceActive} />
               </View>
               <View className="flex-1">
                 <Text weight="medium" className="text-sm text-foreground">
@@ -128,7 +130,7 @@ export function ConnectServiceSheet({
               </View>
               {hasLocation ? (
                 <Badge variant="outline" className="ml-2">
-                  <Ionicons name="location" size={10} color="#10B981" />
+                  <Ionicons name="location" size={10} color={colors.serviceActive} />
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="ml-2">
@@ -140,7 +142,7 @@ export function ConnectServiceSheet({
         }}
         ListEmptyComponent={
           <View className="items-center py-8">
-            <Ionicons name="checkmark-circle" size={40} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={40} color={colors.serviceActive} />
             <Text className="text-muted-foreground mt-2 text-center">
               {search
                 ? t('network.connectService.noMatch')

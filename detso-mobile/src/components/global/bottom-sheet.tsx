@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "../../lib/utils";
 import { CustomTextProps, Text } from "./text";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface BottomSheetProps {
   snapPoints?: string[];
@@ -31,6 +32,7 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
     },
     ref,
   ) => {
+    const colors = useThemeColor();
     // Jika snapPoints tidak diberikan → dynamic sizing (auto-fit content)
     const useDynamic = !snapPoints;
     const insets = useSafeAreaInsets();
@@ -79,7 +81,7 @@ export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         backdropComponent={renderBackdrop}
         backgroundComponent={renderBackground}
         handleIndicatorStyle={{
-          backgroundColor: "#94a3b8",
+          backgroundColor: colors.textMuted,
           width: 40,
           height: 5,
         }}

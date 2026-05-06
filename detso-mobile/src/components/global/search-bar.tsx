@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { cn } from "../../lib/utils";
 import { useT } from "@/src/features/i18n/store";
 import { COLORS } from "@/src/lib/colors";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface SearchBarProps {
   value: string;
@@ -39,6 +40,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
     ref
   ) => {
     const { t } = useT();
+    const colors = useThemeColor();
     const resolvedPlaceholder = placeholder || t("components.searchBar.placeholder");
     const [isFocused, setIsFocused] = useState(false);
 
@@ -81,7 +83,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
           value={value}
           onChangeText={onChangeText}
           placeholder={resolvedPlaceholder}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={colors.textMuted}
           className="flex-1 h-full text-base text-foreground"
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -97,7 +99,7 @@ export const SearchBar = React.forwardRef<TextInput, SearchBarProps>(
             className="ml-2 p-1 bg-muted rounded-full"
             activeOpacity={0.7}
           >
-            <Ionicons name="close" size={16} color="#64748b" />
+            <Ionicons name="close" size={16} color={colors.icon} />
           </TouchableOpacity>
         )}
       </View>

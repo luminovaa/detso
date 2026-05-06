@@ -16,6 +16,7 @@ export default function AllMenuScreen() {
   const { contentPaddingBottom } = useTabBarHeight();
   
   const isOwner = user?.role === 'TENANT_OWNER';
+  const isOwnerOrAdmin = user?.role === 'TENANT_OWNER' || user?.role === 'TENANT_ADMIN';
 
   // Main Features (5 items)
   const mainFeatures = [
@@ -49,6 +50,16 @@ export default function AllMenuScreen() {
       label: t("allMenu.team"),
       onPress: () => router.push("/team"),
     },
+    // Monitoring - Only for Owner & Admin
+    ...(isOwnerOrAdmin
+      ? [
+          {
+            icon: "hardware-chip",
+            label: t("allMenu.monitoring"),
+            onPress: () => router.push("/monitoring"),
+          },
+        ]
+      : []),
   ];
 
   // Settings & Account (3-4 items, conditional based on role)

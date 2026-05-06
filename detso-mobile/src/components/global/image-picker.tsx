@@ -20,6 +20,7 @@ import { Button } from "./button";
 import { BottomSheet, BottomSheetTitle } from "./bottom-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { useTabBarHeight } from "../../hooks/use-tab-bar-height";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 type SheetState =
   | "source-select"
@@ -63,6 +64,7 @@ export function ImagePickerSheet({
   enableGeoTag,
 }: ImagePickerSheetProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const { pickImage } = useImagePicker();
   const { contentPaddingBottom } = useTabBarHeight();
   const [sheetState, setSheetState] = useState<SheetState>("source-select");
@@ -236,7 +238,7 @@ export function ImagePickerSheet({
                         <View className="absolute inset-0 bg-background/95 justify-center items-center z-[60]">
                 <ActivityIndicator
                   size="large"
-                  color="#1d4ed8"
+                  color={colors.info}
                   className="mb-4"
                 />
                 <Text weight="bold" className="text-xl text-foreground">
@@ -268,7 +270,7 @@ export function ImagePickerSheet({
                 className="items-center"
               >
                 <View className="bg-primary/10 h-20 w-20 rounded-2xl items-center justify-center mb-3 border border-primary/20">
-                  <Ionicons name="camera" size={32} color="#1d4ed8" />
+                  <Ionicons name="camera" size={32} color={colors.info} />
                 </View>
                                 <Text weight="semibold" className="text-foreground">
                   {t("imagePicker.camera")}
@@ -280,7 +282,7 @@ export function ImagePickerSheet({
                 className="items-center"
               >
                 <View className="bg-muted h-20 w-20 rounded-2xl items-center justify-center mb-3 border border-border">
-                  <Ionicons name="images" size={32} color="#64748b" />
+                  <Ionicons name="images" size={32} color={colors.icon} />
                 </View>
                 <Text weight="semibold" className="text-foreground">
                   {t("imagePicker.gallery")}

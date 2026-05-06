@@ -2,6 +2,7 @@ import React from "react";
 import { View, Animated } from "react-native";
 import { GeoInfo } from "../../lib/camera-utils";
 import { Text } from "./text";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface WatermarkOverlayProps {
   overlayRef: React.RefObject<View | null>;
@@ -18,6 +19,8 @@ export function WatermarkOverlay({
   dimensions,
   onReady,
 }: WatermarkOverlayProps) {
+  const colors = useThemeColor();
+
   return (
     <View
       ref={overlayRef}
@@ -28,7 +31,7 @@ export function WatermarkOverlay({
         width: dimensions.width,
         height: dimensions.height,
         zIndex: -10,
-        backgroundColor: "#000",
+        backgroundColor: colors.black,
       }}
       collapsable={false}
     >

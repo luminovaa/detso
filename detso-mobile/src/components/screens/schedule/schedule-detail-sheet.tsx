@@ -19,7 +19,7 @@ import { showErrorToast } from '@/src/lib/api-error';
 import { Schedule } from '@/src/lib/types';
 import { formatScheduleTime, getScheduleStatusVariant } from '@/src/lib/schedule-utils';
 import { TICKET_PRIORITY_VARIANTS, TICKET_STATUS_VARIANTS } from '@/src/lib/ticket-constants';
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface ScheduleDetailSheetProps {
   scheduleId: string | null;
@@ -35,6 +35,7 @@ function ScheduleDetailSheetInner(
   const { t } = useT();
   const { locale } = useLanguageStore();
   const user = useAuthStore((s) => s.user);
+  const colors = useThemeColor();
 
   // Fetch schedule detail
   const { data: scheduleData, isLoading } = useSchedule(scheduleId || '');
@@ -231,7 +232,7 @@ function ScheduleDetailSheetInner(
             <View className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
               <View className="flex-row items-center gap-3">
                 <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
-                  <Ionicons name="time" size={20} color={COLORS.brand.primary} />
+                  <Ionicons name="time" size={20} color={colors.primary} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-xs text-muted-foreground">{t('schedule.timeLabel')}</Text>
@@ -248,7 +249,7 @@ function ScheduleDetailSheetInner(
             {/* Technician */}
             <View className="flex-row items-center gap-3">
               <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 items-center justify-center">
-                <Ionicons name="person" size={16} color="#3B82F6" />
+                <Ionicons name="person" size={16} color={colors.info} />
               </View>
               <View className="flex-1">
                 <Text className="text-xs text-muted-foreground">{t('schedule.technicianLabel')}</Text>
@@ -262,7 +263,7 @@ function ScheduleDetailSheetInner(
             {schedule.notes && (
               <View className="flex-row items-start gap-3">
                 <View className="w-9 h-9 rounded-full bg-amber-50 dark:bg-amber-900/30 items-center justify-center">
-                  <Ionicons name="document-text" size={16} color="#F59E0B" />
+                  <Ionicons name="document-text" size={16} color={colors.warning} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-xs text-muted-foreground">{t('schedule.notesLabel')}</Text>
@@ -278,7 +279,7 @@ function ScheduleDetailSheetInner(
           {schedule.ticket && (
             <View className="px-5 mt-5">
               <View className="flex-row items-center gap-2 mb-3">
-                <Ionicons name="ticket" size={16} color={COLORS.neutral.gray[500]} />
+                <Ionicons name="ticket" size={16} color={colors.icon} />
                 <Text weight="semibold" className="text-sm text-foreground">
                   {t('schedule.ticketLabel')}
                 </Text>
@@ -308,18 +309,18 @@ function ScheduleDetailSheetInner(
                 {schedule.ticket.customer && (
                   <View className="gap-2 pt-2 border-t border-border/30">
                     <View className="flex-row items-center gap-2">
-                      <Ionicons name="person-outline" size={14} color={COLORS.neutral.gray[400]} />
+                      <Ionicons name="person-outline" size={14} color={colors.iconMuted} />
                       <Text className="text-xs text-foreground">{schedule.ticket.customer.name}</Text>
                     </View>
                     {schedule.ticket.customer.phone && (
                       <View className="flex-row items-center gap-2">
-                        <Ionicons name="call-outline" size={14} color={COLORS.neutral.gray[400]} />
+                        <Ionicons name="call-outline" size={14} color={colors.iconMuted} />
                         <Text className="text-xs text-muted-foreground">{schedule.ticket.customer.phone}</Text>
                       </View>
                     )}
                     {schedule.ticket.service?.address && (
                       <View className="flex-row items-center gap-2">
-                        <Ionicons name="location-outline" size={14} color={COLORS.neutral.gray[400]} />
+                        <Ionicons name="location-outline" size={14} color={colors.iconMuted} />
                         <Text className="text-xs text-muted-foreground" numberOfLines={2}>{schedule.ticket.service.address}</Text>
                       </View>
                     )}
@@ -336,7 +337,7 @@ function ScheduleDetailSheetInner(
                   }}
                 >
                   <View className="flex-row items-center gap-2">
-                    <Ionicons name="eye-outline" size={16} color={COLORS.brand.primary} />
+                    <Ionicons name="eye-outline" size={16} color={colors.primary} />
                     <Text className="text-primary text-sm">{t('schedule.viewTicketBtn')}</Text>
                   </View>
                 </Button>
@@ -369,7 +370,7 @@ function ScheduleDetailSheetInner(
                   onPress={handleEdit}
                 >
                   <View className="flex-row items-center gap-2">
-                    <Ionicons name="pencil" size={16} color={COLORS.brand.primary} />
+                    <Ionicons name="pencil" size={16} color={colors.primary} />
                     <Text className="text-primary text-sm">{t('schedule.editBtn')}</Text>
                   </View>
                 </Button>

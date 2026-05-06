@@ -8,8 +8,7 @@ import { Text } from "../../global/text";
 import { ImageViewer, ImageViewerImage } from "../../global/image-viewer";
 import { CustomerDocument } from "@/src/lib/types";
 import { customerService } from "@/src/features/customer/service";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 interface CustomerDocumentsTabProps {
   customerId: string;
   documents: CustomerDocument[];
@@ -18,6 +17,7 @@ interface CustomerDocumentsTabProps {
 }
 
 export function CustomerDocumentsTab({ customerId, documents, customerName, hasInstallationReport = false }: CustomerDocumentsTabProps) {
+  const colors = useThemeColor();
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
@@ -95,7 +95,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
                   >
                     {isPdf ? (
                       <View className="h-28 items-center justify-center bg-muted">
-                        <Ionicons name="document-text" size={36} color={COLORS.neutral.gray[500]} />
+                        <Ionicons name="document-text" size={36} color={colors.icon} />
                       </View>
                     ) : (
                       <DocThumb uri={doc.document_url} />
@@ -116,7 +116,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
         {documents.length === 0 && !hasInstallationReport && (
           <Card className="mb-6 border-border/40">
             <View className="p-6 items-center">
-              <Ionicons name="folder-open-outline" size={32} color={COLORS.neutral.gray[500]} />
+              <Ionicons name="folder-open-outline" size={32} color={colors.icon} />
               <Text className="text-sm text-muted-foreground mt-2">Belum ada dokumen</Text>
             </View>
           </Card>
@@ -133,7 +133,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
               <View className="p-4 gap-y-3">
                 <View className="flex-row items-center gap-x-3">
                   <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
-                    <Ionicons name="document-text" size={20} color={COLORS.brand.primary} />
+                    <Ionicons name="document-text" size={20} color={colors.primary} />
                   </View>
                   <View className="flex-1">
                     <Text weight="semibold" className="text-sm text-foreground">
@@ -151,7 +151,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
                     disabled={pdfLoading}
                     className={`flex-1 flex-row items-center justify-center gap-x-2 py-2.5 rounded-lg border border-primary ${pdfLoading ? "opacity-50" : ""}`}
                   >
-                    <Ionicons name="eye-outline" size={16} color={COLORS.brand.primary} />
+                    <Ionicons name="eye-outline" size={16} color={colors.primary} />
                     <Text weight="semibold" className="text-sm text-primary">
                       {pdfLoading ? "Memuat..." : "Lihat"}
                     </Text>
@@ -162,7 +162,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
                     disabled={pdfLoading}
                     className={`flex-1 flex-row items-center justify-center gap-x-2 py-2.5 rounded-lg bg-primary ${pdfLoading ? "opacity-50" : ""}`}
                   >
-                    <Ionicons name="download-outline" size={16} color="#fff" />
+                    <Ionicons name="download-outline" size={16} color={colors.white} />
                     <Text weight="semibold" className="text-sm text-white">
                       {pdfLoading ? "Memuat..." : "Download"}
                     </Text>

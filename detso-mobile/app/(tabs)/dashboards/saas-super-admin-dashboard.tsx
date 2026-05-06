@@ -16,14 +16,16 @@ import { useSaasDashboard } from "@/src/features/dashboard/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function SaasSuperAdminDashboard() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const { contentPaddingBottom } = useTabBarHeight();
+  const colors = useThemeColor();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const primaryColor = isDark ? "#66a3ff" : "#102a4d";
+  const primaryColor = colors.primary;
 
   const { data: response, isLoading, refetch, isRefetching } = useSaasDashboard();
   const data = response?.data as SaasDashboardData | undefined;

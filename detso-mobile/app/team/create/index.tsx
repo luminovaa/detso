@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,7 @@ import { Label } from "@/src/components/global/label";
 import { useT } from "@/src/features/i18n/store";
 import { createUserSchema, CreateUserInput, Detso_Role } from "@/src/features/auth/schema";
 import { useCreateUser } from "@/src/features/user/hooks";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 type RoleOption = {
   value: typeof Detso_Role.TENANT_ADMIN | typeof Detso_Role.TENANT_TEKNISI;
@@ -25,6 +26,7 @@ type RoleOption = {
 
 export default function TeamCreateScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const createUser = useCreateUser();
   const isSubmitting = createUser.isPending;
 
@@ -123,10 +125,16 @@ export default function TeamCreateScreen() {
                     <Pressable
                       key={option.value}
                       onPress={() => setSelectedRole(option.value)}
-                      style={[
-                        styles.roleCard,
-                        isActive && styles.roleCardActive,
-                      ]}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 12,
+                        paddingHorizontal: 14,
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: isActive ? colors.info : colors.border,
+                        backgroundColor: isActive ? "#dbeafe" : colors.input,
+                        alignItems: "center",
+                      }}
                     >
                       <Text
                         weight={isActive ? "bold" : "medium"}
@@ -161,19 +169,4 @@ export default function TeamCreateScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  roleCard: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: "#e2e8f0",
-    backgroundColor: "#f8fafc",
-    alignItems: "center",
-  },
-  roleCardActive: {
-    borderColor: "hsl(221.2, 83.2%, 53.3%)",
-    backgroundColor: "hsl(221.2, 83.2%, 96%)",
-  },
-});
+

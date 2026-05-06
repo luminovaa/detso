@@ -6,8 +6,7 @@ import { Text } from '@/src/components/global/text';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
 import { useT } from '@/src/features/i18n/store';
-import { useColorScheme } from 'nativewind';
-import { getColor } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface MapControlsProps {
   onLocateMe: (lat: number, lng: number) => void;
@@ -15,11 +14,10 @@ interface MapControlsProps {
 }
 
 export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
+  const colors = useThemeColor();
   const { mode, cancelAdd, mapStyle, toggleMapStyle } = useNetworkMapStore();
   const [isLocating, setIsLocating] = useState(false);
   const { fabBottom } = useTabBarHeight();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const handleLocateMe = async () => {
     try {
@@ -45,9 +43,9 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
         <TouchableOpacity
           onPress={cancelAdd}
           className="w-12 h-12 rounded-full bg-red-500 items-center justify-center"
-          style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+          style={{ shadowColor: colors.shadow, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
         >
-          <Ionicons name="close" size={24} color="white" />
+          <Ionicons name="close" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
     );
@@ -59,12 +57,12 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
       <TouchableOpacity
         onPress={toggleMapStyle}
         className="w-12 h-12 rounded-full bg-white dark:bg-neutral-800 items-center justify-center"
-        style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+        style={{ shadowColor: colors.shadow, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
       >
         <Ionicons
           name={mapStyle === 'satellite' ? 'map-outline' : 'earth'}
           size={22}
-          color={isDark ? '#94A3B8' : '#64748B'}
+          color={colors.icon}
         />
       </TouchableOpacity>
 
@@ -73,12 +71,12 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
         onPress={handleLocateMe}
         disabled={isLocating}
         className="w-12 h-12 rounded-full bg-white dark:bg-neutral-800 items-center justify-center"
-        style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+        style={{ shadowColor: colors.shadow, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
       >
         {isLocating ? (
-          <ActivityIndicator size="small" color={getColor('brand.primary', isDark)} />
+          <ActivityIndicator size="small" color={colors.primary} />
         ) : (
-          <Ionicons name="locate" size={22} color={getColor('brand.primary', isDark)} />
+          <Ionicons name="locate" size={22} color={colors.primary} />
         )}
       </TouchableOpacity>
 
@@ -86,9 +84,9 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
       <TouchableOpacity
         onPress={onAddNode}
         className="w-12 h-12 rounded-full bg-primary items-center justify-center"
-        style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+        style={{ shadowColor: colors.shadow, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
       >
-        <Ionicons name="add" size={26} color="white" />
+        <Ionicons name="add" size={26} color={colors.white} />
       </TouchableOpacity>
     </View>
   );
@@ -96,6 +94,7 @@ export function MapControls({ onLocateMe, onAddNode }: MapControlsProps) {
 
 /** Banner shown when in add_node mode */
 export function AddNodeBanner() {
+  const colors = useThemeColor();
   const { t } = useT();
   const { mode, addNodeType } = useNetworkMapStore();
 
@@ -107,9 +106,9 @@ export function AddNodeBanner() {
     <View className="absolute top-28 left-4 right-4 z-20">
       <View
         className="bg-primary/95 px-4 py-3 rounded-xl flex-row items-center justify-center"
-        style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
+        style={{ shadowColor: colors.shadow, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5 }}
       >
-        <Ionicons name="pin" size={18} color="white" />
+        <Ionicons name="pin" size={18} color={colors.white} />
         <Text weight="medium" className="text-white ml-2 text-sm">
           {t('network.banner.tapToPlace', { type: label })}
         </Text>

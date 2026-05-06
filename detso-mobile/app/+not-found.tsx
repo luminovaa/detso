@@ -7,11 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/src/components/global/text';
 import { Button } from '@/src/components/global/button';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function NotFoundScreen() {
   // 🔥 Mengambil path/URL spesifik yang tidak ditemukan
   const pathname = usePathname();
   const { t } = useT();
+  const colors = useThemeColor();
 
   return (
     <SafeAreaView className="flex-1 bg-background px-8 justify-center">
@@ -29,9 +31,9 @@ export default function NotFoundScreen() {
       <View className="items-center w-full">
         {/* --- ICON 404 ALA SERVER DOWN --- */}
         <View className="w-28 h-28 rounded-[32px] bg-card items-center justify-center mb-8 border border-border shadow-sm">
-          <Ionicons name="server-outline" size={48} color="#EF4444" />
+          <Ionicons name="server-outline" size={48} color={colors.error} />
           <View className="absolute bottom-6 right-6 bg-background rounded-full p-1">
-            <Ionicons name="close-circle" size={20} color="#EF4444" />
+            <Ionicons name="close-circle" size={20} color={colors.error} />
           </View>
         </View>
 
@@ -46,7 +48,7 @@ export default function NotFoundScreen() {
         {/* --- TERMINAL DIAGNOSTIC LOG (TAMPILKAN PATH YANG SALAH) --- */}
         <View className="bg-[#0F172A] w-full p-5 rounded-2xl border border-slate-700/50 shadow-inner mb-10">
           <View className="flex-row items-center mb-3 border-b border-slate-700/50 pb-2">
-            <Ionicons name="terminal-outline" size={14} color="#64748B" className="mr-2" />
+            <Ionicons name="terminal-outline" size={14} color={colors.icon} className="mr-2" />
             <Text weight="semibold" className="text-slate-400 text-[10px] tracking-widest uppercase">
               {t("notFound.logTitle")}
             </Text>

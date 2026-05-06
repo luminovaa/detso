@@ -22,6 +22,7 @@ import { NetworkNode } from '@/src/features/network/types';
 import { useDeleteNode } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
 import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface NodeDetailSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>;
@@ -38,6 +39,7 @@ export function NodeDetailSheet({
   onConnect,
   onDismiss,
 }: NodeDetailSheetProps) {
+  const colors = useThemeColor();
   const { t } = useT();
   const deleteNode = useDeleteNode();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -45,7 +47,7 @@ export function NodeDetailSheet({
   if (!node) return null;
 
   const isServer = node.type === 'SERVER';
-  const iconColor = isServer ? '#8b5cf6' : '#3b82f6';
+  const iconColor = isServer ? colors.networkServer : colors.networkOdp;
   const typeLabel = isServer ? 'Server' : 'ODP';
 
   const handleDelete = () => {
@@ -73,7 +75,7 @@ export function NodeDetailSheet({
             <Ionicons
               name={isServer ? 'server' : 'cube'}
               size={16}
-              color="white"
+              color={colors.white}
             />
           </View>
           <View className="flex-1">
@@ -89,14 +91,14 @@ export function NodeDetailSheet({
       <View className="gap-3 mb-4">
         {node.address && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="location-outline" size={16} color="#6B7280" />
+            <Ionicons name="location-outline" size={16} color={colors.icon} />
             <Text className="text-sm text-muted-foreground flex-1">{node.address}</Text>
           </View>
         )}
 
         {node.type === 'ODP' && node.slot && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="git-branch-outline" size={16} color="#6B7280" />
+            <Ionicons name="git-branch-outline" size={16} color={colors.icon} />
             <Text className="text-sm text-muted-foreground">
               {t('network.nodeDetail.slotUsed', { used: node.used_slot, total: node.slot })}
             </Text>
@@ -105,7 +107,7 @@ export function NodeDetailSheet({
 
         {node.type === 'ODP' && node.parent_name && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="server-outline" size={16} color="#6B7280" />
+            <Ionicons name="server-outline" size={16} color={colors.icon} />
             <Text className="text-sm text-muted-foreground">
               {t('network.nodeDetail.parent', { name: node.parent_name })}
             </Text>
@@ -114,7 +116,7 @@ export function NodeDetailSheet({
 
         {node.type === 'SERVER' && (
           <View className="flex-row items-center gap-2">
-            <Ionicons name="cube-outline" size={16} color="#6B7280" />
+            <Ionicons name="cube-outline" size={16} color={colors.icon} />
             <Text className="text-sm text-muted-foreground">
               {t('network.nodeDetail.odpConnected', { count: node.children_count })}
             </Text>
@@ -123,7 +125,7 @@ export function NodeDetailSheet({
 
         {node.notes && (
           <View className="flex-row items-start gap-2">
-            <Ionicons name="document-text-outline" size={16} color="#6B7280" />
+            <Ionicons name="document-text-outline" size={16} color={colors.icon} />
             <Text className="text-sm text-muted-foreground flex-1">{node.notes}</Text>
           </View>
         )}
@@ -133,7 +135,7 @@ export function NodeDetailSheet({
       <View className="flex-row gap-2">
         <Button variant="outline" className="flex-1" onPress={onEdit}>
           <View className="flex-row items-center gap-1">
-            <Ionicons name="pencil" size={14} color="#6b7280" />
+            <Ionicons name="pencil" size={14} color={colors.icon} />
             <Text className="text-sm">Edit</Text>
           </View>
         </Button>
@@ -141,7 +143,7 @@ export function NodeDetailSheet({
         {node.type === 'ODP' && (
           <Button variant="outline" className="flex-1" onPress={onConnect}>
             <View className="flex-row items-center gap-1">
-              <Ionicons name="link" size={14} color="#3b82f6" />
+              <Ionicons name="link" size={14} color={colors.networkOdp} />
               <Text className="text-sm text-blue-500">Connect</Text>
             </View>
           </Button>
@@ -149,7 +151,7 @@ export function NodeDetailSheet({
 
         <Button variant="destructive" className="flex-1" onPress={handleDelete}>
           <View className="flex-row items-center gap-1">
-            <Ionicons name="trash" size={14} color="white" />
+            <Ionicons name="trash" size={14} color={colors.white} />
             <Text className="text-sm text-white">Hapus</Text>
           </View>
         </Button>

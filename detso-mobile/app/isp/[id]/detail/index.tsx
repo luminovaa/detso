@@ -17,10 +17,12 @@ import { Button } from "@/src/components/global/button";
 import { useTenant } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ISPDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const colors = useThemeColor();
   const { colorScheme } = useColorScheme();
 
   const { data: response, isLoading, refetch, isRefetching } = useTenant(id!);
@@ -43,7 +45,7 @@ export default function ISPDetailScreen() {
   };
 
   const isDark = colorScheme === "dark";
-  const primaryColor = isDark ? "#66a3ff" : "#102a4d";
+  const primaryColor = colors.primary;
 
     if (isLoading && !tenant) {
     return (
@@ -106,7 +108,7 @@ export default function ISPDetailScreen() {
         <Ionicons
           name={icon}
           size={22}
-          color={isDark ? "#66a3ff" : "#102a4d"}
+          color={colors.primary}
         />
       </View>
       <View>

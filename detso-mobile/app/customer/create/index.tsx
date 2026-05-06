@@ -27,7 +27,7 @@ import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
 import { networkService } from "@/src/features/network/service";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 const TOTAL_STEPS = 5;
 
 interface PhotoState {
@@ -37,6 +37,7 @@ interface PhotoState {
 
 export default function CustomerCreateScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const createCustomer = useCreateCustomer();
   const isSubmitting = createCustomer.isPending;
 
@@ -295,7 +296,7 @@ export default function CustomerCreateScreen() {
           <Image source={{ uri: photo.uri }} className="w-full h-full" resizeMode="cover" />
         ) : (
           <View className="items-center">
-            <Ionicons name="camera-outline" size={32} color="#94a3b8" />
+            <Ionicons name="camera-outline" size={32} color={colors.textMuted} />
             <Text className="text-muted-foreground text-xs mt-2">{t("customer.photoHint")}</Text>
           </View>
         )}
@@ -334,7 +335,7 @@ export default function CustomerCreateScreen() {
                     <Image source={{ uri: ktpPhoto.uri }} className="w-full h-full" resizeMode="cover" />
                   ) : (
                     <View className="items-center">
-                      <Ionicons name="id-card-outline" size={32} color="#94a3b8" />
+                      <Ionicons name="id-card-outline" size={32} color={colors.textMuted} />
                       <Text className="text-muted-foreground text-xs mt-2">{t("customer.photoHint")}</Text>
                     </View>
                   )}
@@ -350,7 +351,7 @@ export default function CustomerCreateScreen() {
               {/* NIK checking indicator */}
               {nikChecking && (
                 <View className="flex-row items-center gap-x-2 px-1">
-                  <ActivityIndicator size="small" color={COLORS.brand.primary} />
+                  <ActivityIndicator size="small" color={colors.primary} />
                   <Text className="text-xs text-muted-foreground">Memeriksa NIK...</Text>
                 </View>
               )}
@@ -359,7 +360,7 @@ export default function CustomerCreateScreen() {
               {existingCustomer && !nikChecking && (
                 <View className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <View className="flex-row items-center gap-x-2 mb-2">
-                    <Ionicons name="information-circle" size={20} color={COLORS.brand.primary} />
+                    <Ionicons name="information-circle" size={20} color={colors.primary} />
                     <Text weight="semibold" className="text-sm text-primary">NIK Sudah Terdaftar</Text>
                   </View>
                   <Text className="text-sm text-foreground">
@@ -408,8 +409,8 @@ export default function CustomerCreateScreen() {
                 <Switch
                   value={sameAddress}
                   onValueChange={setSameAddress}
-                  trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                  thumbColor={sameAddress ? "#3b82f6" : "#94a3b8"}
+                  trackColor={{ false: colors.border, true: "#bfdbfe" }}
+                  thumbColor={sameAddress ? colors.info : colors.textMuted}
                 />
               </View>
 
@@ -426,7 +427,7 @@ export default function CustomerCreateScreen() {
                   className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
                 >
                   <View className="flex-row items-center flex-1">
-                    <Ionicons name="location-outline" size={20} color="#64748b" />
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
                     <View className="ml-2 flex-1">
                       {watch("lat") && watch("long") ? (
                         <View>
@@ -443,7 +444,7 @@ export default function CustomerCreateScreen() {
                     </View>
                   </View>
                   <View className="bg-primary/10 p-2 rounded-lg">
-                    <Ionicons name="map" size={20} color="#1E40AF" />
+                    <Ionicons name="map" size={20} color={colors.info} />
                   </View>
                 </TouchableOpacity>
               </View>

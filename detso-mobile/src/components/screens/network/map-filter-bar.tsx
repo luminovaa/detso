@@ -4,8 +4,10 @@ import { Text } from '@/src/components/global/text';
 import { MapFilterType } from '@/src/features/network/types';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export function MapFilterBar() {
+  const colors = useThemeColor();
   const { t } = useT();
   const { filterType, setFilter } = useNetworkMapStore();
 
@@ -29,7 +31,7 @@ export function MapFilterBar() {
                 className={`px-4 py-2 rounded-full ${
                   isActive ? 'bg-primary' : 'bg-white/90 dark:bg-neutral-800/90'
                 }`}
-                style={{ shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
+                style={{ shadowColor: colors.shadow, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
               >
                 <Text
                   weight={isActive ? 'bold' : 'medium'}

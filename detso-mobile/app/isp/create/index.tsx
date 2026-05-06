@@ -25,9 +25,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { tenantKeys } from "@/src/features/tenant/hooks";
 import { dashboardKeys } from "@/src/features/dashboard/hooks";
 import { showErrorToast } from "@/src/lib/api-error";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ISPCreateScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const qc = useQueryClient();
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: (formData: FormData) => authService.registerTenant(formData),
@@ -156,7 +158,7 @@ export default function ISPCreateScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {watch("address") ? (
                       <View>
@@ -175,7 +177,7 @@ export default function ISPCreateScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>

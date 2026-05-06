@@ -19,6 +19,7 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 import { useT } from "@/src/features/i18n/store";
 import { useCreateNode } from "@/src/features/network/hooks";
 import { networkService } from "@/src/features/network/service";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface OdpFormValues {
   name: string;
@@ -30,6 +31,7 @@ interface OdpFormValues {
 
 export default function OdpCreateScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const createNode = useCreateNode();
   const isSubmitting = createNode.isPending;
   const [showMap, setShowMap] = useState(false);
@@ -118,7 +120,7 @@ export default function OdpCreateScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {watch("address") ? (
                       <Text className="text-foreground text-xs" numberOfLines={2}>
@@ -130,7 +132,7 @@ export default function OdpCreateScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>

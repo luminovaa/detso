@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { cn } from "../../lib/utils";
 import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface InputProps extends TextInputProps {
   error?: string;
@@ -18,6 +19,7 @@ export interface InputProps extends TextInputProps {
 
 const Input = React.forwardRef<TextInput, InputProps>(
   ({ className, error, isPassword, prefix, suffixComponent, secureTextEntry, ...props }, ref) => {
+    const colors = useThemeColor();
     // State untuk toggle mata (show/hide password)
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -52,7 +54,7 @@ const Input = React.forwardRef<TextInput, InputProps>(
           <TextInput
             ref={ref}
             className="flex-1 h-full text-base text-foreground leading-tight"
-            placeholderTextColor="#94a3b8" // Warna text-muted-foreground
+            placeholderTextColor={colors.textMuted}
             secureTextEntry={shouldHideText}
             onFocus={(e) => {
               setIsFocused(true);
@@ -82,7 +84,7 @@ const Input = React.forwardRef<TextInput, InputProps>(
               <Ionicons
                 name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
                 size={22}
-                color="#64748b"
+                color={colors.icon}
               />
             </TouchableOpacity>
           )}

@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "./text";
 import { cn } from "../../lib/utils";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface TitleHeaderProps {
   type: "sticky" | "large" | "fixed";
@@ -38,6 +39,7 @@ export function TitleHeader({
   rightElement,
 }: TitleHeaderProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const resolvedPlaceholder = placeholder || t("components.titleHeader.placeholder");
   // --- ANIMASI REANIMATED ---
   const stickyStyle = useAnimatedStyle(() => ({
@@ -81,7 +83,7 @@ export function TitleHeader({
           <Ionicons
             name="search-outline"
             size={20}
-            color="#94a3b8"
+            color={colors.textMuted}
             className="mr-2"
           />
           <TextInput
@@ -89,7 +91,7 @@ export function TitleHeader({
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 text-foreground text-base h-full"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={colors.textMuted}
           />
         </View>
 
@@ -100,7 +102,7 @@ export function TitleHeader({
             onPress={onFilterPress}
             className="h-12 bg-primary rounded-2xl items-center justify-center px-4 flex-row shadow-sm"
           >
-            <Ionicons name="options-outline" size={20} color="white" />
+            <Ionicons name="options-outline" size={20} color={colors.white} />
             <Text
               weight="semibold"
               className="text-primary-foreground ml-2 text-sm"
@@ -141,7 +143,7 @@ export function TitleHeader({
                   rightElement ? "w-12" : "px-4", // Bulat jika ada elemen kanan, memanjang jika tidak
                 )}
               >
-                <Ionicons name="options-outline" size={20} color="white" />
+                <Ionicons name="options-outline" size={20} color={colors.white} />
                 {!rightElement && (
                   <Text
                     weight="semibold"
@@ -163,7 +165,7 @@ export function TitleHeader({
             <Ionicons
               name="search-outline"
               size={20}
-              color="#94a3b8"
+              color={colors.textMuted}
               className="mr-2"
             />
             <TextInput
@@ -171,95 +173,7 @@ export function TitleHeader({
               value={searchQuery}
               onChangeText={onSearchChange}
               className="flex-1 text-foreground text-base h-full"
-              placeholderTextColor="#94a3b8"
-            />
-          </View>
-        )}
-      </View>
-    );
-  }
-
-  // ==========================================
-  // VARIAN 3: FIXED HEADER (Top bar diam untuk halaman detail)
-  // ==========================================
-  if (type === "fixed") {
-    return (
-      <View className="bg-background py-2 px-6 z-50">
-        <View className="flex-row items-center justify-between mb-2">
-          {/* Back Button & Title */}
-          <View className="flex-row items-center flex-1">
-            {onBackPress && (
-              <TouchableOpacity
-                onPress={onBackPress}
-                className="mr-2 h-10 w-10 items-center justify-center -ml-2 rounded-full active:bg-muted"
-              >
-                {/* Gunakan warna foreground agar dinamis di dark/light mode */}
-                <Ionicons
-                  name="arrow-back"
-                  size={24}
-                  color="var(--foreground)"
-                  className="text-foreground"
-                />
-              </TouchableOpacity>
-            )}
-            <Text
-              weight="bold"
-              className="text-3xl text-foreground flex-1"
-              numberOfLines={1}
-            >
-              {title}
-            </Text>
-          </View>
-
-          {/* Right Action Area */}
-          <View className="flex-row items-center gap-2">
-            {onFilterPress && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onFilterPress}
-                className={cn(
-                  "h-12 bg-primary rounded-2xl items-center justify-center flex-row shadow-sm",
-                  rightElement ? "w-12" : "px-4",
-                )}
-              >
-                <Ionicons name="options-outline" size={20} color="white" />
-                {!rightElement && (
-                  <Text
-                    weight="semibold"
-                    className="text-primary-foreground ml-2 text-sm"
-                  >
-                    {t("components.titleHeader.filter")}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
-
-            {rightElement && <View>{rightElement}</View>}
-          </View>
-        </View>
-
-        {/* Animated Subtitle (Akan hilang saat di-scroll) */}
-        {subtitle && (
-          <Animated.View style={subtitleStyle} className="overflow-hidden">
-            <Text className="text-muted-foreground -mt-1">{subtitle}</Text>
-          </Animated.View>
-        )}
-
-        {/* Search Bar */}
-        {onSearchChange && (
-          <View className="flex-row items-center bg-card border border-input rounded-2xl px-4 h-12 w-full shadow-sm mt-1">
-            <Ionicons
-              name="search-outline"
-              size={20}
-              color="#94a3b8"
-              className="mr-2"
-            />
-            <TextInput
-              placeholder={resolvedPlaceholder}
-              value={searchQuery}
-              onChangeText={onSearchChange}
-              className="flex-1 text-foreground text-base h-full"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={colors.textMuted}
             />
           </View>
         )}

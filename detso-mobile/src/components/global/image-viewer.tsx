@@ -10,6 +10,7 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./text";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -31,6 +32,7 @@ export function ImageViewer({
   initialIndex = 0,
   onClose,
 }: ImageViewerProps) {
+  const colors = useThemeColor();
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
@@ -60,7 +62,7 @@ export function ImageViewer({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.black} />
       <View className="flex-1 bg-black">
         {/* Header */}
         <View
@@ -72,7 +74,7 @@ export function ImageViewer({
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             className="w-10 h-10 rounded-full bg-black/50 items-center justify-center"
           >
-            <Ionicons name="close" size={24} color="#fff" />
+            <Ionicons name="close" size={24} color={colors.white} />
           </TouchableOpacity>
 
           {hasMultiple && (
@@ -113,7 +115,7 @@ export function ImageViewer({
             onPress={goPrev}
             className="absolute left-3 top-1/2 -mt-5 w-10 h-10 rounded-full bg-black/50 items-center justify-center"
           >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color={colors.white} />
           </TouchableOpacity>
         )}
         {hasMultiple && currentIndex < images.length - 1 && (
@@ -121,7 +123,7 @@ export function ImageViewer({
             onPress={goNext}
             className="absolute right-3 top-1/2 -mt-5 w-10 h-10 rounded-full bg-black/50 items-center justify-center"
           >
-            <Ionicons name="chevron-forward" size={24} color="#fff" />
+            <Ionicons name="chevron-forward" size={24} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>

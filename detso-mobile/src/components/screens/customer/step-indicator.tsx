@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "../../global/text";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -9,6 +10,50 @@ interface StepIndicatorProps {
 }
 
 export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicatorProps) {
+  const colors = useThemeColor();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+    },
+    stepsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    circle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.input,
+      borderWidth: 2,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    circleActive: {
+      backgroundColor: colors.info,
+      borderColor: colors.info,
+    },
+    circleCurrent: {
+      shadowColor: colors.info,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    connector: {
+      flex: 1,
+      height: 2,
+      backgroundColor: colors.border,
+      marginHorizontal: 4,
+    },
+    connectorActive: {
+      backgroundColor: colors.info,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       {/* Step circles + connectors */}
@@ -60,45 +105,3 @@ export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicator
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  stepsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  circle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#f1f5f9",
-    borderWidth: 2,
-    borderColor: "#e2e8f0",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  circleActive: {
-    backgroundColor: "hsl(221.2, 83.2%, 53.3%)",
-    borderColor: "hsl(221.2, 83.2%, 53.3%)",
-  },
-  circleCurrent: {
-    shadowColor: "#3b82f6",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  connector: {
-    flex: 1,
-    height: 2,
-    backgroundColor: "#e2e8f0",
-    marginHorizontal: 4,
-  },
-  connectorActive: {
-    backgroundColor: "hsl(221.2, 83.2%, 53.3%)",
-  },
-});

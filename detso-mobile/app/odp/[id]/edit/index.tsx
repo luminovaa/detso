@@ -19,7 +19,7 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 import { useT } from "@/src/features/i18n/store";
 import { useNetworkNode, useEditNode } from "@/src/features/network/hooks";
 import { networkService } from "@/src/features/network/service";
-import { COLORS } from "@/src/lib/colors";
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface OdpFormValues {
   name: string;
@@ -32,6 +32,7 @@ interface OdpFormValues {
 export default function OdpEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const colors = useThemeColor();
   const { data, isLoading } = useNetworkNode(id);
   const editNode = useEditNode();
   const isSubmitting = editNode.isPending;
@@ -119,7 +120,7 @@ export default function OdpEditScreen() {
     return (
       <ScreenWrapper headerTitle={t("odp.editTitle")} showBackButton>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={COLORS.brand.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </ScreenWrapper>
     );
@@ -151,7 +152,7 @@ export default function OdpEditScreen() {
                 className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
               >
                 <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color="#64748b" />
+                  <Ionicons name="location-outline" size={20} color={colors.icon} />
                   <View className="ml-2 flex-1">
                     {watch("address") || location ? (
                       <View>
@@ -170,7 +171,7 @@ export default function OdpEditScreen() {
                   </View>
                 </View>
                 <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color="#1E40AF" />
+                  <Ionicons name="map" size={20} color={colors.info} />
                 </View>
               </TouchableOpacity>
             </View>

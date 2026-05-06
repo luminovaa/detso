@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
 import { Skeleton } from "@/src/components/global/skeleton";
+import { useThemeColor, createShadow } from "@/src/lib/theme-colors";
 
 interface HeaderProps {
   /** Judul halaman */
@@ -43,7 +44,8 @@ export function Header({
   onAvatarPress,
   isLoading = false,
 }: HeaderProps) {
-  
+    const colors = useThemeColor();
+
     const handleBack = () => {
       if (onBackPress) {
         onBackPress();
@@ -75,11 +77,8 @@ export function Header({
         className="bg-primary pb-12 px-4"
         style={{ 
           paddingTop: statusBarHeight + 12,
-          shadowColor: "#000",
+          ...createShadow(colors.shadow, 0.3, 8, 8),
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 8,
         }}
       >
       <View className="flex-row items-center justify-between">

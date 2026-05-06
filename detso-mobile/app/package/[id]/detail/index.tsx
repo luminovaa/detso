@@ -16,7 +16,8 @@ import { Button } from "@/src/components/global/button";
 import { usePackage, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
+
 interface PackageData {
   id: string;
   name: string;
@@ -29,6 +30,7 @@ interface PackageData {
 export default function PackageDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const colors = useThemeColor();
   const { colorScheme } = useColorScheme();
 
   const { data: response, isLoading, refetch, isRefetching } = usePackage(id!);
@@ -110,7 +112,7 @@ export default function PackageDetailScreen() {
       showBackButton
       headerRightNode={
         <Button variant="ghost" size="sm" onPress={handleEdit}>
-          <Ionicons name="pencil" size={20} color={COLORS.brand.primary} />
+          <Ionicons name="pencil" size={20} color={colors.primary} />
         </Button>
       }
     >
@@ -122,15 +124,15 @@ export default function PackageDetailScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            colors={[COLORS.brand.primary]}
-            tintColor={COLORS.brand.primary}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
       >
         {/* Package Icon & Name */}
         <View className="items-center mb-8">
           <View className="w-24 h-24 rounded-3xl bg-primary/10 items-center justify-center border border-primary/20 mb-4">
-            <Ionicons name="cube" size={48} color={COLORS.brand.primary} />
+            <Ionicons name="cube" size={48} color={colors.primary} />
           </View>
           <Text weight="bold" className="text-2xl text-foreground text-center">
             {packageData?.name}
@@ -142,7 +144,7 @@ export default function PackageDetailScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-x-3">
               <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center">
-                <Ionicons name="pricetag" size={20} color="#22c55e" />
+                <Ionicons name="pricetag" size={20} color={colors.success} />
               </View>
               <View>
                 <Text className="text-muted-foreground text-xs">
@@ -161,7 +163,7 @@ export default function PackageDetailScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-x-3">
               <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center">
-                <Ionicons name="speedometer" size={20} color="#3b82f6" />
+                <Ionicons name="speedometer" size={20} color={colors.info} />
               </View>
               <View>
                 <Text className="text-muted-foreground text-xs">

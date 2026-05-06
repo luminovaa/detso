@@ -9,6 +9,7 @@ import { cn } from "@/src/lib/utils";
 import { Text } from "@/src/components/global/text";
 import { Label } from "@/src/components/global/label";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 interface FormDatePickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -34,6 +35,7 @@ export function FormDatePicker<T extends FieldValues>({
   maximumDate,
 }: FormDatePickerProps<T>) {
   const { t } = useT();
+  const colors = useThemeColor();
   const resolvedPlaceholder = placeholder || t("components.datePicker.placeholder");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -76,7 +78,7 @@ export function FormDatePicker<T extends FieldValues>({
               <Ionicons
                 name={mode === "time" ? "time-outline" : "calendar-outline"}
                 size={20}
-                color={error ? "#ef4444" : "#94a3b8"}
+                color={error ? colors.error : colors.textMuted}
                 className="mr-3"
               />
               <Text

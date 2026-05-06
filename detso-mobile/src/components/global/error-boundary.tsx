@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "./text";
 import { Button } from "./button";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 interface Props {
   children: ReactNode;
@@ -17,11 +18,12 @@ interface State {
 // Functional wrapper to inject i18n into class component
 function ErrorFallback({ error, onReset }: { error: Error | null; onReset: () => void }) {
   const { t } = useT();
+  const colors = useThemeColor();
 
   return (
     <View className="flex-1 bg-background items-center justify-center px-6">
       <View className="bg-destructive/10 w-24 h-24 rounded-full items-center justify-center mb-6">
-        <Ionicons name="warning" size={48} color="#ef4444" />
+        <Ionicons name="warning" size={48} color={colors.error} />
       </View>
 
       <Text

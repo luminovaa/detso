@@ -20,6 +20,7 @@ import { PermissionScreen } from "@/src/components/global/permission";
 import { config } from "@/src/lib/config";
 import { useT } from "@/src/features/i18n/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
@@ -39,6 +40,7 @@ export function MapLocationPicker({
   initialAddress = "",
 }: MapLocationPickerProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const { insets } = useTabBarHeight();
 
   const [mapRegion, setMapRegion] = useState({
@@ -236,7 +238,7 @@ export function MapLocationPicker({
             onPress={onClose}
             className="w-10 h-10 items-center justify-center rounded-full bg-muted"
           >
-            <Ionicons name="close" size={24} color="#0f172a" />
+            <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text weight="bold" className="text-lg">
             {t("map.selectLocation")}
@@ -275,7 +277,7 @@ export function MapLocationPicker({
                 anchor={{ x: 0.5, y: 1 }}
               >
                 <View className="items-center pb-1">
-                  <Ionicons name="location-sharp" size={40} color="#EF4444" className="shadow-md" />
+                  <Ionicons name="location-sharp" size={40} color={colors.error} className="shadow-md" />
                 </View>
               </Mapbox.PointAnnotation>
             )}
@@ -284,7 +286,7 @@ export function MapLocationPicker({
           </Mapbox.MapView>
 
           <View className="absolute top-4 left-4 right-4 bg-black/70 px-4 py-3 rounded-xl flex-row items-center gap-3">
-            <Ionicons name="information-circle" size={24} color="#FCD34D" />
+            <Ionicons name="information-circle" size={24} color={colors.warning} />
             <Text className="text-white text-xs flex-1">
               {t("map.tapToPlace")}
             </Text>
@@ -297,9 +299,9 @@ export function MapLocationPicker({
               className="bg-primary shadow-[0_3px_10px_rgb(0,0,0,0.2)] p-3 rounded-full self-end items-center justify-center"
             >
               {isLocating ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.white} />
               ) : (
-                <Ionicons name="locate" size={24} color="#fff" />
+                <Ionicons name="locate" size={24} color={colors.white} />
               )}
             </TouchableOpacity>
           </View>
@@ -314,7 +316,7 @@ export function MapLocationPicker({
               <TextInput
                 className="flex-1 text-foreground text-sm py-2 min-h-[44px]"
                 placeholder={t("map.addressPlaceholder")}
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={colors.textMuted}
                 value={addressText}
                 onChangeText={setAddressText}
                 multiline
@@ -327,9 +329,9 @@ export function MapLocationPicker({
                 className="bg-primary/10 w-10 h-10 rounded-lg items-center justify-center ml-2"
               >
                 {isSearching || isReverseGeocoding ? (
-                  <ActivityIndicator size="small" color="#1E40AF" />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Ionicons name="search" size={20} color="#1E40AF" />
+                  <Ionicons name="search" size={20} color={colors.primary} />
                 )}
               </TouchableOpacity>
             </View>

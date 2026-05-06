@@ -16,6 +16,7 @@ import { cn } from "../../lib/utils";
 import { Text } from "./text";
 import { Label } from "./label";
 import { useT } from "@/src/features/i18n/store";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export interface SelectOption {
   label: string;
@@ -79,6 +80,7 @@ export const AsyncSelect = <T extends FieldValues>({
   onSelectFullObject,
 }: AsyncSelectProps<T>) => {
   const { t } = useT();
+  const colors = useThemeColor();
   const resolvedPlaceholder = placeholder || t("components.select.placeholder");
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState("");
@@ -195,7 +197,7 @@ export const AsyncSelect = <T extends FieldValues>({
             <Ionicons
               name="chevron-down-outline"
               size={20}
-              color={error ? "#ef4444" : "#64748b"}
+              color={error ? colors.error : colors.icon}
             />
           </TouchableOpacity>
 
@@ -225,7 +227,7 @@ export const AsyncSelect = <T extends FieldValues>({
                     className="h-9 w-9 items-center justify-center bg-muted rounded-full"
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="close" size={22} color="#64748B" />
+                    <Ionicons name="close" size={22} color={colors.icon} />
                   </TouchableOpacity>
                 </View>
 
@@ -235,12 +237,12 @@ export const AsyncSelect = <T extends FieldValues>({
                     <Ionicons
                       name="search-outline"
                       size={20}
-                      color="#94a3b8"
+                      color={colors.textMuted}
                     />
                     <TextInput
                       className="flex-1 text-base text-foreground ml-3"
                       placeholder={t("components.select.searchPlaceholder")}
-                      placeholderTextColor="#94a3b8"
+                      placeholderTextColor={colors.textMuted}
                       value={search}
                       onChangeText={handleSearchChange}
                       autoFocus
@@ -253,7 +255,7 @@ export const AsyncSelect = <T extends FieldValues>({
                         activeOpacity={0.7}
                         className="ml-2 p-1"
                       >
-                        <Ionicons name="close-circle" size={20} color="#94a3b8" />
+                        <Ionicons name="close-circle" size={20} color={colors.textMuted} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -306,7 +308,7 @@ export const AsyncSelect = <T extends FieldValues>({
                         <Ionicons
                           name="checkmark-circle"
                           size={24}
-                          color="#1d4ed8"
+                          color={colors.info}
                         />
                       )}
                     </TouchableOpacity>
@@ -314,9 +316,9 @@ export const AsyncSelect = <T extends FieldValues>({
                   ListEmptyComponent={() => (
                     <View className="py-16 items-center justify-center">
                       {isLoading ? (
-                        <View className="items-center">
+                         <View className="items-center">
                           <View className="bg-primary/10 w-14 h-14 rounded-full items-center justify-center mb-4">
-                            <ActivityIndicator size="small" color="#1d4ed8" />
+                            <ActivityIndicator size="small" color={colors.info} />
                           </View>
                           <Text className="text-muted-foreground">
                             {t("components.select.loading")}
@@ -328,7 +330,7 @@ export const AsyncSelect = <T extends FieldValues>({
                             <Ionicons
                               name="cube-outline"
                               size={32}
-                              color="#94a3b8"
+                              color={colors.textMuted}
                             />
                           </View>
                           <Text className="text-muted-foreground text-center px-8">
@@ -346,7 +348,7 @@ export const AsyncSelect = <T extends FieldValues>({
                     if (isFetchingMore) {
                       return (
                         <View className="py-6 items-center">
-                          <ActivityIndicator size="small" color="#1d4ed8" />
+                          <ActivityIndicator size="small" color={colors.info} />
                           <Text className="text-muted-foreground text-xs mt-2">
                             {t("components.select.loadingMore")}
                           </Text>
