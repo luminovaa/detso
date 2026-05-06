@@ -15,8 +15,10 @@ import { useNetworkMapStore } from '@/src/features/network/store';
 import { useEditLink } from '@/src/features/network/hooks';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
 import { useT } from '@/src/features/i18n/store';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 export function WaypointToolbar() {
+  const colors = useThemeColor();
   const { t } = useT();
   const { fabBottom } = useTabBarHeight();
   const {
@@ -54,14 +56,14 @@ export function WaypointToolbar() {
   return (
     <View
       className="absolute left-3 right-3 bg-card rounded-[20px] px-4 pt-2 pb-4 border border-border/50"
-      style={{ bottom: fabBottom, shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 12 }}
+      style={{ bottom: fabBottom, shadowColor: colors.shadow, shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 12 }}
     >
       {/* Handle indicator (like bottom sheet) */}
       <View className="w-9 h-1 rounded-full bg-muted self-center mb-2.5" />
 
       {/* Info banner */}
       <View className="flex-row items-center bg-muted/50 rounded-lg px-2.5 py-2 mb-2.5 border border-border">
-        <Ionicons name="information-circle" size={16} color="#0891b2" />
+        <Ionicons name="information-circle" size={16} color={colors.info} />
         <Text className="text-xs text-muted-foreground ml-1.5 flex-1">
           {t('network.waypoint.hint')}
         </Text>
@@ -78,7 +80,7 @@ export function WaypointToolbar() {
             onPress={handleRemoveLast}
             disabled={isSaving}
           >
-            <Ionicons name="backspace-outline" size={14} color="#ef4444" />
+            <Ionicons name="backspace-outline" size={14} color={colors.error} />
             <Text className="text-xs text-destructive ml-1">Hapus terakhir</Text>
           </TouchableOpacity>
         </View>
@@ -90,7 +92,7 @@ export function WaypointToolbar() {
         <Button
           variant="outline"
           size="lg"
-          leftIcon={<Ionicons name="close" size={18} color="#6b7280" />}
+          leftIcon={<Ionicons name="close" size={18} color={colors.icon} />}
           title={t('common.cancel')}
           onPress={cancelEditWaypoints}
           disabled={isSaving}
@@ -101,7 +103,7 @@ export function WaypointToolbar() {
         <Button
           variant="secondary"
           size="lg"
-          leftIcon={<Ionicons name="refresh" size={18} color="white" />}
+          leftIcon={<Ionicons name="refresh" size={18} color={colors.white} />}
           title="Reset"
           onPress={resetWaypoints}
           disabled={isSaving}
@@ -112,7 +114,7 @@ export function WaypointToolbar() {
         <Button
           variant="primary"
           size="lg"
-          leftIcon={!isSaving ? <Ionicons name="checkmark" size={18} color="white" /> : undefined}
+          leftIcon={!isSaving ? <Ionicons name="checkmark" size={18} color={colors.white} /> : undefined}
           title={t('common.save')}
           onPress={handleSave}
           isLoading={isSaving}

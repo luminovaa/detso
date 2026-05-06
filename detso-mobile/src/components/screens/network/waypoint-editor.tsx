@@ -16,12 +16,14 @@ import { Text } from '../../global/text';
 import { useNetworkMapStore } from '@/src/features/network/store';
 import { NetworkTopology } from '@/src/features/network/types';
 import { toMapboxCoord } from '@/src/lib/map-utils';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface WaypointEditorProps {
   topology: NetworkTopology;
 }
 
 export function WaypointEditor({ topology }: WaypointEditorProps) {
+  const colors = useThemeColor();
   const { editingLinkId, draftWaypoints } = useNetworkMapStore();
 
   // Get the link being edited
@@ -86,7 +88,7 @@ export function WaypointEditor({ topology }: WaypointEditorProps) {
           <Mapbox.LineLayer
             id="draft-line"
             style={{
-              lineColor: '#f59e0b',
+              lineColor: colors.warning,
               lineWidth: 4,
               lineOpacity: 0.9,
               lineCap: 'round',
@@ -107,9 +109,9 @@ export function WaypointEditor({ topology }: WaypointEditorProps) {
         >
           <View
             collapsable={false}
-            style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: '#f59e0b', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.3, shadowRadius: 2, elevation: 4 }}
+            style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: colors.warning, shadowColor: colors.shadow, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.3, shadowRadius: 2, elevation: 4 }}
           >
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#f59e0b' }} />
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.warning }} />
           </View>
         </Mapbox.PointAnnotation>
       ))}
@@ -122,9 +124,9 @@ export function WaypointEditor({ topology }: WaypointEditorProps) {
       >
         <View
           collapsable={false}
-          style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: '#10b981', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 2, elevation: 3 }}
+          style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: colors.serviceActive, shadowColor: colors.shadow, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 2, elevation: 3 }}
         >
-          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#10b981' }} />
+          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.serviceActive }} />
         </View>
       </Mapbox.PointAnnotation>
 
@@ -136,9 +138,9 @@ export function WaypointEditor({ topology }: WaypointEditorProps) {
       >
         <View
           collapsable={false}
-          style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: '#ef4444', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 2, elevation: 3 }}
+          style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center', borderWidth: 2.5, borderColor: colors.serviceInactive, shadowColor: colors.shadow, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 2, elevation: 3 }}
         >
-          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#ef4444' }} />
+          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.serviceInactive }} />
         </View>
       </Mapbox.PointAnnotation>
     </>

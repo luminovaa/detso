@@ -7,7 +7,9 @@
     "success": "Success",
     "loadFailed": "Failed to Load",
     "failed": "Failed",
-    "user": "User"
+    "user": "User",
+    "edit": "Edit",
+    "notFound": "Data not found"
   },
 
   "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
@@ -869,7 +871,24 @@
     "editProfile": "Edit Profile",
     "changePassword": "Change Password",
     "editCompany": "Edit Company",
-    "helpCenter": "Help Center"
+    "helpCenter": "Help Center",
+    "monitoring": "Monitoring"
+  },
+
+  "monitoring": {
+    "title": "Monitoring",
+    "detailTitle": "Router Detail",
+    "loading": "Loading...",
+    "emptyTitle": "No Routers",
+    "emptyDesc": "No routers configured yet. Add a router to start monitoring.",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Last seen",
+    "uptime": "Uptime",
+    "sessions": "Sessions",
+    "interfaces": "Interfaces",
+    "noData": "No Data",
+    "noDataDesc": "No monitoring data available for this router."
   },
 
   "odp": {

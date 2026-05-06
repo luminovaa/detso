@@ -7,7 +7,9 @@
     "success": "Berhasil",
     "loadFailed": "Gagal Memuat",
     "failed": "Gagal",
-    "user": "Pengguna"
+    "user": "Pengguna",
+    "edit": "Edit",
+    "notFound": "Data tidak ditemukan"
   },
 
   "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
@@ -869,7 +871,24 @@
     "editProfile": "Edit Profil",
     "changePassword": "Ubah Password",
     "editCompany": "Edit Perusahaan",
-    "helpCenter": "Pusat Bantuan"
+    "helpCenter": "Pusat Bantuan",
+    "monitoring": "Monitoring"
+  },
+
+  "monitoring": {
+    "title": "Monitoring",
+    "detailTitle": "Detail Router",
+    "loading": "Memuat...",
+    "emptyTitle": "Belum Ada Router",
+    "emptyDesc": "Belum ada router yang dikonfigurasi. Tambahkan router untuk mulai monitoring.",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Terakhir terlihat",
+    "uptime": "Uptime",
+    "sessions": "Sesi Aktif",
+    "interfaces": "Interface",
+    "noData": "Tidak Ada Data",
+    "noDataDesc": "Belum ada data monitoring untuk router ini."
   },
 
   "odp": {
