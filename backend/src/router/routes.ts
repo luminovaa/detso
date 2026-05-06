@@ -10,6 +10,7 @@ import tenantRouter from '../controller/tenant';
 import dashboardRouter from '../controller/dashboard';
 import networkRouter from '../controller/network';
 import filesRouter from '../controller/files';
+import mikrotikRouter from '../controller/mikrotik';
 import { authLimiter } from '../middleware/rate-limit.middleware';
 
 export default (app: Express) => {
@@ -41,6 +42,9 @@ export default (app: Express) => {
 
     // Network topology (owner only)
     apiRouter.use('/network', networkRouter);
+
+    // Mikrotik monitoring (owner & admin only)
+    apiRouter.use('/mikrotik', mikrotikRouter);
 
     apiRouter.use('*', (req, res) => {
         res.status(404).send('Not found!!!');

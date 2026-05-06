@@ -1,5 +1,6 @@
 import { prisma } from '../src/utils/prisma';
 import * as bcrypt from 'bcryptjs';
+import { encryptPassword } from '../src/utils/encryption';
 
 async function main() {
   console.log('🚀 Seeding Mikrotik test data...\n');
@@ -54,7 +55,7 @@ async function main() {
       host: 'localhost',
       api_port: 8728,
       api_username: 'api-user',
-      api_password: 'api-password123', // TODO: Encrypt in production
+      api_password: encryptPassword('api-password123'),
       is_active: true,
       is_online: true,
       board_name: 'CHR QEMU Standard PC',
@@ -77,7 +78,7 @@ async function main() {
       host: 'localhost',
       api_port: 8730,
       api_username: 'api-user',
-      api_password: 'api-password123', // TODO: Encrypt in production
+      api_password: encryptPassword('api-password123'),
       is_active: true,
       is_online: true,
       board_name: 'CHR QEMU Standard PC',

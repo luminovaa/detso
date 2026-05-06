@@ -10,6 +10,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import app from './src/app';
 import { log } from './src/config/logger.config';
 import { cleanupExpiredTokens } from './src/controller/auth/get.auth';
+import { startMonitoringWorker } from './src/jobs/mikrotik-monitoring.job';
 
 const PORT = Number(process.env.PORT) || 6589;
 
@@ -38,6 +39,12 @@ io.on('connection', (socket) => {
   });
 });
 
+// Make io globally available for background workers
+declare global {
+  var io: SocketIOServer;
+}
+global.io = io;
+
 // Start Server
 const server = httpServer.listen(PORT, () => {
   const address = server.address();
@@ -58,6 +65,9 @@ const server = httpServer.listen(PORT, () => {
   cleanupExpiredTokens().catch(err => 
     log.error('Initial token cleanup failed', { error: String(err) })
   );
+
+  // Start Mikrotik monitoring worker
+  startMonitoringWorker();
 });
 
 // Schedule daily token cleanup (every 24 hours)
@@ -79,4 +89,21 @@ process.on('SIGTERM', () => {
     log.info('Process terminated');
     process.exit(0);
   });
+});
+
+// Prevent process crash from unhandled errors (e.g., Mikrotik API unexpected replies)
+process.on('uncaughtException', (error: Error) => {
+  log.error('Uncaught exception (non-fatal)', { 
+    message: error.message, 
+    stack: error.stack,
+    name: error.name 
+  });
+  // Don't exit - keep server running
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  log.error('Unhandled rejection (non-fatal)', { 
+    reason: reason instanceof Error ? reason.message : String(reason) 
+  });
+  // Don't exit - keep server running
 });

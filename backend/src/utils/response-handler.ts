@@ -28,3 +28,21 @@ export const responseData = <T>(
 
   res.status(statusCode).json(payload);
 };
+
+export const successResponse = <T>(
+  message: string,
+  data?: T,
+  statusCode: number = 200
+) => {
+  const payload: ResponseData<T> = {
+    success: true,
+    statusCode,
+    message,
+  };
+
+  if (data !== undefined) {
+    payload.data = data;
+  }
+
+  return payload;
+};

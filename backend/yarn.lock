@@ -1608,6 +1608,7 @@ __metadata:
     jsonwebtoken: "npm:^9.0.3"
     morgan: "npm:^1.10.1"
     multer: "npm:^1.4.5-lts.2"
+    node-cron: "npm:^4.2.1"
     node-routeros: "npm:^1.6.9"
     pdfkit: "npm:^0.17.2"
     pg: "npm:^8.20.0"
@@ -2897,6 +2898,13 @@ __metadata:
   version: 2.1.1
   resolution: "netmask@npm:2.1.1"
   checksum: 10c0/c78e31869b0578fb0a9874a0c0fdf0e1f8b3492392d1043355fb11d9ea42ef94e0216c6aee7d8e15db39d1a8caf331f9b144ae3ee43fd951b73a66837711fb09
+  languageName: node
+  linkType: hard
+
+"node-cron@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "node-cron@npm:4.2.1"
+  checksum: 10c0/804df01df230e96fd2f8ffcde004f4d5af953bccdf3ccf993dc450526dd65f553a2f2ad4bc0faf55c90c38cbc99c9ddbb88ee16cba3fc6bc74e606da6efb249e
   languageName: node
   linkType: hard
 
