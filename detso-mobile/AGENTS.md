@@ -417,6 +417,7 @@ npm run reset-project   # Reset to blank project
 ### DO:
 - Gunakan `@/` path alias untuk imports (`@/src/...`, `@/app/...`)
 - Gunakan NativeWind classes untuk styling (bukan StyleSheet)
+- **Gunakan `useThemeColor()` hook untuk warna di inline styles/props**
 - Gunakan `expo-secure-store` untuk data sensitif (tokens)
 - Gunakan React Query untuk server state
 - Gunakan Zustand untuk client-only state
@@ -430,10 +431,127 @@ npm run reset-project   # Reset to blank project
 - Jangan fetch data langsung di screen files (gunakan hooks dari features/)
 - Jangan hardcode API URL (gunakan config.ts)
 - Jangan hardcode strings (gunakan i18n)
+- **Jangan hardcode warna (hex/rgb) - gunakan `useThemeColor()` atau Tailwind classes**
 - Jangan buat inline styles (gunakan NativeWind)
 - Jangan ignore TypeScript errors
 - Jangan bypass auth check di protected screens
 - Jangan import dari `node_modules` langsung jika ada Expo equivalent
+
+## Color Management
+
+### Theme-Aware Colors
+
+Untuk komponen yang tidak support `className` (ActivityIndicator, Ionicons, TextInput placeholder, dll), gunakan `useThemeColor()` hook:
+
+```typescript
+import { useThemeColor } from '@/src/lib/theme-colors';
+
+function MyComponent() {
+  const colors = useThemeColor();
+  
+  return (
+    <>
+      {/* ✅ CORRECT - Theme-aware colors */}
+      <ActivityIndicator color={colors.primary} />
+      <Ionicons name="alert" color={colors.error} />
+      <TextInput placeholderTextColor={colors.textMuted} />
+      
+      {/* ❌ WRONG - Hardcoded colors */}
+      <ActivityIndicator color="#3b82f6" />
+      <Ionicons name="alert" color="#ef4444" />
+      <TextInput placeholderTextColor="#94a3b8" />
+    </>
+  );
+}
+```
+
+### Available Theme Colors
+
+```typescript
+const colors = useThemeColor();
+
+// Brand colors
+colors.primary       // Teal (light: #0F766E, dark: #2DD4BF)
+colors.secondary     // Cyan
+colors.accent        // Emerald
+colors.tertiary      // Deep teal / Light teal
+
+// Semantic colors
+colors.success       // Green
+colors.warning       // Amber
+colors.error         // Red
+colors.info          // Blue
+
+// Text colors
+colors.text          // Primary text
+colors.textMuted     // Secondary/muted text
+colors.textDisabled  // Disabled text
+colors.textInverted  // Inverted (for colored backgrounds)
+
+// Background colors
+colors.background    // Main background
+colors.card          // Card/surface background
+colors.input         // Input background
+colors.hover         // Hover/pressed state
+
+// Border colors
+colors.border        // Default border
+colors.borderInput   // Input border
+colors.borderFocus   // Focus border
+
+// Icon colors
+colors.icon          // Default icon
+colors.iconActive    // Active/selected icon
+colors.iconMuted     // Muted/disabled icon
+
+// Network topology colors
+colors.networkFiber       // Fiber line
+colors.networkDropCable   // Drop cable
+colors.networkServer      // Server node
+colors.networkOdp         // ODP node
+colors.serviceActive      // Active service
+colors.serviceInactive    // Inactive service
+colors.serviceSuspended   // Suspended service
+
+// Ticket priority colors
+colors.priorityLow
+colors.priorityMedium
+colors.priorityHigh
+colors.priorityUrgent
+
+// Special colors
+colors.shadow        // Shadow (always black)
+colors.overlay       // Overlay/backdrop
+colors.white         // Pure white
+colors.black         // Pure black
+colors.transparent   // Transparent
+```
+
+### Helper Functions
+
+```typescript
+import { withOpacity, createShadow } from '@/src/lib/theme-colors';
+
+// Add opacity to color
+const semiTransparent = withOpacity(colors.primary, 0.5);
+// Returns: 'rgba(15, 118, 110, 0.5)'
+
+// Create shadow style
+const shadowStyle = createShadow(colors.shadow, 0.2, 8, 5);
+// Returns: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation }
+```
+
+### When to Use What
+
+| Scenario | Solution | Example |
+|----------|----------|---------|
+| Regular styling | Tailwind classes | `className="bg-primary text-white"` |
+| ActivityIndicator | `useThemeColor()` | `color={colors.primary}` |
+| Ionicons | `useThemeColor()` | `color={colors.error}` |
+| TextInput placeholder | `useThemeColor()` | `placeholderTextColor={colors.textMuted}` |
+| Mapbox styles | `useThemeColor()` | `lineColor: colors.networkFiber` |
+| Shadow colors | `createShadow()` | `style={createShadow(colors.shadow)}` |
+| Dynamic inline styles | `useThemeColor()` | `style={{ color: colors.text }}` |
 
 ## Environment Variables
 
