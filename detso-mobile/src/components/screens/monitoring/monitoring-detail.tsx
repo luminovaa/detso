@@ -8,6 +8,7 @@ import { useCurrentMonitoring, useForcePoll } from "@/src/features/mikrotik/hook
 import { useT } from "@/src/features/i18n/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useThemeColor } from "@/src/lib/theme-colors";
+import { safeNumber, formatBytes, formatBps } from "@/src/lib/format";
 
 interface Props {
   routerId: string;
@@ -42,24 +43,6 @@ function StatCard({ icon, label, value, subValue, color }: {
   );
 }
 
-function formatBytes(bytes: string | number): string {
-  const b = typeof bytes === 'string' ? parseInt(bytes, 10) : bytes;
-  if (b === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(b) / Math.log(k));
-  return parseFloat((b / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function formatBps(bps: string | number): string {
-  const b = typeof bps === 'string' ? parseInt(bps, 10) : bps;
-  if (b === 0) return '0 bps';
-  if (b >= 1000000000) return (b / 1000000000).toFixed(1) + ' Gbps';
-  if (b >= 1000000) return (b / 1000000).toFixed(1) + ' Mbps';
-  if (b >= 1000) return (b / 1000).toFixed(1) + ' Kbps';
-  return b + ' bps';
-}
-
 export function MonitoringDetail({ routerId }: Props) {
   const { t } = useT();
   const colors = useThemeColor();
@@ -72,16 +55,17 @@ export function MonitoringDetail({ routerId }: Props) {
   const monitoring = monitoringResponse?.monitoring;
   const interfaces = monitoringResponse?.interfaces || [];
 
-  const memoryUsed = monitoring ? parseInt(monitoring.memory_used, 10) : 0;
-  const memoryTotal = monitoring ? parseInt(monitoring.memory_total, 10) : 1;
-  const diskUsed = monitoring ? parseInt(monitoring.disk_used, 10) : 0;
-  const diskTotal = monitoring ? parseInt(monitoring.disk_total, 10) : 1;
-  const memoryPercent = ((memoryUsed / memoryTotal) * 100).toFixed(1);
-  const diskPercent = ((diskUsed / diskTotal) * 100).toFixed(1);
+  const cpuLoad = safeNumber(monitoring?.cpu_load);
+  const memoryUsed = safeNumber(monitoring?.memory_used);
+  const memoryTotal = safeNumber(monitoring?.memory_total);
+  const memoryPercent = memoryTotal > 0 ? Math.round((memoryUsed / memoryTotal) * 100) : 0;
+  const activeSessions = safeNumber(monitoring?.active_sessions);
+  const diskUsed = safeNumber(monitoring?.disk_used);
+  const diskTotal = safeNumber(monitoring?.disk_total);
+  const diskPercent = diskTotal > 0 ? Math.round((diskUsed / diskTotal) * 100) : 0;
 
   const handleRefresh = () => {
-    forcePoll.mutate(routerId);
-    refetch();
+    forcePoll.mutate(routerId, { onSettled: () => refetch() });
   };
 
   return (
@@ -123,7 +107,7 @@ export function MonitoringDetail({ routerId }: Props) {
                   </Text>
                 </View>
                 <Text className="text-xs text-muted-foreground">
-                  {t("monitoring.uptime")}: {monitoring.uptime}
+                  {t("monitoring.uptime")}: {monitoring.uptime ?? '-'}
                 </Text>
               </View>
             </View>
@@ -133,13 +117,13 @@ export function MonitoringDetail({ routerId }: Props) {
               <StatCard
                 icon="speedometer-outline"
                 label="CPU"
-                value={`${monitoring.cpu_load.toFixed(0)}%`}
-                color={monitoring.cpu_load > 80 ? colors.error : monitoring.cpu_load > 50 ? colors.warning : colors.success}
+                value={`${cpuLoad.toFixed(0)}%`}
+                color={cpuLoad > 80 ? colors.error : cpuLoad > 50 ? colors.warning : colors.success}
               />
               <StatCard
                 icon="people-outline"
                 label={t("monitoring.sessions")}
-                value={`${monitoring.active_sessions}`}
+                value={`${activeSessions}`}
                 color={colors.info}
               />
             </View>
@@ -151,13 +135,13 @@ export function MonitoringDetail({ routerId }: Props) {
               </Text>
               <View className="flex-row items-center justify-between">
                 <Text weight="bold" className="text-2xl text-foreground">
-                  {monitoring.cpu_load.toFixed(1)}%
+                  {cpuLoad.toFixed(1)}%
                 </Text>
               </View>
               <ProgressBar
-                value={monitoring.cpu_load}
+                value={cpuLoad}
                 max={100}
-                color={monitoring.cpu_load > 80 ? "bg-red-500" : monitoring.cpu_load > 50 ? "bg-yellow-500" : "bg-green-500"}
+                color={cpuLoad > 80 ? "bg-red-500" : cpuLoad > 50 ? "bg-yellow-500" : "bg-green-500"}
               />
             </View>
 
@@ -177,7 +161,7 @@ export function MonitoringDetail({ routerId }: Props) {
               <ProgressBar
                 value={memoryUsed}
                 max={memoryTotal}
-                color={parseFloat(memoryPercent) > 90 ? "bg-red-500" : parseFloat(memoryPercent) > 70 ? "bg-yellow-500" : "bg-blue-500"}
+                color={memoryPercent > 90 ? "bg-red-500" : memoryPercent > 70 ? "bg-yellow-500" : "bg-blue-500"}
               />
             </View>
 
@@ -197,7 +181,7 @@ export function MonitoringDetail({ routerId }: Props) {
               <ProgressBar
                 value={diskUsed}
                 max={diskTotal}
-                color={parseFloat(diskPercent) > 90 ? "bg-red-500" : parseFloat(diskPercent) > 70 ? "bg-yellow-500" : "bg-purple-500"}
+                color={diskPercent > 90 ? "bg-red-500" : diskPercent > 70 ? "bg-yellow-500" : "bg-purple-500"}
               />
             </View>
 
