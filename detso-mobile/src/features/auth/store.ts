@@ -138,8 +138,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.getMe();
       set({ user: response.data });
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
+    } catch (error: any) {
+      console.error('Failed to refresh user data:', error?.message || error);
       throw error;
     }
   },
@@ -178,8 +178,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           await refreshTokenWithLock();
           await get().refreshUserData();
           get().setupAutoRefresh(); // Schedule next cycle
-        } catch (error) {
-          console.error('❌ [AUTO-REFRESH] Refresh failed:', error);
+        } catch (error: any) {
+          console.error('❌ [AUTO-REFRESH] Refresh failed:', error?.message || error);
           get().logout();
         }
         return;
@@ -219,8 +219,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ refreshTimer: timer });
       console.log('✅ [AUTO-REFRESH] Timer set successfully');
 
-    } catch (error) {
-      console.error('❌ [AUTO-REFRESH] Setup failed:', error);
+    } catch (error: any) {
+      console.error('❌ [AUTO-REFRESH] Setup failed:', error?.message || error);
     }
   },
 

@@ -50,6 +50,10 @@ export default function TenantTeknisiDashboard() {
   // Recompute murah (filter+sort atas list bulan berjalan) — tidak perlu useMemo,
   // dan menghindari dependency array yang harus melacak `now` per instant.
   const todaySchedules = getSchedulesForDate(schedules, now);
+  // Metric "Tugas Hari Ini" hanya menghitung jadwal yang masih SCHEDULED —
+  // CANCELLED/COMPLETED tetap muncul di daftar di bawah (dengan badge status),
+  // tapi bukan "tugas" yang masih perlu dikerjakan hari ini.
+  const todayScheduledCount = todaySchedules.filter((s) => s.status === 'SCHEDULED').length;
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -101,7 +105,7 @@ export default function TenantTeknisiDashboard() {
               <MetricCard
                 icon="calendar-outline"
                 label={t('teknisiDashboard.todaySchedules')}
-                value={todaySchedules.length}
+                value={todayScheduledCount}
                 color={colors.primary}
               />
               <MetricCard
