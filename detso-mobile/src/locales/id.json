@@ -468,7 +468,13 @@
   "teknisiDashboard": {
     "title": "Dashboard Teknisi",
     "welcome": "Selamat datang, {{name}}",
-    "comingSoon": "Dashboard untuk teknisi akan segera hadir"
+    "todaySchedules": "Tugas Hari Ini",
+    "activeTickets": "Tiket Aktif",
+    "completedThisMonth": "Selesai Bulan Ini",
+    "todayScheduleSection": "Jadwal Hari Ini",
+    "ticketSection": "Tiket Aktif Saya",
+    "noActiveTickets": "Tidak ada tiket aktif",
+    "noActiveTicketsDesc": "Tiket baru yang ditugaskan ke kamu akan muncul di sini."
   },
 
   "_comment_ticket": "Ticket Management Screens (app/ticket/)",

@@ -468,7 +468,13 @@
   "teknisiDashboard": {
     "title": "Technician Dashboard",
     "welcome": "Welcome, {{name}}",
-    "comingSoon": "Technician dashboard will be available soon"
+    "todaySchedules": "Today's Jobs",
+    "activeTickets": "Active Tickets",
+    "completedThisMonth": "Done This Month",
+    "todayScheduleSection": "Today's Schedule",
+    "ticketSection": "My Active Tickets",
+    "noActiveTickets": "No active tickets",
+    "noActiveTicketsDesc": "New tickets assigned to you will show up here."
   },
 
   "_comment_ticket": "Ticket Management Screens (app/ticket/)",
