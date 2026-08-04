@@ -722,6 +722,8 @@
     "mapScreen": {
       "loading": "Loading network map...",
       "preparing": "Preparing network map...",
+      "autoCreateFailed": "Failed to prepare the map",
+      "autoCreateFailedDesc": "We couldn't create the first server node. Check your connection, then try again.",
       "creatingServer": "Creating server at {{name}} location",
       "loadFailed": "Failed to Load",
       "loadFailedDesc": "Unable to load network data. Check your internet connection.",

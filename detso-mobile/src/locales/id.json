@@ -722,6 +722,8 @@
     "mapScreen": {
       "loading": "Memuat peta jaringan...",
       "preparing": "Menyiapkan peta jaringan...",
+      "autoCreateFailed": "Gagal menyiapkan peta",
+      "autoCreateFailedDesc": "Node server pertama gagal dibuat. Periksa koneksi kamu, lalu coba lagi.",
       "creatingServer": "Membuat server di lokasi {{name}}",
       "loadFailed": "Gagal Memuat",
       "loadFailedDesc": "Tidak dapat memuat data jaringan. Periksa koneksi internet Anda.",

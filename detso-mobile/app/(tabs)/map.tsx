@@ -261,8 +261,30 @@ export default function NetworkMap() {
   if (topology && topology.nodes.length === 0) {
     const tenantHasLocation = tenant?.lat && tenant?.long;
 
-    // If tenant has location but auto-create failed or hasn't run yet, show manual option
+    // If tenant has location: auto-create in-flight → spinner; failed → error + retry
     if (tenantHasLocation) {
+      if (createNode.isError) {
+        return (
+          <View className="flex-1 items-center justify-center bg-background px-6">
+            <Ionicons name="cloud-offline" size={48} color={colors.error} />
+            <Text weight="bold" className="text-foreground mt-3 text-lg">
+              {t('network.mapScreen.autoCreateFailed')}
+            </Text>
+            <Text className="text-muted-foreground mt-1 text-center">
+              {t('network.mapScreen.autoCreateFailedDesc')}
+            </Text>
+            <Button
+              className="mt-4"
+              onPress={() => {
+                createNode.reset();
+                setAutoCreateAttempted(false);
+              }}
+            >
+              <Text className="text-primary-foreground">{t('network.mapScreen.retry')}</Text>
+            </Button>
+          </View>
+        );
+      }
       return (
         <View className="flex-1 items-center justify-center bg-background">
           <ActivityIndicator size="large" color={colors.primary} />
