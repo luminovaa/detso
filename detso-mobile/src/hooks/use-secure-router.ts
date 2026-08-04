@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '../features/auth/store';
+import { isRouteAllowed } from '../lib/route-roles';
 
 /**
  * Custom React Hook for enforcing authentication-based navigation flows.
@@ -24,6 +25,8 @@ export function useProtectedRoute(fontsLoaded: boolean) {
     if (!user && !inAuthGroup) {
       router.replace('/sign-in');
     } else if (user && inAuthGroup) {
+      router.replace('/(tabs)');
+    } else if (user && !isRouteAllowed(segments, user.role)) {
       router.replace('/(tabs)');
     }
   }, [user, isInitialized, fontsLoaded, segments]);
