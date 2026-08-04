@@ -50,7 +50,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   refreshTimer: null,
 
   login: async (data: LoginInput) => {
-    console.log('Login attempt:', data);
     set({ isLoading: true });
     try {
       const response = await authService.login(data);
@@ -62,7 +61,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await get().refreshUserData();
 
       set({ user, isLoading: false, isInitialized: true });
-      console.log('Login successful:', user);
 
       get().setupAutoRefresh();
       const _t = (key: string) => {
