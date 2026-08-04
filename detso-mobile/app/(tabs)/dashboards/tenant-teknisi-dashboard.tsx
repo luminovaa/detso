@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
 import { ScreenWrapper } from '@/src/components/global/screen-wrapper';
@@ -24,7 +24,10 @@ export default function TenantTeknisiDashboard() {
   const { contentPaddingBottom } = useTabBarHeight();
   const [refreshing, setRefreshing] = useState(false);
 
-  const now = useMemo(() => new Date(), []);
+  // Dihitung ulang tiap render (bukan useMemo) supaya "hari ini" self-heal
+  // saat app dibiarkan terbuka lewat tengah malam / pergantian bulan —
+  // re-render apa pun (pull-to-refresh, tab refocus) mengoreksi tanggalnya sendiri.
+  const now = new Date();
   const {
     data: scheduleResp,
     isLoading: schedulesLoading,
@@ -44,7 +47,9 @@ export default function TenantTeknisiDashboard() {
   const statistics = scheduleResp?.data?.statistics as
     | { total: number; scheduled: number; completed: number; cancelled: number }
     | undefined;
-  const todaySchedules = useMemo(() => getSchedulesForDate(schedules, now), [schedules, now]);
+  // Recompute murah (filter+sort atas list bulan berjalan) — tidak perlu useMemo,
+  // dan menghindari dependency array yang harus melacak `now` per instant.
+  const todaySchedules = getSchedulesForDate(schedules, now);
 
   const handleRefresh = async () => {
     setRefreshing(true);
