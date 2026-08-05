@@ -21,6 +21,7 @@ import {
   getHistoricalMonitoring,
   getInterfaceStats,
   forcePollRouter,
+  getPPPoESessions,
 } from './monitoring.controller';
 
 const router = Router();
@@ -66,5 +67,8 @@ router.get('/monitoring/:router_id/interfaces', getInterfaceStats);
 
 // Force poll router
 router.post('/monitoring/:router_id/poll', forcePollRouter);
+
+// Get live PPPoE sessions
+router.get('/monitoring/:router_id/pppoe', getPPPoESessions);
 
 export default router;

@@ -7,6 +7,8 @@
 import { prisma } from '../../utils/prisma';
 import { log } from '../../config/logger.config';
 import { decryptPassword } from '../../utils/encryption';
+import { computeBps } from './traffic';
+import type { PPPoESession, SystemHealth } from './types';
 
 export class MonitoringService {
   /**
@@ -39,7 +41,7 @@ export class MonitoringService {
 
         // Fetch system resources (required)
         const resource = await service.getSystemResource();
-        
+
         // Fetch interfaces - wrap in try/catch because some CHR versions
         // return !empty which crashes node-routeros
         let interfaces: any[] = [];
@@ -48,9 +50,47 @@ export class MonitoringService {
         } catch (e) {
           log.debug('Failed to fetch interfaces', { routerId, error: String(e) });
         }
-        
-        const pppoeSessions: any[] = [];
-        const health: any = null;
+
+        // PPPoE and health use the same per-fetch guard as interfaces
+        let pppoeSessions: PPPoESession[] = [];
+        try {
+          pppoeSessions = await service.getPPPoEActiveSessions();
+        } catch (e) {
+          log.debug('Failed to fetch PPPoE sessions', { routerId, error: String(e) });
+        }
+
+        let health: SystemHealth | null = null;
+        try {
+          health = await service.getSystemHealth();
+        } catch (e) {
+          log.debug('Failed to fetch system health', { routerId, error: String(e) });
+        }
+
+        // One shared timestamp per poll cycle: getCurrentMonitoring joins
+        // interface rows to the monitoring row on recorded_at equality
+        const recordedAt = new Date();
+
+        // Previous interface snapshot for the bps delta
+        const prevLatest = await prisma.detso_Mikrotik_Interface.findFirst({
+          where: { router_id: routerId },
+          orderBy: { recorded_at: 'desc' },
+          select: { recorded_at: true },
+        });
+        const prevInterfaces = prevLatest
+          ? await prisma.detso_Mikrotik_Interface.findMany({
+              where: { router_id: routerId, recorded_at: prevLatest.recorded_at },
+              select: {
+                interface_name: true,
+                rx_bytes: true,
+                tx_bytes: true,
+                recorded_at: true,
+              },
+            })
+          : [];
+        const prevByName = new Map<string, (typeof prevInterfaces)[number]>();
+        for (const p of prevInterfaces) {
+          prevByName.set(p.interface_name, p);
+        }
 
         // Store monitoring data
         // Note: Mikrotik API returns all values as strings, so we need to parse them
@@ -70,8 +110,9 @@ export class MonitoringService {
             disk_total: BigInt(totalDisk),
             uptime: String(resource.uptime || ''),
             active_sessions: pppoeSessions.length,
-            temperature: health?.temperature ? parseFloat(String(health.temperature)) : null,
-            voltage: health?.voltage ? parseFloat(String(health.voltage)) : null,
+            temperature: health?.temperature != null ? parseFloat(String(health.temperature)) : null,
+            voltage: health?.voltage != null ? parseFloat(String(health.voltage)) : null,
+            recorded_at: recordedAt,
           },
         });
 
@@ -80,24 +121,32 @@ export class MonitoringService {
         const interfaceRecords = interfaces
           .filter((iface: any) => iface.type !== 'loopback') // Skip loopback
           .map((iface: any) => {
+            const interfaceName = String(iface.name || '');
+            const rxBytes = BigInt(String(iface['rx-byte'] || '0'));
+            const txBytes = BigInt(String(iface['tx-byte'] || '0'));
+            const prev = prevByName.get(interfaceName);
+            const dtSeconds = prev
+              ? (recordedAt.getTime() - prev.recorded_at.getTime()) / 1000
+              : 0;
             return {
               router_id: routerId,
-              interface_name: String(iface.name || ''),
+              interface_name: interfaceName,
               interface_type: String(iface.type || ''),
               mac_address: iface['mac-address'] ? String(iface['mac-address']) : null,
               mtu: iface.mtu ? parseInt(String(iface.mtu), 10) : null,
               is_running: iface.running === 'true' || iface.running === true,
               is_disabled: iface.disabled === 'true' || iface.disabled === true,
-              rx_bytes: BigInt(String(iface['rx-byte'] || '0')),
-              tx_bytes: BigInt(String(iface['tx-byte'] || '0')),
+              rx_bytes: rxBytes,
+              tx_bytes: txBytes,
               rx_packets: BigInt(String(iface['rx-packet'] || '0')),
               tx_packets: BigInt(String(iface['tx-packet'] || '0')),
               rx_errors: parseInt(String(iface['rx-error'] || '0'), 10),
               tx_errors: parseInt(String(iface['tx-error'] || '0'), 10),
               rx_drops: parseInt(String(iface['rx-drop'] || '0'), 10),
               tx_drops: parseInt(String(iface['tx-drop'] || '0'), 10),
-              rx_bps: BigInt(0), // Traffic monitoring disabled for now
-              tx_bps: BigInt(0),
+              rx_bps: prev ? computeBps(prev.rx_bytes, rxBytes, dtSeconds) : BigInt(0),
+              tx_bps: prev ? computeBps(prev.tx_bytes, txBytes, dtSeconds) : BigInt(0),
+              recorded_at: recordedAt,
             };
           });
 

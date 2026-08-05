@@ -55,4 +55,9 @@ export const mikrotikService = {
     const response = await api.post(`/mikrotik/monitoring/${routerId}/poll`);
     return response.data;
   },
+
+  getPPPoESessions: async (routerId: string) => {
+    const response = await api.get(`/mikrotik/monitoring/${routerId}/pppoe`);
+    return response.data;
+  },
 };

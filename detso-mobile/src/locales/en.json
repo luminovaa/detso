@@ -896,7 +896,24 @@
     "sessions": "Sessions",
     "interfaces": "Interfaces",
     "noData": "No Data",
-    "noDataDesc": "No monitoring data available for this router."
+    "noDataDesc": "No monitoring data available for this router.",
+    "pppoeTitle": "PPPoE Sessions",
+    "pppoeEmpty": "No Active Sessions",
+    "pppoeEmptyDesc": "No customers are currently connected.",
+    "pppoeError": "Failed to Load Sessions",
+    "pppoeErrorDesc": "The router could not be reached. Try again.",
+    "retry": "Try Again",
+    "historyTitle": "History",
+    "historyRange3h": "3h",
+    "historyRange12h": "12h",
+    "historyRange24h": "24h",
+    "historyCpu": "CPU (%)",
+    "historyMemory": "Memory (%)",
+    "historySessions": "Active Sessions",
+    "historyEmpty": "No History Data",
+    "historyEmptyDesc": "Data will accumulate after the router has been polled a few times.",
+    "temperature": "Temperature",
+    "historyDesc": "CPU, memory, sessions"
   },
 
   "odp": {

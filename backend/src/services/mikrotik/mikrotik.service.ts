@@ -6,6 +6,7 @@
 
 import { RouterOSAPI } from 'node-routeros';
 import { log } from '../../config/logger.config';
+import { normalizeSystemHealth } from './health';
 import type {
   MikrotikConnectionConfig,
   SystemResource,
@@ -161,8 +162,7 @@ export class MikrotikService {
     await this.ensureConnected();
     try {
       const result = await this.conn.write('/system/health/print');
-      if (!result || result.length === 0) return null;
-      return result[0] as SystemHealth;
+      return normalizeSystemHealth(result);
     } catch (error) {
       // Not all hardware supports health monitoring
       if (error instanceof Error && (

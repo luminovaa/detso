@@ -10,6 +10,7 @@ export const mikrotikKeys = {
   monitoring: (routerId: string) => [...mikrotikKeys.all, 'monitoring', routerId] as const,
   history: (routerId: string, hours: number) => [...mikrotikKeys.all, 'history', routerId, hours] as const,
   interfaces: (routerId: string) => [...mikrotikKeys.all, 'interfaces', routerId] as const,
+  pppoe: (routerId: string) => [...mikrotikKeys.all, 'pppoe', routerId] as const,
 };
 
 // ==========================================
@@ -110,5 +111,14 @@ export function useForcePoll() {
       queryClient.invalidateQueries({ queryKey: mikrotikKeys.interfaces(routerId) });
       showToast.success('Berhasil', 'Data berhasil di-refresh');
     },
+  });
+}
+
+export function usePPPoESessions(routerId: string) {
+  return useQuery({
+    queryKey: mikrotikKeys.pppoe(routerId),
+    queryFn: () => mikrotikService.getPPPoESessions(routerId),
+    enabled: !!routerId,
+    // No refetchInterval: every fetch opens a live connection to the router
   });
 }

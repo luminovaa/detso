@@ -28,3 +28,9 @@ export function formatBps(value: unknown): string {
   } while (v >= 1000 && i < units.length - 1);
   return `${v.toFixed(1)} ${units[i]}`;
 }
+
+export function formatTemperature(value: unknown): string {
+  const n = typeof value === 'string' ? Number(value) : value;
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '-';
+  return `${Math.round(n)}°C`;
+}

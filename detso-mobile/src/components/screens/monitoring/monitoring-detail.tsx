@@ -1,6 +1,7 @@
 import React from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Text } from "@/src/components/global/text";
@@ -8,7 +9,7 @@ import { useCurrentMonitoring, useForcePoll } from "@/src/features/mikrotik/hook
 import { useT } from "@/src/features/i18n/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useThemeColor } from "@/src/lib/theme-colors";
-import { safeNumber, formatBytes, formatBps } from "@/src/lib/format";
+import { safeNumber, formatBytes, formatBps, formatTemperature } from "@/src/lib/format";
 
 interface Props {
   routerId: string;
@@ -63,6 +64,7 @@ export function MonitoringDetail({ routerId }: Props) {
   const diskUsed = safeNumber(monitoring?.disk_used);
   const diskTotal = safeNumber(monitoring?.disk_total);
   const diskPercent = diskTotal > 0 ? Math.round((diskUsed / diskTotal) * 100) : 0;
+  const temperature = monitoring?.temperature ?? null;
 
   const handleRefresh = () => {
     forcePoll.mutate(routerId, { onSettled: () => refetch() });
@@ -126,6 +128,66 @@ export function MonitoringDetail({ routerId }: Props) {
                 value={`${activeSessions}`}
                 color={colors.info}
               />
+              <StatCard
+                icon="thermometer-outline"
+                label={t("monitoring.temperature")}
+                value={formatTemperature(temperature)}
+                color={
+                  temperature == null
+                    ? undefined
+                    : temperature > 75
+                      ? colors.error
+                      : temperature > 60
+                        ? colors.warning
+                        : colors.success
+                }
+              />
+            </View>
+
+            {/* PPPoE & History navigation */}
+            <View className="flex-row gap-3 mb-4">
+              <Pressable
+                onPress={() => router.push(`/monitoring/${routerId}/pppoe`)}
+                className="bg-card border border-border rounded-xl p-3 flex-1 active:opacity-70"
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="people-outline" size={18} color={colors.info} />
+                    <Text
+                      weight="semibold"
+                      className="text-sm text-foreground ml-2"
+                      numberOfLines={1}
+                    >
+                      {t("monitoring.pppoeTitle")}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.icon} />
+                </View>
+                <Text className="text-xs text-muted-foreground mt-1">
+                  {t("monitoring.sessions")}: {activeSessions}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push(`/monitoring/${routerId}/history`)}
+                className="bg-card border border-border rounded-xl p-3 flex-1 active:opacity-70"
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="stats-chart-outline" size={18} color={colors.warning} />
+                    <Text
+                      weight="semibold"
+                      className="text-sm text-foreground ml-2"
+                      numberOfLines={1}
+                    >
+                      {t("monitoring.historyTitle")}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.icon} />
+                </View>
+                <Text className="text-xs text-muted-foreground mt-1">
+                  {t("monitoring.historyDesc")}
+                </Text>
+              </Pressable>
             </View>
 
             {/* CPU Load */}

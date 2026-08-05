@@ -89,3 +89,17 @@ export interface CurrentMonitoringResponse {
   monitoring: MonitoringData | null;
   interfaces: InterfaceData[];
 }
+
+export interface PPPoESessionData {
+  id: string;
+  name: string;
+  service: string;
+  caller_id: string | null;
+  address: string | null;
+  uptime: string | null;
+}
+
+export interface PPPoESessionsResponse {
+  router: { id: string; name: string };
+  sessions: PPPoESessionData[];
+}

@@ -1,4 +1,4 @@
-import { safeNumber, formatBytes, formatBps } from '../format';
+import { safeNumber, formatBytes, formatBps, formatTemperature } from '../format';
 
 describe('safeNumber', () => {
   it('melewatkan angka valid', () => {
@@ -37,5 +37,22 @@ describe('formatBps', () => {
   });
   it('input rusak jadi 0 bps', () => {
     expect(formatBps(NaN)).toBe('0 bps');
+  });
+});
+
+describe('formatTemperature', () => {
+  it('formats a numeric temperature with °C', () => {
+    expect(formatTemperature(36)).toBe('36°C');
+    expect(formatTemperature(36.6)).toBe('37°C');
+  });
+
+  it('accepts numeric strings', () => {
+    expect(formatTemperature('41')).toBe('41°C');
+  });
+
+  it('returns "-" for null, undefined, and non-numeric values', () => {
+    expect(formatTemperature(null)).toBe('-');
+    expect(formatTemperature(undefined)).toBe('-');
+    expect(formatTemperature('abc')).toBe('-');
   });
 });

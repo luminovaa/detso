@@ -8,6 +8,9 @@ import { successResponse } from '../../utils/response-handler';
 import { NotFoundError, AuthorizationError } from '../../utils/error-handler';
 import { monitoringService } from '../../services/mikrotik';
 import { historicalDataQuerySchema } from './validation/validation.mikrotik';
+import { MikrotikService } from '../../services/mikrotik/mikrotik.service';
+import { decryptPassword } from '../../utils/encryption';
+import { mapPPPoESessions } from '../../services/mikrotik/pppoe';
 
 /**
  * Get current monitoring data for a router
@@ -219,6 +222,52 @@ export const forcePollRouter = async (req: Request, res: Response, next: NextFun
     await monitoringService.pollRouter(router_id);
 
     return res.json(successResponse('Router berhasil di-poll'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get live PPPoE sessions straight from the router
+ * GET /api/mikrotik/monitoring/:router_id/pppoe
+ */
+export const getPPPoESessions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const router_id = req.params.router_id as string;
+    const tenantId = req.user!.tenant_id;
+
+    // Verify router belongs to tenant
+    const router = await prisma.detso_Mikrotik_Router.findFirst({
+      where: {
+        id: router_id,
+        tenant_id: tenantId!,
+        deleted_at: null,
+      },
+    });
+
+    if (!router) {
+      throw new NotFoundError('Router tidak ditemukan');
+    }
+
+    // Fresh connection per request (same pattern as pollRouter)
+    const service = new MikrotikService({
+      host: router.host,
+      port: router.api_port,
+      username: router.api_username,
+      password: decryptPassword(router.api_password),
+      timeout: 15,
+    });
+
+    try {
+      await service.connect();
+      const sessions = await service.getPPPoEActiveSessions();
+      return res.json(successResponse('Berhasil mengambil sesi PPPoE', {
+        router: { id: router.id, name: router.name },
+        sessions: mapPPPoESessions(sessions),
+      }));
+    } finally {
+      await service.disconnect();
+    }
   } catch (error) {
     next(error);
   }

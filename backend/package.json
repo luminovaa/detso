@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "format": "prettier-eslint \"$PWD/{,!(node_modules)/**/}*.{js,json}\"",
     "format:fix": "prettier-eslint --write \"$PWD/{,!(node_modules)/**/}*.{js,json}\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "prisma:push": "npx prisma db push",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
@@ -61,6 +61,9 @@
     "schema": "./prisma/schema.prisma"
   },
   "devDependencies": {
-    "@types/morgan": "^1.9.10"
+    "@types/jest": "^29.5.14",
+    "@types/morgan": "^1.9.10",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.12"
   }
 }

@@ -896,7 +896,24 @@
     "sessions": "Sesi Aktif",
     "interfaces": "Interface",
     "noData": "Tidak Ada Data",
-    "noDataDesc": "Belum ada data monitoring untuk router ini."
+    "noDataDesc": "Belum ada data monitoring untuk router ini.",
+    "pppoeTitle": "Sesi PPPoE",
+    "pppoeEmpty": "Tidak Ada Sesi Aktif",
+    "pppoeEmptyDesc": "Belum ada pelanggan yang sedang terhubung.",
+    "pppoeError": "Gagal Memuat Sesi",
+    "pppoeErrorDesc": "Router tidak dapat dijangkau. Coba lagi.",
+    "retry": "Coba Lagi",
+    "historyTitle": "Riwayat",
+    "historyRange3h": "3 jam",
+    "historyRange12h": "12 jam",
+    "historyRange24h": "24 jam",
+    "historyCpu": "CPU (%)",
+    "historyMemory": "Memori (%)",
+    "historySessions": "Sesi Aktif",
+    "historyEmpty": "Belum Ada Data Riwayat",
+    "historyEmptyDesc": "Data akan terkumpul setelah router ter-poll beberapa kali.",
+    "temperature": "Suhu",
+    "historyDesc": "CPU, memori, sesi"
   },
 
   "odp": {
