@@ -6,7 +6,7 @@ export function TicketSkeletonLoading() {
   return (
     <View className="pt-2">
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <Card key={i} className="mb-3 overflow-hidden border-border/40">
+        <Card key={i} className="rounded-2xl mb-3 overflow-hidden border-border/40">
           <View className="p-4">
             {/* Priority + Status badges */}
             <View className="flex-row gap-x-2 mb-2">

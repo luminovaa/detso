@@ -41,8 +41,8 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
         notes, documents, photos, odp_id,
     } = validationResult.data;
 
-    const documentFiles = files.documents;
-    const servicePhotoFiles = files.photos;
+    const documentFiles = files?.documents;
+    const servicePhotoFiles = files?.photos;
 
     const cleanupFiles = async () => {
         if (documentFiles) {
@@ -62,13 +62,13 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             let customer;
 
             // [NEW] 2. Cek customer hanya di dalam tenant ini
-            const existingCustomer = await tx.detso_Customer.findFirst({
+            const existingCustomer = nik && nik.trim().length > 0 ? await tx.detso_Customer.findFirst({
                 where: {
-                    nik,
+                    nik: nik.trim(),
                     tenant_id: tenant_id, // Wajib filter by tenant
                     deleted_at: null
                 }
-            });
+            }) : null;
 
             if (existingCustomer) {
                 customer = existingCustomer;
@@ -83,7 +83,7 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                         birth_date,
                         birth_place,
                         address,
-                        nik,
+                        nik: nik && nik.trim().length > 0 ? nik.trim() : null,
                         created_at: new Date()
                     }
                 });

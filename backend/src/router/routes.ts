@@ -16,6 +16,9 @@ import { authLimiter } from '../middleware/rate-limit.middleware';
 export default (app: Express) => {
     app.use(express.json({ limit: '10mb' }));
 
+    app.get('/health', (_req, res) => {
+        res.status(200).json({ status: 'ok' });
+    });
     const apiRouter = Router();
 
     app.use(express.urlencoded({ extended: true }));

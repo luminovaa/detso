@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/src/components/global/text';
 import { useLanguageStore } from '@/src/features/i18n/store';
 import { getMonthName } from '@/src/lib/calendar-utils';
-
+import { useThemeColor } from '@/src/lib/theme-colors';
 interface MonthNavigationControlProps {
   currentDate: Date;
   onPrevMonth: () => void;
@@ -21,7 +21,7 @@ export function MonthNavigationControl({
   onNextMonth,
 }: MonthNavigationControlProps) {
   const locale = useLanguageStore((s) => s.locale);
-
+  const colors = useThemeColor();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const monthName = getMonthName(month, locale);
@@ -33,7 +33,7 @@ export function MonthNavigationControl({
         className="w-7 h-7 items-center justify-center rounded-full active:bg-primary-foreground/20"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Ionicons name="chevron-back" size={18} color="white" />
+        <Ionicons name="chevron-back" size={18} color={colors.white} />
       </TouchableOpacity>
 
       <Text className="text-sm font-semibold min-w-[100px] text-center text-primary-foreground">
@@ -45,7 +45,7 @@ export function MonthNavigationControl({
         className="w-7 h-7 items-center justify-center rounded-full active:bg-primary-foreground/20"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Ionicons name="chevron-forward" size={18} color="white" />
+        <Ionicons name="chevron-forward" size={18} color={colors.white} />
       </TouchableOpacity>
     </View>
   );

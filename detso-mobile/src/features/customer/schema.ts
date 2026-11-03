@@ -37,7 +37,7 @@ export const updateCustomerSchema = z.object({
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
     return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()),
+  }, z.date().optional()).optional(),
   
   birth_place: z.string().optional(),
   
@@ -50,8 +50,7 @@ export const updateCustomerSchema = z.object({
   documents: z
     .array(documentSchema)
     .max(5, { message: t('validation.maxDocuments') })
-    .optional()
-    .default([]),
+    .optional(),
 }).refine(data => {
   const types = data.documents?.map(d => d.type);
   const uniqueTypes = new Set(types);
@@ -89,7 +88,7 @@ export const createCustomerSchema = z.object({
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
     return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()),
+  }, z.date().optional()).optional(),
   birth_place: z.string().optional(),
   mac_address: z.string().min(12, t('validation.macMin12')).optional().or(z.literal('')),
   notes: z.string().optional(),

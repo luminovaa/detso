@@ -7,7 +7,6 @@ import {
   TouchableOpacity 
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
 import { router } from "expo-router";
 
 // --- Global Components ---
@@ -50,9 +49,6 @@ export default function IspScreen() {
   };
 
   const colors = useThemeColor();
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const primaryColor = colors.primary;
 
   return (
     <ScreenWrapper 
@@ -74,8 +70,8 @@ export default function IspScreen() {
             <RefreshControl 
               refreshing={isRefetching && !isFetchingNextPage} 
               onRefresh={handleRefresh} 
-              colors={[primaryColor]}
-              tintColor={primaryColor}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
           ListEmptyComponent={
@@ -102,7 +98,7 @@ export default function IspScreen() {
         className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
         style={{ bottom: fabBottom }}
       >
-        <Ionicons name="add" size={30} color="white" />
+        <Ionicons name="add" size={30} color={colors.white} />
       </TouchableOpacity>
     </ScreenWrapper>
   );

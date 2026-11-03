@@ -4,6 +4,7 @@ WORKDIR /src
 
 # Install Chromium & dependencies
 RUN apk add --no-cache \
+    curl \
     chromium \
     nss \
     freetype \
@@ -25,7 +26,6 @@ RUN mkdir -p /src/whatsapp-auth && chmod -R 777 /src/whatsapp-auth
 
 COPY package.json yarn.lock ./
 RUN yarn install
-RUN yarn global add ts-node
 
 COPY prisma ./prisma
 RUN npx prisma generate
@@ -36,4 +36,4 @@ EXPOSE 6589
 
 # Jalankan pakai dumb-init supaya Chrome nggak zombie process
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && ts-node index.ts"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npx tsx index.ts"]

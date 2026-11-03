@@ -2,17 +2,14 @@ import React from "react";
 import { View, ScrollView, RefreshControl, Linking } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
-
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { Avatar } from "@/src/components/global/avatar";
 import { Badge } from "@/src/components/global/badge";
 import { Skeleton } from "@/src/components/global/skeleton";
 import { Button } from "@/src/components/global/button";
-
+import { GroupedSection } from "@/src/components/screens/dashboard/grouped-section";
 // --- State & Logic ---
 import { useTenant } from "@/src/features/tenant/hooks";
 import { useT } from "@/src/features/i18n/store";
@@ -23,8 +20,6 @@ export default function ISPDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
   const colors = useThemeColor();
-  const { colorScheme } = useColorScheme();
-
   const { data: response, isLoading, refetch, isRefetching } = useTenant(id!);
   const tenant = response?.data as Tenant | undefined;
   const isRefreshing = isRefetching;
@@ -44,9 +39,7 @@ export default function ISPDetailScreen() {
       );
   };
 
-  const isDark = colorScheme === "dark";
   const primaryColor = colors.primary;
-
     if (isLoading && !tenant) {
     return (
       <ScreenWrapper headerTitle={t("isp.detailTitle")} showBackButton>
@@ -72,7 +65,7 @@ export default function ISPDetailScreen() {
           </View>
 
           {/* Skeleton Info */}
-          <Card className="p-6 gap-y-6 border-border/40">
+          <View className="bg-card border border-border rounded-2xl p-6 gap-y-6">
             <View className="flex-row gap-x-4">
               <Skeleton className="w-10 h-10 rounded-full" />
               <View className="flex-1 gap-y-2">
@@ -87,7 +80,7 @@ export default function ISPDetailScreen() {
                 <Skeleton className="w-full h-5" />
               </View>
             </View>
-          </Card>
+          </View>
         </View>
       </ScreenWrapper>
     );
@@ -101,26 +94,39 @@ export default function ISPDetailScreen() {
     value,
     colorClass = "text-primary",
   }: any) => (
-    <Card className="w-[48%] p-4 border-border/50 bg-card shadow-sm">
-      <View
-        className="w-12 h-12 rounded-2xl bg-muted/50 items-center justify-center mb-4"
-      >
-        <Ionicons
-          name={icon}
-          size={22}
-          color={colors.primary}
-        />
+    <View className="w-[48%] p-4 bg-card border border-border rounded-2xl">
+      <View className="w-11 h-11 rounded-2xl bg-primary/10 items-center justify-center mb-3">
+        <Ionicons name={icon} size={22} color={colors.primary} />
       </View>
       <View>
         <Text weight="bold" className={`text-2xl ${colorClass}`}>
           {value.toLocaleString()}
         </Text>
-        <Text weight="medium" className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
+        <Text weight="medium" className="text-xs text-muted-foreground mt-1">
           {label}
         </Text>
       </View>
-    </Card>
+    </View>
   );
+
+  const contactRows = [
+    {
+      label: t("isp.address"),
+      value: tenant.address || "-",
+    },
+    {
+      label: t("isp.phone"),
+      value: tenant.phone || "-",
+    },
+    {
+      label: t("isp.createdAt"),
+      value: new Date(tenant.created_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    },
+  ];
 
     return (
     <ScreenWrapper
@@ -130,12 +136,13 @@ export default function ISPDetailScreen() {
         <Button
           variant="ghost"
           size="sm"
+          className="min-h-11 min-w-11"
           onPress={() => router.push(`/isp/${id}/edit`)}
           leftIcon={
             <Ionicons
               name="create-outline"
               size={20}
-              color="white"
+              color={colors.white}
             />
           }
         />
@@ -144,7 +151,7 @@ export default function ISPDetailScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingVertical: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -186,11 +193,11 @@ export default function ISPDetailScreen() {
         </View>
 
         {/* --- Quick Actions --- */}
-        <View className="flex-row justify-center gap-x-4 mb-10">
+        <View className="flex-row justify-center gap-x-4 mb-8">
           <Button
             variant="outline"
             size="sm"
-            className="rounded-2xl border-border/60"
+            className="min-h-11 rounded-2xl border-border"
             leftIcon={<Ionicons name="call" size={18} color={primaryColor} />}
             title={t("isp.phone")}
             onPress={handleCall}
@@ -198,7 +205,7 @@ export default function ISPDetailScreen() {
           <Button
             variant="outline"
             size="sm"
-            className="rounded-2xl border-border/60"
+            className="min-h-11 rounded-2xl border-border"
             leftIcon={<Ionicons name="map" size={18} color={primaryColor} />}
             title={t("isp.address")}
             onPress={handleMap}
@@ -228,7 +235,7 @@ export default function ISPDetailScreen() {
             icon="cube"
             label={t("isp.totalPackages")}
             value={tenant.stats.total_packages}
-            colorClass="text-orange-500"
+            colorClass="text-primary"
           />
           <StatCard
             icon="ticket"
@@ -239,70 +246,22 @@ export default function ISPDetailScreen() {
         </View>
 
         {/* --- Information Section --- */}
-        <Text weight="bold" className="text-lg text-foreground mb-4 px-1">
-          {t("isp.contactInfo")}
-        </Text>
-
-        <Card className="p-6 border-border/40 bg-card overflow-hidden">
-          <View className="gap-y-6">
-            <View className="flex-row items-start">
-              <View className="w-10 h-10 rounded-full bg-muted/80 items-center justify-center mr-4">
-                <Ionicons name="location" size={20} color="gray" />
-              </View>
-              <View className="flex-1">
-                <Text
-                  weight="semibold"
-                  className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[1.5px]"
-                >
-                  {t("isp.address")}
-                </Text>
-                <Text className="text-sm text-foreground leading-5">
-                  {tenant.address}
+        <GroupedSection title={t("isp.contactInfo")}>
+          {contactRows.map((row, idx) => {
+            const isLast = idx === contactRows.length - 1;
+            return (
+              <View
+                key={row.label}
+                className={`flex-row items-center justify-between px-4 py-3.5 gap-3 ${isLast ? "" : "border-b border-border/60"}`}
+              >
+                <Text className="text-sm text-muted-foreground">{row.label}</Text>
+                <Text weight="semibold" className="text-sm text-foreground text-right flex-1">
+                  {row.value}
                 </Text>
               </View>
-            </View>
-
-            <View className="h-[1px] bg-border/40 w-full" />
-
-            <View className="flex-row items-start">
-              <View className="w-10 h-10 rounded-full bg-muted/80 items-center justify-center mr-4">
-                <Ionicons name="call" size={20} color="gray" />
-              </View>
-              <View className="flex-1">
-                <Text
-                  weight="semibold"
-                  className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[1.5px]"
-                >
-                  {t("isp.phone")}
-                </Text>
-                <Text className="text-sm text-foreground">{tenant.phone}</Text>
-              </View>
-            </View>
-
-            <View className="h-[1px] bg-border/40 w-full" />
-
-            <View className="flex-row items-start">
-              <View className="w-10 h-10 rounded-full bg-muted/80 items-center justify-center mr-4">
-                <Ionicons name="calendar" size={20} color="gray" />
-              </View>
-              <View className="flex-1">
-                <Text
-                  weight="semibold"
-                  className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[1.5px]"
-                >
-                  {t("isp.createdAt")}
-                </Text>
-                <Text className="text-sm text-foreground">
-                  {new Date(tenant.created_at).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Card>
+            );
+          })}
+        </GroupedSection>
       </ScrollView>
     </ScreenWrapper>
   );

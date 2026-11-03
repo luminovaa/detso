@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
+import { useThemeColor } from "@/src/lib/theme-colors";
 import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -24,12 +23,10 @@ import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { CustomerListItem } from "@/src/lib/types";
 
-import { COLORS } from '@/src/lib/colors';
 export default function CustomerScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
-  const { bottom: safeBottom } = useSafeAreaInsets();
-  const fabBottom = safeBottom + 24;
+  const fabBottom = 16;
 
   // State
   const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
@@ -54,6 +51,7 @@ export default function CustomerScreen() {
     [data?.pages],
   );
 
+
   const deleteCustomer = useDeleteCustomer();
 
   const handleRefresh = useCallback(() => {
@@ -73,10 +71,10 @@ export default function CustomerScreen() {
     });
   }, [deleteCustomer]);
 
-  const primaryColor = COLORS.brand.primary;
+  const colors = useThemeColor();
 
   return (
-    <ScreenWrapper headerTitle={t("customer.title")} showBackButton isLoading={isLoading}>
+    <ScreenWrapper headerTitle={t("customer.title")} showBackButton isLoading={isLoading && !debouncedSearch}>
       {/* Search Bar */}
       <View className="pt-4 pb-2">
         <SearchBar
@@ -113,8 +111,8 @@ export default function CustomerScreen() {
             <RefreshControl
               refreshing={isRefetching && !isFetchingNextPage}
               onRefresh={handleRefresh}
-              colors={[primaryColor]}
-              tintColor={primaryColor}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
           ListEmptyComponent={
@@ -127,7 +125,7 @@ export default function CustomerScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color={COLORS.brand.primary} />
+                <ActivityIndicator color={colors.primary} />
               </View>
             ) : null
           }
@@ -141,7 +139,7 @@ export default function CustomerScreen() {
         className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
         style={{ bottom: fabBottom }}
       >
-        <Ionicons name="add" size={30} color="white" />
+        <Ionicons name="add" size={30} color={colors.white} />
       </TouchableOpacity>
     </ScreenWrapper>
   );

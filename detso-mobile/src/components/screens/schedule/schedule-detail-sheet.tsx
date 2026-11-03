@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, useCallback, useEffect } from 'react';
-import { View, Alert, ScrollView } from 'react-native';
+import { View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
@@ -384,7 +384,7 @@ function ScheduleDetailSheetInner(
                   isLoading={deleteSchedule.isPending}
                 >
                   <View className="flex-row items-center gap-2">
-                    <Ionicons name="trash" size={16} color="white" />
+                    <Ionicons name="trash" size={16} color={colors.white} />
                     <Text className="text-white text-sm">{t('schedule.deleteBtn')}</Text>
                   </View>
                 </Button>

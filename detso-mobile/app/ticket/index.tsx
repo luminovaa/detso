@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
+import { useThemeColor } from "@/src/lib/theme-colors";
 import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -26,7 +25,6 @@ import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { Ticket, TicketPriority } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 
-import { COLORS } from '@/src/lib/colors';
 const PRIORITY_OPTIONS: { value: TicketPriority | undefined; labelKey: string; variant: BadgeVariantKey }[] = [
   { value: undefined, labelKey: "ticket.allPriorities", variant: "neutral" },
   { value: "URGENT", labelKey: "ticket.priorityUrgent", variant: "error" },
@@ -38,8 +36,7 @@ const PRIORITY_OPTIONS: { value: TicketPriority | undefined; labelKey: string; v
 export default function TicketScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
-  const { bottom: safeBottom } = useSafeAreaInsets();
-  const fabBottom = safeBottom + 24;
+  const fabBottom = 16;
 
   // State
   const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
@@ -85,12 +82,10 @@ export default function TicketScreen() {
     });
   }, [deleteTicket]);
 
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const primaryColor = COLORS.brand.primary;
+  const colors = useThemeColor();
 
   return (
-    <ScreenWrapper headerTitle={t("ticket.title")} showBackButton isLoading={isLoading}>
+    <ScreenWrapper headerTitle={t("ticket.title")} showBackButton isLoading={isLoading && !debouncedSearch}>
       {/* Search Bar */}
       <View className="pt-4 pb-2">
         <SearchBar
@@ -108,6 +103,7 @@ export default function TicketScreen() {
             key={option.labelKey}
             activeOpacity={0.7}
             onPress={() => setPriorityFilter(option.value)}
+            className="min-h-11 justify-center"
           >
             <Badge
               colorVariant={priorityFilter === option.value ? option.variant : "neutral"}
@@ -145,8 +141,8 @@ export default function TicketScreen() {
             <RefreshControl
               refreshing={isRefetching && !isFetchingNextPage}
               onRefresh={handleRefresh}
-              colors={[primaryColor]}
-              tintColor={primaryColor}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
           ListEmptyComponent={
@@ -162,7 +158,7 @@ export default function TicketScreen() {
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center">
-                <ActivityIndicator color={COLORS.brand.primary} />
+                <ActivityIndicator color={colors.primary} />
               </View>
             ) : null
           }
@@ -176,7 +172,7 @@ export default function TicketScreen() {
         className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
         style={{ bottom: fabBottom }}
       >
-        <Ionicons name="add" size={30} color="white" />
+        <Ionicons name="add" size={30} color={colors.white} />
       </TouchableOpacity>
     </ScreenWrapper>
   );

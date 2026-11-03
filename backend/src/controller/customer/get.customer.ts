@@ -171,6 +171,8 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         phone: customer.phone,
         email: customer.email,
         nik: customer.nik,
+        birth_place: customer.birth_place,
+        birth_date: customer.birth_date,
         created_at: customer.created_at,
         has_installation_report: !!installationReport,
         documents: customer.documents.map(doc => ({

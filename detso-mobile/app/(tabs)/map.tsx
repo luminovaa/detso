@@ -307,7 +307,7 @@ export default function NetworkMap() {
         </Text>
         <Button className="mt-6" onPress={() => router.push('/settings/edit-tenant')}>
           <View className="flex-row items-center gap-2">
-            <Ionicons name="location" size={18} color="white" />
+            <Ionicons name="location" size={18} color={colors.white} />
             <Text weight="bold" className="text-primary-foreground">{t('network.mapScreen.setLocation')}</Text>
           </View>
         </Button>
@@ -393,8 +393,8 @@ export default function NetworkMap() {
               }}
             >
               <View className="flex-row items-center gap-2">
-                <View className="w-8 h-8 rounded-full bg-[#8b5cf6] items-center justify-center">
-                  <Ionicons name="server" size={16} color="white" />
+                <View className="w-8 h-8 rounded-full items-center justify-center" style={{ backgroundColor: colors.networkServer }}>
+                  <Ionicons name="server" size={16} color={colors.white} />
                 </View>
                 <View className="flex-1">
                   <Text weight="medium" className="text-foreground text-sm">Server</Text>
@@ -410,8 +410,8 @@ export default function NetworkMap() {
               }}
             >
               <View className="flex-row items-center gap-2">
-                <View className="w-8 h-8 rounded-full bg-[#3b82f6] items-center justify-center">
-                  <Ionicons name="cube" size={16} color="white" />
+                <View className="w-8 h-8 rounded-full items-center justify-center" style={{ backgroundColor: colors.networkOdp }}>
+                  <Ionicons name="cube" size={16} color={colors.white} />
                 </View>
                 <View className="flex-1">
                   <Text weight="medium" className="text-foreground text-sm">ODP</Text>

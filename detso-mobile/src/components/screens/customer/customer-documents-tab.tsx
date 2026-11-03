@@ -23,7 +23,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
 
 
   const viewerImages: ImageViewerImage[] = documents
-    .filter((d) => !d.document_url.endsWith(".pdf") && !d.document_url.includes("/api/files/signed"))
+    .filter((d) => !d.document_url.endsWith(".pdf") && d.document_type.toLowerCase() !== "pdf")
     .map((d) => ({
       uri: d.document_url,
       label: d.document_type,
@@ -33,7 +33,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
     (index: number) => {
       // If it's a PDF, open signed URL in browser
       const doc = documents[index];
-      if (doc.document_url.endsWith(".pdf") || doc.document_url.includes("/api/files/signed")) {
+      if (doc.document_url.endsWith(".pdf") || doc.document_type.toLowerCase() === "pdf") {
         Linking.openURL(doc.document_url);
         return;
       }
@@ -85,13 +85,13 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
 
             <View className="flex-row flex-wrap gap-3">
               {documents.map((doc, idx) => {
-                const isPdf = doc.document_url.endsWith(".pdf") || doc.document_url.includes("/api/files/signed");
+                const isPdf = doc.document_url.endsWith(".pdf") || doc.document_type.toLowerCase() === "pdf";
                 return (
                   <TouchableOpacity
                     key={doc.id}
                     activeOpacity={0.7}
                     onPress={() => openDocViewer(idx)}
-                    className="w-[47%] rounded-xl border border-border overflow-hidden bg-card"
+                    className="w-[47%] rounded-2xl border border-border overflow-hidden bg-card"
                   >
                     {isPdf ? (
                       <View className="h-28 items-center justify-center bg-muted">
@@ -114,7 +114,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
 
         {/* Empty state - no documents AND no PDF */}
         {documents.length === 0 && !hasInstallationReport && (
-          <Card className="mb-6 border-border/40">
+          <Card className="rounded-2xl mb-6 border-border/40">
             <View className="p-6 items-center">
               <Ionicons name="folder-open-outline" size={32} color={colors.icon} />
               <Text className="text-sm text-muted-foreground mt-2">Belum ada dokumen</Text>
@@ -129,7 +129,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
               Laporan Instalasi (PDF)
             </Text>
 
-            <Card className="border-border/40">
+            <Card className="rounded-2xl border-border/40">
               <View className="p-4 gap-y-3">
                 <View className="flex-row items-center gap-x-3">
                   <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
@@ -149,7 +149,7 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
                   <TouchableOpacity
                     onPress={handleViewPdf}
                     disabled={pdfLoading}
-                    className={`flex-1 flex-row items-center justify-center gap-x-2 py-2.5 rounded-lg border border-primary ${pdfLoading ? "opacity-50" : ""}`}
+                    className={`flex-1 flex-row items-center justify-center gap-x-2 min-h-11 py-2.5 rounded-xl border border-primary ${pdfLoading ? "opacity-50" : ""}`}
                   >
                     <Ionicons name="eye-outline" size={16} color={colors.primary} />
                     <Text weight="semibold" className="text-sm text-primary">
@@ -160,10 +160,10 @@ export function CustomerDocumentsTab({ customerId, documents, customerName, hasI
                   <TouchableOpacity
                     onPress={handleDownloadPdf}
                     disabled={pdfLoading}
-                    className={`flex-1 flex-row items-center justify-center gap-x-2 py-2.5 rounded-lg bg-primary ${pdfLoading ? "opacity-50" : ""}`}
+                    className={`flex-1 flex-row items-center justify-center gap-x-2 min-h-11 py-2.5 rounded-xl bg-primary ${pdfLoading ? "opacity-50" : ""}`}
                   >
                     <Ionicons name="download-outline" size={16} color={colors.white} />
-                    <Text weight="semibold" className="text-sm text-white">
+                    <Text weight="semibold" className="text-sm text-primary-foreground">
                       {pdfLoading ? "Memuat..." : "Download"}
                     </Text>
                   </TouchableOpacity>

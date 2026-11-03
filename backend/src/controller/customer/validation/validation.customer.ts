@@ -30,7 +30,7 @@ export const updateCustomerSchema = z.object({
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
     return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()),
+  }, z.date().optional()).optional(),
   birth_place: z.string().optional(),
   nik: z
     .string()
@@ -42,8 +42,7 @@ export const updateCustomerSchema = z.object({
   documents: z
     .array(documentSchema)
     .max(5, { message: 'Maksimal 5 dokumen' })
-    .optional()
-    .default([]), // jika tidak ada, anggap kosong
+    .optional(),
 }).refine(data => {
   // Jika ada documents, pastikan tidak ada duplikat type
   const types = data.documents?.map(d => d.type);
@@ -64,25 +63,25 @@ const photoSchema = z.object({
 
 export const createCustomerSchema = z.object({
   name: z.string().min(3, 'Nama minimal 3 karakter'),
-  phone: z.string().min(10, 'Nomor telepon minimal 10 karakter').optional(),
-  email: z.string().email('Email tidak valid').optional(),
-  nik: z.string().min(16, 'NIK harus 16 karakter').optional(),
+  phone: z.string().min(8, 'Nomor telepon minimal 8 karakter').optional().or(z.literal('')),
+  email: z.string().email('Email tidak valid').optional().or(z.literal('')),
+  nik: z.string().min(16, 'NIK harus 16 karakter').optional().or(z.literal('')),
   package_id: z.string().min(1, 'Package ID harus diisi'),
   address_service: z.string().min(10, 'Alamat minimal 10 karakter'),
   address: z.string().min(10, 'Alamat minimal 10 karakter'),
   package_name: z.string().optional(),
   package_speed: z.string().optional(),
   package_price: z.number().optional(),
-  ip_address: z.ipv4('Alamat IP tidak valid').optional(),
+  ip_address: z.ipv4('Alamat IP tidak valid').optional().or(z.literal('')),
   lat: z.string().optional(),
   long: z.string().optional(),
   birth_date: z.preprocess((arg) => {
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
     return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()),
+  }, z.date().optional()).optional(),
   birth_place: z.string().optional(),
-  mac_address: z.string().min(12, 'MAC address minimal 12 karakter').optional(),
+  mac_address: z.string().min(12, 'MAC address minimal 12 karakter').optional().or(z.literal('')),
   notes: z.string().optional(),
   documents: z.array(documentSchema).optional(),
   photos: z.array(photoSchema).optional(),

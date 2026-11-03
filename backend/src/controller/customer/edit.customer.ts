@@ -32,7 +32,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
     throw new ValidationError('Validasi gagal', validationResult.error.issues);
   }
 
-  const { name, phone, email, nik, documents } = validationResult.data;
+  const { name, phone, email, nik, birth_place, birth_date, documents } = validationResult.data;
 
   // [NEW] 2. Cari customer dengan filter tenant_id
   // Menggunakan findFirst bukan findUnique karena kita butuh filter tenant_id
@@ -52,7 +52,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   }
 
   const cleanupUploadedFiles = async () => {
-    if (files.documents) {
+    if (files?.documents) {
       await Promise.all(
         files.documents.map(file => deleteFile(file.path).catch(err => console.error('Gagal hapus file:', err)))
       );
@@ -85,6 +85,8 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
           phone,
           email,
           nik,
+          birth_place,
+          birth_date,
           updated_at: new Date()
         }
       });
@@ -106,7 +108,7 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
         });
 
         // Upload dokumen baru
-        if (documents.length > 0 && files.documents) {
+        if (documents.length > 0 && files?.documents) {
           if (files.documents.length !== documents.length) {
             await cleanupUploadedFiles();
             throw new ValidationError('Jumlah file dokumen tidak sesuai dengan data yang dikirim.');
@@ -164,6 +166,8 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
         phone: finalCustomer.phone,
         email: finalCustomer.email,
         nik: finalCustomer.nik,
+        birth_place: finalCustomer.birth_place,
+        birth_date: finalCustomer.birth_date,
         created_at: finalCustomer.created_at,
         updated_at: finalCustomer.updated_at,
         documents: documentsWithUrl

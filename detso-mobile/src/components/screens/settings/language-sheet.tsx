@@ -32,7 +32,7 @@ export const LanguageSheet = forwardRef<BottomSheetModal, LanguageSheetProps>(({
       </BottomSheetHeader>
       
       <View className="flex-1 justify-between">
-        <Card className="overflow-hidden border-border/50">
+        <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
           <SelectionItem 
             label={t("settings.preferences.langId")} 
             isActive={locale === "id"} 

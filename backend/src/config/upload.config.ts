@@ -4,7 +4,7 @@ import { Request } from 'express';
 export const uploadCustomerFiles = createUploadMiddleware({
     destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
         // Gunakan path yang konsisten
-        const basePath = 'storage/private/customer';
+        const basePath = 'storage/public/customer';
         
         if (file.fieldname === 'documents') {
             cb(null, `${basePath}/documents`);

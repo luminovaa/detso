@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
+import { View, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +9,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
+import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
-import { Label } from "@/src/components/global/label";
 import { AsyncSelect } from "@/src/components/global/select-searchable";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
 
@@ -20,7 +20,6 @@ import { createServiceConnectionSchema, CreateServiceConnectionInput } from "@/s
 import { useCreateServiceConnection } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
-import { networkService } from "@/src/features/network/service";
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ServiceCreateScreen() {
@@ -79,23 +78,6 @@ export default function ServiceCreateScreen() {
     [],
   );
 
-  const fetchOdpNodes = useCallback(
-    async (search: string, _page: number) => {
-      const res = await networkService.getNodes({ type: 'ODP' });
-      const nodes = res?.data?.nodes || [];
-      const filtered = search
-        ? nodes.filter((n: any) => n.name.toLowerCase().includes(search.toLowerCase()))
-        : nodes;
-      return {
-        data: filtered.map((n: any) => ({
-          label: `${n.name}${n.address ? ` • ${n.address}` : ''}${n.slot ? ` (${n.used_slot || 0}/${n.slot})` : ''}`,
-          value: n.id,
-        })),
-        hasNextPage: false,
-      };
-    },
-    [],
-  );
 
   const onSubmit = (data: CreateServiceConnectionInput) => {
     const formData = new FormData();
@@ -108,10 +90,7 @@ export default function ServiceCreateScreen() {
       formData.append("lat", location.lat);
       formData.append("long", location.lng);
     }
-    if (data.ip_address) formData.append("ip_address", data.ip_address);
-    if (data.mac_address) formData.append("mac_address", data.mac_address);
     if (data.notes) formData.append("notes", data.notes);
-    if (data.odp_id) formData.append("odp_id", data.odp_id);
 
     createService.mutate(formData, {
       onSuccess: () => router.back(),
@@ -120,105 +99,106 @@ export default function ServiceCreateScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("service.createTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-y-3">
-            {/* Customer Selector */}
-            <AsyncSelect
-              control={control}
-              name="customer_id"
-              label={t("service.customerLabel")}
-              placeholder={t("service.customerPlaceholder")}
-              fetchOptions={fetchCustomers}
-              required
-              highlightSearch
-            />
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("customer.stepService")}
+            </Text>
+            <View className="gap-y-3">
+              {/* Customer Selector */}
+              <AsyncSelect
+                control={control}
+                name="customer_id"
+                label={t("service.customerLabel")}
+                placeholder={t("service.customerPlaceholder")}
+                fetchOptions={fetchCustomers}
+                required
+                highlightSearch
+              />
 
-            {/* Package Selector */}
-            <AsyncSelect
-              control={control}
-              name="package_id"
-              label={t("service.packageLabel")}
-              placeholder={t("service.packagePlaceholder")}
-              fetchOptions={fetchPackages}
-              required
-              highlightSearch
-              onSelectFullObject={(item) => {
-                setSelectedPackage(item);
-                setValue("package_name", item.name);
-                setValue("package_speed", item.speed);
-              }}
-            />
+              {/* Package Selector */}
+              <AsyncSelect
+                control={control}
+                name="package_id"
+                label={t("service.packageLabel")}
+                placeholder={t("service.packagePlaceholder")}
+                fetchOptions={fetchPackages}
+                required
+                highlightSearch
+                onSelectFullObject={(item) => {
+                  setSelectedPackage(item);
+                  setValue("package_name", item.name);
+                  setValue("package_speed", item.speed);
+                }}
+              />
 
-            {/* Map Picker (sets address automatically) */}
-            <View>
-              <Label>{t("service.addressLabel")}</Label>
-              <TouchableOpacity
-                onPress={() => setShowMap(true)}
-                activeOpacity={0.7}
-                className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
-              >
-                <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color={colors.icon} />
-                  <View className="ml-2 flex-1">
-                    {watch("address") ? (
-                      <Text className="text-foreground text-xs" numberOfLines={2}>
-                        {watch("address")}
-                      </Text>
-                    ) : (
-                      <Text className="text-muted-foreground">{t("service.selectOnMap")}</Text>
-                    )}
+              <FormInput
+                control={control}
+                name="address"
+                label={t("service.addressLabel")}
+                placeholder={t("service.addressPlaceholder")}
+                isTextarea
+              />
+
+              {/* Map Picker (sets address automatically) */}
+              <View>
+                <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
+                  {t("service.selectOnMap")}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowMap(true)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 min-h-11"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
+                    <View className="ml-2 flex-1">
+                      {watch("address") ? (
+                        <Text className="text-foreground text-xs" numberOfLines={2}>
+                          {watch("address")}
+                        </Text>
+                      ) : (
+                        <Text className="text-muted-foreground">{t("service.selectOnMap")}</Text>
+                      )}
+                    </View>
                   </View>
-                </View>
-                <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color={colors.info} />
-                </View>
-              </TouchableOpacity>
+                  <View className="bg-primary/10 p-2 rounded-lg">
+                    <Ionicons name="map" size={20} color={colors.primary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
+          </Card>
 
-            {/* ODP Selector (Optional) */}
-            <AsyncSelect
-              control={control}
-              name="odp_id"
-              label={t("service.odpLabel")}
-              placeholder={t("service.odpPlaceholder")}
-              fetchOptions={fetchOdpNodes}
-              highlightSearch
-            />
-
-            {/* Technical Info */}
-            <FormInput
-              control={control}
-              name="ip_address"
-              label={t("service.ipLabel")}
-              placeholder={t("service.ipPlaceholder")}
-              keyboardType="numeric"
-            />
-
-            <FormInput
-              control={control}
-              name="mac_address"
-              label={t("service.macLabel")}
-              placeholder={t("service.macPlaceholder")}
-              autoCapitalize="characters"
-            />
-
-            <FormInput
-              control={control}
-              name="notes"
-              label={t("service.notesLabel")}
-              placeholder={t("service.notesPlaceholder")}
-              isTextarea
-            />
-          </View>
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("customer.stepTechnical")}
+            </Text>
+            <View className="gap-y-3">
+              <FormInput
+                control={control}
+                name="notes"
+                label={t("service.notesLabel")}
+                placeholder={t("service.notesPlaceholder")}
+                isTextarea
+              />
+            </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("service.creating") : t("service.submitBtn")}
             size="lg"
@@ -228,7 +208,7 @@ export default function ServiceCreateScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       <MapLocationPicker
         visible={showMap}

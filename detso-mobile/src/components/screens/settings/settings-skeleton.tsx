@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/src/components/global/card";
 
 export function SettingsSkeleton() {
   return (
-    <View className="flex-1 pt-4 pb-24">
+    <View className="flex-1 pt-4 pb-24 gap-6">
       {/* --- 1. PROFILE SECTION SKELETON --- */}
-      <Card className="mb-8 overflow-hidden">
+      <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
         <CardContent className="flex-row items-center p-5">
           {/* Avatar Circle */}
           <Skeleton className="w-16 h-16 rounded-full" />
@@ -27,72 +27,67 @@ export function SettingsSkeleton() {
       </Card>
 
       {/* --- 2. PREFERENCES SECTION SKELETON --- */}
-      {/* Section Title */}
-      <View className="mb-3 ml-2">
-        <Skeleton className="h-4 w-24" />
-      </View>
-      
-      <Card className="mb-8">
-        <CardContent className="p-0">
-          {[1, 2, 3].map((i) => (
-            <View 
-              key={i} 
-              className={`flex-row items-center justify-between p-4 ${i < 3 ? "border-b border-border/50" : ""}`}
-            >
-              <View className="flex-row items-center">
-                <Skeleton className="w-10 h-10 rounded-xl mr-4" />
-                <Skeleton className="h-5 w-32" />
+      <View className="gap-3">
+        <Skeleton className="h-5 w-28" />
+        <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
+          <CardContent className="p-0">
+            {[1, 2, 3].map((i) => (
+              <View 
+                key={i} 
+                className={`flex-row items-center justify-between p-4 gap-3 ${i < 3 ? "border-b border-border/60" : ""}`}
+              >
+                <View className="flex-row items-center">
+                  <Skeleton className="w-10 h-10 rounded-xl mr-4" />
+                  <Skeleton className="h-5 w-32" />
+                </View>
+                <Skeleton className="h-6 w-12 rounded-full" />
               </View>
-              {/* Right side placeholder (Arrow or Switch) */}
-              <Skeleton className="h-6 w-12 rounded-full" />
-            </View>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      </View>
 
       {/* --- 3. SUPPORT SECTION SKELETON --- */}
-      <View className="mb-3 ml-2">
-        <Skeleton className="h-4 w-32" />
-      </View>
-
-      <Card className="mb-10">
-        <CardContent className="p-0">
-          {[1, 2].map((i) => (
-            <View 
-              key={i} 
-              className={`flex-row items-center justify-between p-4 ${i < 2 ? "border-b border-border/50" : ""}`}
-            >
-              <View className="flex-row items-center">
-                <Skeleton className="w-10 h-10 rounded-xl mr-4" />
-                <Skeleton className="h-5 w-36" />
+      <View className="gap-3">
+        <Skeleton className="h-5 w-32" />
+        <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
+          <CardContent className="p-0">
+            {[1, 2].map((i) => (
+              <View 
+                key={i} 
+                className={`flex-row items-center justify-between p-4 gap-3 ${i < 2 ? "border-b border-border/60" : ""}`}
+              >
+                <View className="flex-row items-center">
+                  <Skeleton className="w-10 h-10 rounded-xl mr-4" />
+                  <Skeleton className="h-5 w-36" />
+                </View>
+                <Skeleton className="h-5 w-8" />
               </View>
-              <Skeleton className="h-5 w-8" />
-            </View>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      </View>
 
       {/* --- 4. SECURITY SECTION SKELETON --- */}
-      <View className="mb-3 ml-2">
-        <Skeleton className="h-4 w-28" />
-      </View>
-
-      <Card className="mb-10">
-        <CardContent className="p-0">
-          {[1, 2, 3].map((i) => (
-            <View 
-              key={i} 
-              className={`flex-row items-center justify-between p-4 ${i < 3 ? "border-b border-border/50" : ""}`}
-            >
-              <View className="flex-row items-center">
-                <Skeleton className="w-10 h-10 rounded-xl mr-4" />
-                <Skeleton className="h-5 w-40" />
+      <View className="gap-3">
+        <Skeleton className="h-5 w-28" />
+        <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
+          <CardContent className="p-0">
+            {[1, 2, 3].map((i) => (
+              <View 
+                key={i} 
+                className={`flex-row items-center justify-between p-4 gap-3 ${i < 3 ? "border-b border-border/60" : ""}`}
+              >
+                <View className="flex-row items-center">
+                  <Skeleton className="w-10 h-10 rounded-xl mr-4" />
+                  <Skeleton className="h-5 w-40" />
+                </View>
+                <Skeleton className="h-5 w-5" />
               </View>
-              <Skeleton className="h-5 w-5" />
-            </View>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      </View>
     </View>
   );
 }

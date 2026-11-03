@@ -10,6 +10,7 @@ import { apiLimiter } from './middleware/rate-limit.middleware';
 import { log } from './config/logger.config';
 
 const app: Express = express();
+app.set('trust proxy', 1);
 
 // ==========================================
 // 1. LOGGING MIDDLEWARE (First)
@@ -53,11 +54,8 @@ const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || [];
     
-    // Allow requests with no origin only in development (Postman, mobile apps, etc.)
+    // Native mobile apps (Expo/React Native), curl, and healthchecks do not send an Origin header
     if (!origin) {
-      if (process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin header required'));
-      }
       return callback(null, true);
     }
     

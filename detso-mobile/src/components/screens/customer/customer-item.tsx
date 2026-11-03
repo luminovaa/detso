@@ -7,13 +7,12 @@ import { router } from "expo-router";
 import { Card } from "../../global/card";
 import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
-import { Text } from "../../global/text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 import { CustomerListItem } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface CustomerItemProps {
   item: CustomerListItem;
   searchQuery?: string;
@@ -23,6 +22,9 @@ interface CustomerItemProps {
 
 export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery = "", onDelete, isDeleting }: CustomerItemProps) {
   const { t } = useT();
+  const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const canDelete = user?.role !== "TENANT_TEKNISI";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const handlePress = useCallback(() => {
@@ -59,7 +61,7 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
 
   return (
     <>
-      <Card className="mb-3 overflow-hidden border-border/40">
+      <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
@@ -69,7 +71,7 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
         >
           {/* Icon */}
           <View className="w-12 h-12 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
-            <Ionicons name="person" size={24} color={COLORS.brand.primary} />
+            <Ionicons name="person" size={24} color={colors.primary} />
           </View>
 
           <View className="flex-1 ml-3">
@@ -115,25 +117,29 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
             key: "detail",
             label: "Detail",
             onPress: handlePress,
-            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="eye-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
           {
             key: "edit",
             label: t("customer.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "delete",
-            label: t("customer.deleteBtn"),
-            onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
-            variant: "destructive",
-            isLoading: isDeleting,
-            disabled: isDeleting,
-          },
+          ...(canDelete
+            ? [
+                {
+                  key: "delete",
+                  label: t("customer.deleteBtn"),
+                  onPress: handleDelete,
+                  icon: <Ionicons name="trash-outline" size={20} color={colors.error} />,
+                  variant: "destructive" as const,
+                  isLoading: isDeleting,
+                  disabled: isDeleting,
+                },
+              ]
+            : []),
         ]}
       />
     </>

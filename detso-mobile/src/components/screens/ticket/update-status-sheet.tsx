@@ -10,8 +10,7 @@ import { useT } from "@/src/features/i18n/store";
 import { useUpdateTicketStatus } from "@/src/features/ticket/hooks";
 import { TicketStatus } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface UpdateStatusSheetProps {
   ticketId: string;
   currentStatus: TicketStatus;
@@ -29,6 +28,7 @@ function UpdateStatusSheetInner(
   ref: React.ForwardedRef<BottomSheetModal>,
 ) {
     const { t } = useT();
+    const colors = useThemeColor();
     const [selectedStatus, setSelectedStatus] = useState<TicketStatus>(currentStatus);
     const [note, setNote] = useState("");
     const [photo, setPhoto] = useState<string | null>(null);
@@ -105,8 +105,8 @@ function UpdateStatusSheetInner(
         ref={ref}
         snapPoints={["65%"]}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: COLORS.neutral.white }}
-        handleIndicatorStyle={{ backgroundColor: COLORS.neutral.gray[500] }}
+        backgroundStyle={{ backgroundColor: colors.card }}
+        handleIndicatorStyle={{ backgroundColor: colors.textMuted }}
       >
         <BottomSheetView className="flex-1 px-6 pt-2 pb-6">
           {/* Title */}
@@ -152,7 +152,7 @@ function UpdateStatusSheetInner(
             multiline
             numberOfLines={2}
             className="border border-border rounded-xl p-3 text-sm text-foreground mb-3"
-            placeholderTextColor={COLORS.neutral.gray[500]}
+            placeholderTextColor={colors.textMuted}
             style={{ textAlignVertical: "top", minHeight: 60 }}
           />
 
@@ -174,7 +174,7 @@ function UpdateStatusSheetInner(
                     onPress={() => setPhoto(null)}
                     className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 items-center justify-center"
                   >
-                    <Ionicons name="close" size={16} color="white" />
+                    <Ionicons name="close" size={16} color={colors.white} />
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -183,14 +183,14 @@ function UpdateStatusSheetInner(
                     onPress={handleTakePhoto}
                     className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
                   >
-                    <Ionicons name="camera-outline" size={24} color={COLORS.neutral.gray[500]} />
+                    <Ionicons name="camera-outline" size={24} color={colors.textMuted} />
                     <Text className="text-xs text-muted-foreground mt-1">Camera</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handlePickPhoto}
                     className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
                   >
-                    <Ionicons name="image-outline" size={24} color={COLORS.neutral.gray[500]} />
+                    <Ionicons name="image-outline" size={24} color={colors.textMuted} />
                     <Text className="text-xs text-muted-foreground mt-1">Gallery</Text>
                   </TouchableOpacity>
                 </View>

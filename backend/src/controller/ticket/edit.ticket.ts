@@ -42,7 +42,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     }
 
     const {
-        title, description, priority, status, assigned_to, service_id, resolved_at, image
+        title, description, priority, type, status, assigned_to, service_id, resolved_at, image
     } = validationResult.data;
 
     const updated_by = user.id;
@@ -133,6 +133,13 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 historyEntries.push({
                     action: 'PRIORITY_CHANGED' as const,
                     description: `Priority diubah dari ${existingTicket.priority} menjadi ${priority}`
+                });
+            }
+            if (type !== undefined && type !== existingTicket.type) {
+                updateData.type = type;
+                historyEntries.push({
+                    action: 'UPDATED' as const,
+                    description: `Tipe diubah dari ${existingTicket.type} menjadi ${type}`
                 });
             }
 

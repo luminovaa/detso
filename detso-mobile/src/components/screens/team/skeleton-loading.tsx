@@ -6,7 +6,7 @@ export function TeamSkeletonLoading() {
   return (
     <View className="pt-2">
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <Card key={i} className="mb-3 overflow-hidden border-border/40">
+        <Card key={i} className="rounded-2xl mb-3 overflow-hidden border-border/40">
           <View className="flex-row items-center p-4">
             {/* Avatar - match TeamItem Avatar size="lg" with border */}
             <View className="relative">

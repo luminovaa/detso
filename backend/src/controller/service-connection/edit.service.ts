@@ -65,7 +65,7 @@ export const editServiceConnection = asyncHandler(async (req: Request, res: Resp
   }
 
   const cleanupUploadedFiles = async () => {
-    if (files.photos) {
+    if (files?.photos) {
       await Promise.all(
         files.photos.map(file => 
           deleteFile(file.path).catch(err => console.error('Gagal hapus file:', err))

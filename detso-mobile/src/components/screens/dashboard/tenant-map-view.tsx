@@ -12,7 +12,7 @@ import { Badge } from "@/src/components/global/badge";
 import { config } from "@/src/lib/config";
 import { TenantMapData } from "@/src/features/dashboard/types";
 import { useT } from "@/src/features/i18n/store";
-import { COLORS } from "@/src/lib/colors";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
 
@@ -25,6 +25,7 @@ interface TenantMapViewProps {
 
 export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMapViewProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const cameraRef = useRef<Mapbox.Camera>(null);
 
   // Filter hanya tenant yang punya koordinat valid
@@ -62,9 +63,9 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
 
   if (validTenants.length === 0) {
     return (
-      <Card className="mt-4">
+      <Card className="mt-4 rounded-2xl border-border/40">
         <CardContent className="p-6 items-center">
-          <Ionicons name="map-outline" size={48} color={COLORS.neutral.gray[500]} />
+          <Ionicons name="map-outline" size={48} color={colors.textMuted} />
           <Text className="text-muted-foreground mt-2 text-center">
             {t("dashboard.mapEmpty")}
           </Text>
@@ -86,7 +87,7 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
       </View>
 
       {/* Map Container */}
-      <Card>
+      <Card className="rounded-2xl border-border/40">
         <CardContent className="p-0 overflow-hidden rounded-2xl">
           <View 
             className="h-[280px] w-full"
@@ -124,7 +125,7 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
                     <Ionicons
                       name="location-sharp"
                       size={40}
-                      color={tenant.is_active ? COLORS.status.success : COLORS.status.error}
+                      color={tenant.is_active ? colors.success : colors.error}
                     />
                   </View>
                   <Mapbox.Callout title={tenant.name} />
@@ -133,16 +134,16 @@ export function TenantMapView({ data, onMapTouchStart, onMapTouchEnd }: TenantMa
             </Mapbox.MapView>
 
             {/* Legend overlay */}
-            <View className="absolute bottom-2.5 left-2.5 flex-row bg-white/90 px-3 py-1.5 rounded-full shadow-sm">
+            <View className="absolute bottom-2.5 left-2.5 flex-row bg-card/90 border border-border px-3 py-1.5 rounded-full shadow-sm">
               <View className="flex-row items-center mr-4">
-                <Ionicons name="location-sharp" size={16} color={COLORS.status.success} />
-                <Text className="text-xs text-primary ml-1">
+                <Ionicons name="location-sharp" size={16} color={colors.success} />
+                <Text className="text-xs text-foreground ml-1">
                   {`${t("dashboard.legendActive")} (${validTenants.filter((item) => item.is_active).length})`}
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Ionicons name="location-sharp" size={16} color={COLORS.status.error} />
-                <Text className="text-xs text-primary ml-1">
+                <Ionicons name="location-sharp" size={16} color={colors.error} />
+                <Text className="text-xs text-foreground ml-1">
                   {`${t("dashboard.legendInactive")} (${validTenants.filter((item) => !item.is_active).length})`}
                 </Text>
               </View>

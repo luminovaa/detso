@@ -21,7 +21,6 @@ import { Button } from '@/src/components/global/button';
 import { NetworkService, NetworkTopology } from '@/src/features/network/types';
 import { useDeleteLink } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
-import { COLORS } from '@/src/lib/colors';
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface ServiceDetailSheetProps {
@@ -146,7 +145,7 @@ export function ServiceDetailSheet({
           <DialogHeader>
             <DialogTitle>Putuskan Koneksi</DialogTitle>
             <DialogDescription>
-              Yakin ingin memutuskan "{service.customer_name}" dari {connectedNode?.name || 'ODP'}?
+              Yakin ingin memutuskan &quot;{service.customer_name}&quot; dari {connectedNode?.name || 'ODP'}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

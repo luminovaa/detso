@@ -32,8 +32,8 @@ export const updateTicketSchema = z.object({
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
     type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional().default('PROBLEM'),
     status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
-    assigned_to: z.string().cuid().nullable().optional(),
-    service_id: z.string().cuid().nullable().optional(),
+    assigned_to: z.string().min(1).nullable().optional(),
+    service_id: z.string().min(1).nullable().optional(),
     resolved_at: z.string().datetime().optional(),
     image: z.string().optional()
 }).strict();

@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PROTOTYPE — Detso Mobile UI Explorer (Login & Dashboard)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       PROTOTYPE DESIGN TOKENS (Aligned with Detso Brand & Non-AI-Slop References)
+       ========================================================================== */
+    :root[data-theme="light"] {
+      --bg-stage: #E8EEF3;
+      --bg-canvas: #F4F6F9;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #EDF2F7;
+      --bg-input: #F8FAFC;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --border-hairline: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --brand-teal: #0F766E;
+      --brand-teal-deep: #115E59;
+      --brand-teal-soft: rgba(15, 118, 110, 0.10);
+      --brand-cyan: #0891B2;
+      --status-online: #10B981;
+      --status-online-soft: rgba(16, 185, 129, 0.12);
+      --status-warn: #D97706;
+      --status-warn-soft: rgba(217, 119, 6, 0.12);
+      --status-danger: #E11D48;
+      --status-danger-soft: rgba(225, 29, 72, 0.11);
+      --shadow-phone: 0 24px 60px rgba(15, 23, 42, 0.16), 0 4px 16px rgba(15, 23, 42, 0.06);
+      --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.04);
+      --tab-glass: rgba(255, 255, 255, 0.90);
+    }
+
+    :root[data-theme="dark"] {
+      --bg-stage: #06090F;
+      --bg-canvas: #0B101B;
+      --bg-card: #131B2E;
+      --bg-card-subtle: #192339;
+      --bg-input: #0F1626;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --border-hairline: #1E293B;
+      --border-strong: #334155;
+      --brand-teal: #2DD4BF;
+      --brand-teal-deep: #0F766E;
+      --brand-teal-soft: rgba(45, 212, 191, 0.12);
+      --brand-cyan: #22D3EE;
+      --status-online: #34D399;
+      --status-online-soft: rgba(52, 211, 153, 0.14);
+      --status-warn: #FBBF24;
+      --status-warn-soft: rgba(251, 191, 36, 0.14);
+      --status-danger: #FB7185;
+      --status-danger-soft: rgba(251, 113, 133, 0.15);
+      --shadow-phone: 0 28px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
+      --tab-glass: rgba(19, 27, 46, 0.90);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-stage);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 24px 110px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==========================================================================
+       TOP PROTOTYPE CONTROL BAR
+       ========================================================================== */
+    .proto-header {
+      width: 100%;
+      max-width: 1240px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hairline);
+      padding: 12px 18px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .proto-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .proto-tag {
+      background: var(--brand-teal-soft);
+      color: var(--brand-teal);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 4px 9px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .proto-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .proto-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .proto-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--bg-canvas);
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ==========================================================================
+       STAGE & PHONE VIEWPORTS
+       ========================================================================== */
+    .stage-grid {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 28px;
+      width: 100%;
+      max-width: 1280px;
+      flex-wrap: wrap;
+    }
+
+    .phone-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .phone-caption {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 790px;
+      background: var(--bg-canvas);
+      border-radius: 46px;
+      box-shadow: var(--shadow-phone);
+      border: 8px solid #1E293B;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s ease;
+    }
+
+    /* iOS Status Bar + Dynamic Island */
+    .ios-statusbar {
+      height: 44px;
+      padding: 12px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .dynamic-island {
+      width: 96px;
+      height: 24px;
+      background: #000;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+    }
+
+    .screen-body {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .screen-body::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Bottom Floating TabBar inside Phone */
+    .phone-tabbar {
+      height: 64px;
+      margin: 0 16px 14px;
+      background: var(--tab-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-hairline);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 16px;
+    }
+
+    .tab-item.active {
+      color: var(--brand-teal);
+      background: var(--brand-teal-soft);
+    }
+
+    /* ==========================================================================
+       SHARED NON-AI-SLOP UI PRIMITIVES
+       ========================================================================== */
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .pill-online { background: var(--status-online-soft); color: var(--status-online); }
+    .pill-online .pill-dot { background: var(--status-online); }
+
+    .pill-warn { background: var(--status-warn-soft); color: var(--status-warn); }
+    .pill-warn .pill-dot { background: var(--status-warn); }
+
+    .pill-danger { background: var(--status-danger-soft); color: var(--status-danger); }
+    .pill-danger .pill-dot { background: var(--status-danger); }
+
+    .pill-teal { background: var(--brand-teal-soft); color: var(--brand-teal); }
+    .pill-teal .pill-dot { background: var(--brand-teal); }
+
+    /* Inset Grouped List (iOS / Linear / Stripe Style - NO BOX INSIDE BOX) */
+    .grouped-list {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border-hairline);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .grouped-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 15px;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-hairline);
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .grouped-row:last-child {
+      border-bottom: none;
+    }
+    .grouped-row:hover {
+      background: var(--bg-card-subtle);
+    }
+
+    .section-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 0 8px;
+      padding: 0 2px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+    .section-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand-teal);
+      cursor: pointer;
+    }
+
+    /* Form Controls */
+    .field-group {
+      margin-bottom: 14px;
+    }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .field-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .field-input {
+      width: 100%;
+      height: 50px;
+      padding: 0 42px 0 14px;
+      border-radius: 13px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field-input:focus {
+      border-color: var(--brand-teal);
+      box-shadow: 0 0 0 3px var(--brand-teal-soft);
+    }
+    .eye-btn {
+      position: absolute;
+      right: 6px;
+      width: 38px;
+      height: 38px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .primary-btn {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 14px;
+      background: #0F766E;
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 16px rgba(15, 118, 110, 0.25);
+      transition: transform 0.1s ease, opacity 0.15s ease;
+    }
+    .primary-btn:active {
+      transform: scale(0.99);
+    }
+
+    /* ==========================================================================
+       FLOATING BOTTOM VARIANT SWITCHER (Per skill://prototype/UI.md)
+       ========================================================================== */
+    .floating-switcher {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0F172A;
+      color: #F8FAFC;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+    }
+
+    .switch-arrow {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFF;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+    .switch-arrow:hover {
+      background: rgba(45, 212, 191, 0.25);
+      border-color: #2DD4BF;
+    }
+
+    .switch-info {
+      text-align: center;
+      min-width: 250px;
+    }
+    .switch-key {
+      font-size: 13px;
+      font-weight: 800;
+      color: #2DD4BF;
+    }
+    .switch-desc {
+      font-size: 11px;
+      color: #CBD5E1;
+      margin-top: 1px;
+    }
+
+    /* State Inspector Pill */
+    .state-toast {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .state-toast.show {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP PROTOTYPE CONTROLS -->
+  <header class="proto-header">
+    <div class="proto-badge-group">
+      <span class="proto-tag">PROTOTYPE</span>
+      <div>
+        <div class="proto-title">Detso Mobile — Anti-AI-Slop UI Explorer</div>
+        <div class="proto-subtitle" id="currentStateLabel">Menampilkan 3 layar sekaligus · Gunakan bar bawah atau tombol ← → untuk ganti varian</div>
+      </div>
+    </div>
+
+    <div class="proto-controls">
+      <!-- Screen Focus Filter -->
+      <div class="seg-group" role="group" aria-label="View Mode">
+        <button class="seg-btn active" data-screen="all" onclick="setScreenMode('all')">Semua Layar (3)</button>
+        <button class="seg-btn" data-screen="login" onclick="setScreenMode('login')">Fokus Login</button>
+        <button class="seg-btn" data-screen="owner" onclick="setScreenMode('owner')">Dashboard Owner</button>
+        <button class="seg-btn" data-screen="teknisi" onclick="setScreenMode('teknisi')">Dashboard Teknisi</button>
+      </div>
+
+      <!-- Interactive Login State Simulator -->
+      <div class="seg-group" role="group" aria-label="Simulasi State Login">
+        <button class="seg-btn active" data-authstate="normal" onclick="setAuthState('normal')">State: Normal</button>
+        <button class="seg-btn" data-authstate="error" onclick="setAuthState('error')">401 Salah PW</button>
+        <button class="seg-btn" data-authstate="ratelimit" onclick="setAuthState('ratelimit')">429 Limit</button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <div class="seg-group" role="group" aria-label="Theme Mode">
+        <button class="seg-btn active" id="themeLightBtn" onclick="setTheme('light')">☀️ Light</button>
+        <button class="seg-btn" id="themeDarkBtn" onclick="setTheme('dark')">🌙 Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN 3-PHONE STAGE -->
+  <main class="stage-grid" id="stageGrid">
+    <!-- Rendered dynamically per variant A / B / C -->
+  </main>
+  <!-- FLOATING VARIANT SWITCHER BAR -->
+  <nav class="floating-switcher" aria-label="Prototype Variant Switcher">
+    <button class="switch-arrow" id="prevVariantBtn" onclick="cycleVariant(-1)" title="Previous Variant (←)">←</button>
+    <div class="switch-info">
+      <div class="switch-key" id="variantTitle">⭐ Pilihan Final (Login B + Dashboard A)</div>
+      <div class="switch-desc" id="variantSubtitle">Login Editorial Linear (B) + Dashboard Owner & Teknisi Berkarakter (A)</div>
+    </div>
+    <button class="switch-arrow" id="nextVariantBtn" onclick="cycleVariant(1)" title="Next Variant (→)">→</button>
+  </nav>
+
+  <script>
+    const VARIANTS = {
+      AB: {
+        key: 'AB',
+        name: '⭐ Pilihan Final (Login B + Dashboard A)',
+        subtitle: 'Login Editorial Linear (B) + Dashboard Owner & Teknisi Berkarakter (A)',
+      },
+      A: {
+        key: 'A',
+        name: 'Variant A (Refined Detso Signature)',
+        subtitle: 'Kiblat: Revolut / Grab Sheet Login + Mobbin Asymmetric Hero Card + iOS Grouped List',
+      },
+      B: {
+        key: 'B',
+        name: 'Variant B (Linear & Stripe Editorial)',
+        subtitle: 'Kiblat: Linear Minimal Top-Anchor Login + Stripe Ledger Summary + Clean Divider Rows',
+      },
+      C: {
+        key: 'C',
+        name: 'Variant C (UniFi & Dribbble Field-Ops)',
+        subtitle: 'Kiblat: Ubiquiti NOC Telemetry Strip + Dribbble #26378456 Task-First Dispatch Cards',
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    let currentVariant = params.get('variant') || 'AB';
+    if (!VARIANTS[currentVariant]) currentVariant = 'AB';
+    let currentTheme = params.get('theme') || 'light';
+    let screenMode = params.get('screen') || 'all';
+    let authState = 'normal'; // 'normal' | 'error' | 'ratelimit'
+    let showPassword = false;
+
+    function syncUrl() {
+      const next = new URLSearchParams();
+      next.set('variant', currentVariant);
+      next.set('theme', currentTheme);
+      if (screenMode !== 'all') next.set('screen', screenMode);
+      window.history.replaceState({}, '', `${window.location.pathname}?${next.toString()}`);
+    }
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeLightBtn').classList.toggle('active', theme === 'light');
+      document.getElementById('themeDarkBtn').classList.toggle('active', theme === 'dark');
+      syncUrl();
+      renderStage();
+    }
+
+    function setScreenMode(mode) {
+      screenMode = mode;
+      document.querySelectorAll('[data-screen]').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-screen') === mode);
+      });
+      syncUrl();
+      renderStage();
+    }
+
+    function setAuthState(state) {
+      authState = state;
+      document.querySelectorAll('[data-authstate]').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-authstate') === state);
+      });
+      renderStage();
+    }
+
+    function togglePasswordVisibility() {
+      showPassword = !showPassword;
+      renderStage();
+    }
+
+    function cycleVariant(delta) {
+      const keys = Object.keys(VARIANTS);
+      const idx = keys.indexOf(currentVariant);
+      currentVariant = keys[(idx + delta + keys.length) % keys.length];
+      syncUrl();
+      renderStage();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+      if (e.key === 'ArrowLeft') cycleVariant(-1);
+      if (e.key === 'ArrowRight') cycleVariant(1);
+    });
+
+    // =========================================================================
+    // LOGIN SCREEN TEMPLATES (Variants A, B, C)
+    // =========================================================================
+    function renderAuthBanner() {
+      if (authState === 'error') {
+        return `
+          <div class="state-toast show" style="background: var(--status-danger-soft); color: var(--status-danger); border: 1px solid rgba(225,29,72,0.25); margin-bottom: 14px;">
+            <span>⚠️</span>
+            <span>Username atau password tidak sesuai. Silakan periksa kembali.</span>
+          </div>
+        `;
+      }
+      if (authState === 'ratelimit') {
+        return `
+          <div class="state-toast show" style="background: var(--status-warn-soft); color: var(--status-warn); border: 1px solid rgba(217,119,6,0.25); margin-bottom: 14px;">
+            <span>⏳</span>
+            <span>Terlalu banyak percobaan. Coba lagi dalam <strong class="mono">04:52</strong>.</span>
+          </div>
+        `;
+      }
+      return '';
+    }
+
+    function renderLoginScreen(v) {
+      const pwType = showPassword ? 'text' : 'password';
+      const pwVal = showPassword ? '12345678' : '12345678';
+
+      if (v === 'A') {
+        // VARIANT A: Refined Detso Signature (Compact Teal Hero + Clean Rounded Sheet, NO clutter)
+        return `
+          <div class="phone-frame" style="background: #0F766E;">
+            <div class="dynamic-island"></div>
+            <div class="ios-statusbar" style="color: #FFFFFF;">
+              <span>09:41</span>
+              <span>5G · 100%</span>
+            </div>
+
+            <div class="screen-body">
+              <!-- Compact Proportional Hero (32% height instead of 50% bloated hero) -->
+              <div style="padding: 18px 24px 28px; color: #FFF; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 42px; height: 42px; border-radius: 13px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;">
+                      D
+                    </div>
+                    <div>
+                      <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.02em;">DETSO ISP</div>
+                      <div style="font-size: 11px; opacity: 0.8;">Field & Network Console</div>
+                    </div>
+                  </div>
+                  <span style="background: rgba(255,255,255,0.16); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;">ID</span>
+                </div>
+
+                <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2;">Selamat Datang</h1>
+                <p style="font-size: 13px; opacity: 0.86; margin-top: 6px; line-height: 1.45;">
+                  Masuk untuk mengelola pelanggan, tiket gangguan, dan jadwal teknisi.
+                </p>
+              </div>
+
+              <!-- Clean Rounded Bottom Sheet -->
+              <div style="flex: 1; background: var(--bg-card); border-radius: 30px 30px 0 0; padding: 26px 22px 20px; display: flex; flex-direction: column;">
+                ${renderAuthBanner()}
+
+                <div class="field-group">
+                  <label class="field-label">Username atau Email</label>
+                  <div class="field-input-wrap">
+                    <input class="field-input" type="text" value="owner_berkah_net" placeholder="Masukkan username atau email" />
+                  </div>
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label">Password</label>
+                  <div class="field-input-wrap">
+                    <input class="field-input" type="${pwType}" value="${pwVal}" placeholder="Masukkan password" />
+                    <button class="eye-btn" onclick="togglePasswordVisibility()" title="Tampilkan Password">
+                      ${showPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                </div>
+
+                <button class="primary-btn" style="margin-top: 10px;" ${authState === 'ratelimit' ? 'disabled style="opacity:0.5; margin-top:10px;"' : ''}>
+                  ${authState === 'ratelimit' ? 'Terkunci Sementara (04:52)' : 'Masuk ke Workspace →'}
+                </button>
+
+                <!-- Quick Demo Credential Chips for Testing -->
+                <div style="margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-hairline);">
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">AKUN DEMO SEED:</div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <span class="pill-badge pill-teal mono" style="font-size: 10px;">owner_berkah_net</span>
+                    <span class="pill-badge pill-online mono" style="font-size: 10px;">teknisi_berkah_net</span>
+                    <span class="pill-badge pill-warn mono" style="font-size: 10px;">pw: 12345678</span>
+                  </div>
+                </div>
+
+                <div style="margin-top: auto; text-align: center; padding-top: 14px; font-size: 12px; color: var(--text-secondary);">
+                  Kendala akses akun? <strong style="color: var(--brand-teal); cursor: pointer;" onclick="alert('Hubungi Admin/Owner ISP Anda untuk reset password atau pembuatan akun staf baru.')">Hubungi Admin ISP</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (v === 'B') {
+        // VARIANT B: Linear / Tailscale Ultra-Minimal Editorial Surface (No Hero Split, Pure Typography & Whitespace)
+        return `
+          <div class="phone-frame" style="background: var(--bg-card);">
+            <div class="dynamic-island"></div>
+            <div class="ios-statusbar" style="color: var(--text-primary);">
+              <span>09:41</span>
+              <span>5G · 100%</span>
+            </div>
+
+            <div class="screen-body" style="padding: 28px 24px 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 42px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--brand-teal); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;">
+                  D
+                </div>
+                <span style="border: 1px solid var(--border-hairline); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; color: var(--text-secondary);">ID / EN</span>
+              </div>
+
+              <div style="margin-bottom: 28px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand-teal); margin-bottom: 6px;">
+                  DETSO NETWORK CLOUD
+                </div>
+                <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary);">
+                  Masuk ke akun Anda
+                </h1>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                  Gunakan kredensial staf ISP yang terdaftar pada tenant Anda.
+                </p>
+              </div>
+
+              ${renderAuthBanner()}
+
+              <div class="field-group">
+                <label class="field-label">Identifier (Username / Email)</label>
+                <div class="field-input-wrap">
+                  <input class="field-input" type="text" value="owner_berkah_net" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Password</label>
+                <div class="field-input-wrap">
+                  <input class="field-input" type="${pwType}" value="${pwVal}" />
+                  <button class="eye-btn" onclick="togglePasswordVisibility()">${showPassword ? '🙈' : '👁️'}</button>
+                </div>
+              </div>
+
+              <button class="primary-btn" style="margin-top: 12px; border-radius: 11px;">
+                Lanjutkan
+              </button>
+
+              <div style="margin-top: auto; background: var(--bg-canvas); padding: 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Belum punya akun staf?</div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">Akun dibuat oleh Owner/Admin ISP</div>
+                </div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--brand-teal); cursor: pointer;">Info →</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // VARIANT C: Ubiquiti UniFi / Field Ops Console Login (Technical Status Pill + Elevated Workspace Card)
+      return `
+        <div class="phone-frame" style="background: var(--bg-canvas);">
+          <div class="dynamic-island"></div>
+          <div class="ios-statusbar" style="color: var(--text-primary);">
+            <span>09:41</span>
+            <span>5G · 100%</span>
+          </div>
+
+          <div class="screen-body" style="padding: 16px 20px 24px;">
+            <!-- Top System Telemetry Pill -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+              <span class="pill-badge pill-online">
+                <span class="pill-dot"></span>
+                <span>API Gateway: Online</span>
+              </span>
+              <span class="mono" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">v1.0.0 · ID</span>
+            </div>
+
+            <!-- Brand Header -->
+            <div style="text-align: center; margin: 10px 0 24px;">
+              <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #0F766E, #0891B2); color: #FFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; box-shadow: 0 10px 24px rgba(15,118,110,0.3); margin-bottom: 12px;">
+                D
+              </div>
+              <h1 style="font-size: 22px; font-weight: 800; color: var(--text-primary);">Detso Operations</h1>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Sistem Manajemen Pelanggan & Tiket ISP</p>
+            </div>
+
+            <!-- Single Clean Elevated Card -->
+            <div style="background: var(--bg-card); border-radius: 20px; padding: 20px; border: 1px solid var(--border-hairline); box-shadow: var(--shadow-card);">
+              ${renderAuthBanner()}
+
+              <div class="field-group">
+                <label class="field-label">ID Pengguna / Email</label>
+                <div class="field-input-wrap">
+                  <input class="field-input mono" style="font-size: 13px;" type="text" value="teknisi_berkah_net" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Kata Sandi</label>
+                <div class="field-input-wrap">
+                  <input class="field-input" type="${pwType}" value="${pwVal}" />
+                  <button class="eye-btn" onclick="togglePasswordVisibility()">${showPassword ? '🙈' : '👁️'}</button>
+                </div>
+              </div>
+
+              <button class="primary-btn" style="margin-top: 6px;">
+                Masuk Konsol Lapangan
+              </button>
+            </div>
+
+            <div style="margin-top: auto; text-align: center; font-size: 12px; color: var(--text-muted);">
+              Terproteksi Multi-Tenant Isolation · <strong style="color: var(--text-primary);">Bantuan Admin</strong>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // OWNER DASHBOARD TEMPLATES (Variants A, B, C)
+    // =========================================================================
+    function renderOwnerDashboard(v) {
+      if (v === 'A') {
+        // VARIANT A: Asymmetric Hero Card + 2 Sub-Metrics + Clean Icon Row + Inset Grouped List
+        return `
+          <div class="phone-frame">
+            <div class="dynamic-island"></div>
+            <div class="ios-statusbar">
+              <span>09:41</span>
+              <span>5G · 100%</span>
+            </div>
+
+            <div class="screen-body" style="padding: 8px 18px 16px;">
+              <!-- Clean Header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Berkah Net ISP</div>
+                  <div style="font-size: 19px; font-weight: 800; color: var(--text-primary);">Halo, Budi Owner</div>
+                </div>
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--brand-teal-soft); color: var(--brand-teal); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px;">
+                  BO
+                </div>
+              </div>
+
+              <!-- 1 PRIMARY HERO VERDICT CARD (Mobbin Plausible/Revolut Rule: 1 dominant metric) -->
+              <div style="background: linear-gradient(135deg, #0F766E 0%, #115E59 100%); color: #FFF; border-radius: 20px; padding: 18px; margin-bottom: 10px; box-shadow: 0 10px 24px rgba(15,118,110,0.22);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85;">Koneksi Layanan Aktif</span>
+                  <span style="background: rgba(255,255,255,0.18); padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;">● 96.5% Online</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                  <span class="mono" style="font-size: 34px; font-weight: 800; letter-spacing: -0.03em;">138</span>
+                  <span style="font-size: 13px; opacity: 0.82;">dari 143 total pelanggan</span>
+                </div>
+              </div>
+
+              <!-- 2 Secondary Compact Cards (Asymmetric weight) -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+                <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 15px; padding: 12px 14px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Tiket Terbuka</span>
+                    <span class="pill-dot" style="background: var(--status-danger);"></span>
+                  </div>
+                  <div class="mono" style="font-size: 22px; font-weight: 800; color: var(--text-primary);">4</div>
+                  <div style="font-size: 11px; color: var(--status-danger); font-weight: 600;">2 Gangguan LOS</div>
+                </div>
+
+                <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 15px; padding: 12px 14px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Paket Aktif</span>
+                    <span class="pill-dot" style="background: var(--brand-cyan);"></span>
+                  </div>
+                  <div class="mono" style="font-size: 22px; font-weight: 800; color: var(--text-primary);">6</div>
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 500;">10M – 100M Fiber</div>
+                </div>
+              </div>
+
+              <!-- Clean 4-Action Squircle Bar (NO outer card wrapper!) -->
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 6px; text-align: center;">
+                <div style="cursor: pointer;">
+                  <div style="width: 48px; height: 48px; margin: 0 auto 5px; border-radius: 15px; background: var(--bg-card); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-card);">📡</div>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Layanan</div>
+                </div>
+                <div style="cursor: pointer;">
+                  <div style="width: 48px; height: 48px; margin: 0 auto 5px; border-radius: 15px; background: var(--bg-card); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-card);">👥</div>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Pelanggan</div>
+                </div>
+                <div style="cursor: pointer;">
+                  <div style="width: 48px; height: 48px; margin: 0 auto 5px; border-radius: 15px; background: var(--bg-card); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-card);">🎫</div>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Tiket</div>
+                </div>
+                <div style="cursor: pointer;">
+                  <div style="width: 48px; height: 48px; margin: 0 auto 5px; border-radius: 15px; background: var(--bg-card); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-card);">📦</div>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Paket</div>
+                </div>
+              </div>
+
+              <!-- INSET GROUPED LIST: Tiket Terbaru (Single container, hairline dividers) -->
+              <div class="section-hdr">
+                <span class="section-title">Tiket Perlu Perhatian</span>
+                <span class="section-link">Lihat Semua</span>
+              </div>
+              <div class="grouped-list">
+                <div class="grouped-row">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">LOS Merah ODP-04 Melati</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Budi Santoso · 14 menit lalu</div>
+                  </div>
+                  <span class="pill-badge pill-danger"><span class="pill-dot"></span>Urgen</span>
+                </div>
+                <div class="grouped-row">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Ping Tinggi Saat Malam</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Warkop Senja · 1 jam lalu</div>
+                  </div>
+                  <span class="pill-badge pill-warn"><span class="pill-dot"></span>Proses</span>
+                </div>
+                <div class="grouped-row">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Pindah Titik Router Baru</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Siti Aminah · 3 jam lalu</div>
+                  </div>
+                  <span class="pill-badge pill-teal"><span class="pill-dot"></span>Terbuka</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="phone-tabbar">
+              <div class="tab-item active"><span>🏠</span><span>Beranda</span></div>
+              <div class="tab-item"><span>🗺️</span><span>Peta ODP</span></div>
+              <div class="tab-item"><span>📅</span><span>Jadwal</span></div>
+              <div class="tab-item"><span>⚙️</span><span>Setelan</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (v === 'B') {
+        // VARIANT B: Stripe / Linear Ledger Style (No Hero Gradient, Pure Typographic Stat Ledger + Segmented Feed)
+        return `
+          <div class="phone-frame" style="background: var(--bg-card);">
+            <div class="dynamic-island"></div>
+            <div class="ios-statusbar">
+              <span>09:41</span>
+              <span>5G · 100%</span>
+            </div>
+
+            <div class="screen-body" style="padding: 8px 20px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border-hairline);">
+                <div>
+                  <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.02em;">Ringkasan Operasional</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Senin, 19 Okt · Berkah Net</div>
+                </div>
+                <span class="pill-badge pill-online"><span class="pill-dot"></span>Normal</span>
+              </div>
+
+              <!-- Stripe-Style 3-Column Stat Ledger (Divided by vertical hairlines, zero card boxes) -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px 0; border-bottom: 1px solid var(--border-hairline);">
+                <div>
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">PELANGGAN</div>
+                  <div class="mono" style="font-size: 24px; font-weight: 800; margin-top: 2px;">143</div>
+                  <div style="font-size: 10px; color: var(--status-online); font-weight: 700;">+5 bulan ini</div>
+                </div>
+                <div style="border-left: 1px solid var(--border-hairline); padding-left: 14px;">
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">AKTIF</div>
+                  <div class="mono" style="font-size: 24px; font-weight: 800; margin-top: 2px;">138</div>
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">96.5% rasio</div>
+                </div>
+                <div style="border-left: 1px solid var(--border-hairline); padding-left: 14px;">
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">KOMPLAIN</div>
+                  <div class="mono" style="font-size: 24px; font-weight: 800; color: var(--status-danger); margin-top: 2px;">4</div>
+                  <div style="font-size: 10px; color: var(--status-danger); font-weight: 700;">2 kritis</div>
+                </div>
+              </div>
+
+              <!-- Horizontal Pill Shortcuts -->
+              <div style="display: flex; gap: 6px; overflow-x: auto; padding: 14px 0;">
+                <span style="background: var(--bg-canvas); border: 1px solid var(--border-hairline); padding: 7px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap;">+ Pelanggan Baru</span>
+                <span style="background: var(--bg-canvas); border: 1px solid var(--border-hairline); padding: 7px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap;">+ Buat Tiket</span>
+                <span style="background: var(--bg-canvas); border: 1px solid var(--border-hairline); padding: 7px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap;">Daftar Paket</span>
+              </div>
+
+              <div class="section-hdr" style="margin-top: 4px;">
+                <span class="section-title">Antrean Tiket Aktif</span>
+                <span class="section-link">Semua (4) →</span>
+              </div>
+
+              <!-- Pure Edge-to-Edge Hairline List -->
+              <div style="border-top: 1px solid var(--border-hairline);">
+                <div class="grouped-row" style="padding: 13px 4px;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">#T-104 · LOS Merah ODP-04</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Budi Santoso · Fiber 50M</div>
+                  </div>
+                  <span class="pill-badge pill-danger"><span class="pill-dot"></span>URGENT</span>
+                </div>
+                <div class="grouped-row" style="padding: 13px 4px;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">#T-103 · Lambat Jam Sibuk</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Warkop Senja · Fiber 100M</div>
+                  </div>
+                  <span class="pill-badge pill-warn"><span class="pill-dot"></span>PROSES</span>
+                </div>
+              </div>
+
+              <div class="section-hdr">
+                <span class="section-title">Pelanggan Baru Terdaftar</span>
+                <span class="section-link">Semua →</span>
+              </div>
+              <div style="border-top: 1px solid var(--border-hairline);">
+                <div class="grouped-row" style="padding: 12px 4px;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">Hendro Wijaya</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Jl. Anggrek No. 8 · Paket 30 Mbps</div>
+                  </div>
+                  <span class="pill-badge pill-online">Aktif</span>
+                </div>
+                <div class="grouped-row" style="padding: 12px 4px;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">Klinik Sehat Bersama</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Jl. Sudirman 45 · Paket 100 Mbps</div>
+                  </div>
+                  <span class="pill-badge pill-online">Aktif</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="phone-tabbar">
+              <div class="tab-item active"><span>🏠</span><span>Beranda</span></div>
+              <div class="tab-item"><span>🗺️</span><span>Peta ODP</span></div>
+              <div class="tab-item"><span>📅</span><span>Jadwal</span></div>
+              <div class="tab-item"><span>⚙️</span><span>Setelan</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // VARIANT C: Ubiquiti UniFi / NOC Command Center (Network Health Banner + Bento Split)
+      return `
+        <div class="phone-frame">
+          <div class="dynamic-island"></div>
+          <div class="ios-statusbar">
+            <span>09:41</span>
+            <span>5G · 100%</span>
+          </div>
+
+          <div class="screen-body" style="padding: 8px 16px 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="font-size: 17px; font-weight: 800;">NOC · Berkah Net</div>
+              <span class="pill-badge pill-online mono" style="font-size: 10px;"><span class="pill-dot"></span>CCR2004 UP</span>
+            </div>
+
+            <!-- Bento Grid Asymmetric -->
+            <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; margin-bottom: 14px;">
+              <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">PPPoE / LAYANAN AKTIF</div>
+                <div style="margin: 12px 0;">
+                  <div class="mono" style="font-size: 32px; font-weight: 800; color: var(--brand-teal); line-height: 1;">138</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">5 isolir / nonaktif</div>
+                </div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--brand-teal);">Buka Layanan →</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 16px; padding: 12px;">
+                  <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">TIKET GANGGUAN</div>
+                  <div class="mono" style="font-size: 20px; font-weight: 800; color: var(--status-danger); margin-top: 2px;">4 Open</div>
+                </div>
+                <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 16px; padding: 12px;">
+                  <div style="font-size: 10px; font-weight: 700; color: var(--text-muted);">TOTAL PELANGGAN</div>
+                  <div class="mono" style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">143</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-hdr">
+              <span class="section-title">Insiden & Tiket Prioritas</span>
+              <span class="section-link">Filter</span>
+            </div>
+            <div class="grouped-list">
+              <div class="grouped-row">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700;">LOS Merah ODP-04 Melati</div>
+                  <div class="mono" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">192.168.10.42 · Budi S.</div>
+                </div>
+                <span class="pill-badge pill-danger">LOS</span>
+              </div>
+              <div class="grouped-row">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700;">Redaman Tinggi -29 dBm</div>
+                  <div class="mono" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">192.168.10.88 · Warkop</div>
+                </div>
+                <span class="pill-badge pill-warn">Cek</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="phone-tabbar">
+            <div class="tab-item active"><span>🏠</span><span>NOC</span></div>
+            <div class="tab-item"><span>🗺️</span><span>Topologi</span></div>
+            <div class="tab-item"><span>📅</span><span>Jadwal</span></div>
+            <div class="tab-item"><span>⚙️</span><span>Setelan</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // TEKNISI DASHBOARD TEMPLATES (Dribbble #26378456 Field Service Inspired)
+    // =========================================================================
+    function renderTeknisiDashboard(v) {
+      if (v === 'A' || v === 'C') {
+        // Dribbble Shot #26378456 Pattern: Week Strip + Highlighted "On Going" Job Card + Action Buttons
+        return `
+          <div class="phone-frame">
+            <div class="dynamic-island"></div>
+            <div class="ios-statusbar">
+              <span>09:41</span>
+              <span>5G · 100%</span>
+            </div>
+
+            <div class="screen-body" style="padding: 8px 18px 16px;">
+              <!-- Teknisi Header -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--brand-teal); text-transform: uppercase;">Teknisi Lapangan</div>
+                  <div style="font-size: 20px; font-weight: 800;">Tugas Hari Ini</div>
+                </div>
+                <span class="pill-badge pill-online"><span class="pill-dot"></span>3 Jadwal</span>
+              </div>
+
+              <!-- Horizontal Day Strip (From Dribbble Field Service Reference) -->
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; text-align: center;">
+                <div style="padding: 8px 4px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-hairline);">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">MING</div>
+                  <div class="mono" style="font-size: 14px; font-weight: 700; margin-top: 2px;">18</div>
+                </div>
+                <div style="padding: 8px 4px; border-radius: 12px; background: var(--brand-teal); color: #FFF; box-shadow: 0 4px 12px rgba(15,118,110,0.28);">
+                  <div style="font-size: 10px; opacity: 0.85; font-weight: 700;">SEN</div>
+                  <div class="mono" style="font-size: 14px; font-weight: 800; margin-top: 2px;">19</div>
+                </div>
+                <div style="padding: 8px 4px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-hairline);">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">SEL</div>
+                  <div class="mono" style="font-size: 14px; font-weight: 700; margin-top: 2px;">20</div>
+                </div>
+                <div style="padding: 8px 4px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-hairline);">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">RAB</div>
+                  <div class="mono" style="font-size: 14px; font-weight: 700; margin-top: 2px;">21</div>
+                </div>
+                <div style="padding: 8px 4px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-hairline);">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">KAM</div>
+                  <div class="mono" style="font-size: 14px; font-weight: 700; margin-top: 2px;">22</div>
+                </div>
+              </div>
+
+              <!-- ACTIVE / ON-GOING JOB CARD (Warm Highlight like Dribbble Reference) -->
+              <div style="background: var(--bg-card); border: 1.5px solid var(--brand-teal); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span class="mono" style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">09:30 – 11:00 WIB</span>
+                  <span class="pill-badge pill-warn"><span class="pill-dot"></span>Sedang Dikerjakan</span>
+                </div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                  Perbaikan Putus Dropcore ODP-04
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
+                  📍 Jl. Melati No. 12 (Rumah Bpk. Budi Santoso)
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button style="height: 40px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--bg-canvas); color: var(--text-primary); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;">
+                    🗺️ Rute Peta
+                  </button>
+                  <button style="height: 40px; border-radius: 10px; border: none; background: #0F766E; color: #FFF; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;">
+                    ✓ Selesaikan
+                  </button>
+                </div>
+              </div>
+
+              <!-- NEXT SCHEDULED ITEM (Clean White Card) -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span class="mono" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">13:00 – 14:30 WIB</span>
+                  <span class="pill-badge pill-teal"><span class="pill-dot"></span>Terjadwal</span>
+                </div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Pasang Baru Paket 50 Mbps</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">📍 Jl. Anggrek Blok C2 · Hendro W.</div>
+              </div>
+
+              <!-- ASSIGNED TICKETS GROUP -->
+              <div class="section-hdr" style="margin-top: 2px;">
+                <span class="section-title">Tiket Ditugaskan ke Anda (2)</span>
+              </div>
+              <div class="grouped-list">
+                <div class="grouped-row">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">Cek Redaman Tinggi (-29 dBm)</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Warkop Senja · ODP-02</div>
+                  </div>
+                  <span class="pill-badge pill-warn">Tinggi</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="phone-tabbar">
+              <div class="tab-item active"><span>📋</span><span>Tugas</span></div>
+              <div class="tab-item"><span>🗺️</span><span>Peta ODP</span></div>
+              <div class="tab-item"><span>📅</span><span>Jadwal</span></div>
+              <div class="tab-item"><span>⚙️</span><span>Profil</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // VARIANT B: Compact Checklist Queue for Teknisi
+      return `
+        <div class="phone-frame" style="background: var(--bg-card);">
+          <div class="dynamic-island"></div>
+          <div class="ios-statusbar">
+            <span>09:41</span>
+            <span>5G · 100%</span>
+          </div>
+
+          <div class="screen-body" style="padding: 8px 20px 16px;">
+            <div style="padding-bottom: 14px; border-bottom: 1px solid var(--border-hairline); margin-bottom: 14px;">
+              <div style="font-size: 18px; font-weight: 800;">Agenda Teknisi · Andi</div>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">2 jadwal tersisa · 14 selesai bulan ini</div>
+            </div>
+
+            <div class="section-hdr" style="margin-top: 0;">
+              <span class="section-title">Urutan Kunjungan Hari Ini</span>
+            </div>
+            <div class="grouped-list">
+              <div class="grouped-row">
+                <div>
+                  <div class="mono" style="font-size: 11px; color: var(--brand-teal); font-weight: 700;">09:30 WIB · SEKARANG</div>
+                  <div style="font-size: 14px; font-weight: 700; margin-top: 2px;">Budi Santoso (LOS Merah)</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Jl. Melati No. 12 · ODP-04</div>
+                </div>
+                <span class="pill-badge pill-danger">Mulai →</span>
+              </div>
+              <div class="grouped-row">
+                <div>
+                  <div class="mono" style="font-size: 11px; color: var(--text-muted); font-weight: 700;">13:00 WIB</div>
+                  <div style="font-size: 14px; font-weight: 700; margin-top: 2px;">Hendro W. (Instalasi Baru)</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Jl. Anggrek Blok C2</div>
+                </div>
+                <span class="pill-badge pill-teal">Detail</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="phone-tabbar">
+            <div class="tab-item active"><span>📋</span><span>Tugas</span></div>
+            <div class="tab-item"><span>🗺️</span><span>Peta</span></div>
+            <div class="tab-item"><span>📅</span><span>Jadwal</span></div>
+            <div class="tab-item"><span>⚙️</span><span>Profil</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // STAGE RENDERER
+    // =========================================================================
+    function renderStage() {
+      const meta = VARIANTS[currentVariant];
+      document.getElementById('variantTitle').textContent = meta.name;
+      document.getElementById('variantSubtitle').textContent = meta.subtitle;
+      document.getElementById('currentStateLabel').textContent =
+        `Aktif: ${meta.name} · Tema: ${currentTheme.toUpperCase()} · Auth State: ${authState.toUpperCase()}`;
+
+      const loginVar = currentVariant === 'AB' ? 'B' : currentVariant;
+      const dashVar = currentVariant === 'AB' ? 'A' : currentVariant;
+      const cols = [];
+      if (screenMode === 'all' || screenMode === 'login') {
+        cols.push(`
+          <div class="phone-column">
+            <div class="phone-caption"><span>1. LAYAR LOGIN (VARIANT ${loginVar})</span></div>
+            ${renderLoginScreen(loginVar)}
+          </div>
+        `);
+      }
+      if (screenMode === 'all' || screenMode === 'owner') {
+        cols.push(`
+          <div class="phone-column">
+            <div class="phone-caption"><span>2. DASHBOARD OWNER / ADMIN ISP (VARIANT ${dashVar})</span></div>
+            ${renderOwnerDashboard(dashVar)}
+          </div>
+        `);
+      }
+      if (screenMode === 'all' || screenMode === 'teknisi') {
+        cols.push(`
+          <div class="phone-column">
+            <div class="phone-caption"><span>3. DASHBOARD TEKNISI LAPANGAN (VARIANT ${dashVar})</span></div>
+            ${renderTeknisiDashboard(dashVar)}
+          </div>
+        `);
+      }
+
+      document.getElementById('stageGrid').innerHTML = cols.join('');
+    }
+
+    // Initial boot
+    setTheme(currentTheme);
+    setScreenMode(screenMode);
+  </script>
+</body>
+</html>

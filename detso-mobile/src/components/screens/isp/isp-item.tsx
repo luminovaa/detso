@@ -9,16 +9,16 @@ import { Tenant } from "@/src/lib/types";
 import { useT } from "@/src/features/i18n/store";
 import { router } from "expo-router";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
   const { t } = useT();
-
+  const colors = useThemeColor();
   const handlePress = useCallback(() => {
     router.push(`/isp/${item.id}/detail`);
   }, [item.id]);
 
   return (
-    <Card className="mb-4 overflow-hidden border-border/40">
+    <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
       <TouchableOpacity
         activeOpacity={0.7}
         className="flex-row items-center p-4"
@@ -28,7 +28,7 @@ export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
           src={item.logo || undefined}
           alt={item.name}
           size="lg"
-          className="bg-primary/5 border border-primary/10"
+          className="bg-primary/10 border border-primary/20"
         />
 
         <View className="flex-1 ml-4">
@@ -61,8 +61,14 @@ export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
               </Text>
             </View>
             <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-orange-500 mr-1.5" />
-              <Text weight="semibold" className="text-[11px] text-orange-500">
+              <View
+                className="w-2 h-2 rounded-full mr-1.5"
+                style={{ backgroundColor: colors.warning }}
+              />
+              <Text
+                weight="semibold"
+                className="text-[11px] text-muted-foreground"
+              >
                 {item.stats.active_services.toLocaleString()}{" "}
                 {t("isp.services")}
               </Text>
@@ -73,7 +79,7 @@ export const ISPItem = React.memo(function ISPItem({ item }: { item: Tenant }) {
         <Ionicons
           name="chevron-forward"
           size={18}
-          color={COLORS.neutral.gray[500]}
+          color={colors.textMuted}
           className="ml-2"
         />
       </TouchableOpacity>

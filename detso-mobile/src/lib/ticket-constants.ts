@@ -32,7 +32,7 @@ export const TICKET_PRIORITY_VARIANTS: Record<TicketPriority, BadgeVariantKey> =
  */
 export const TICKET_PRIORITY_COLORS: Record<TicketPriority, string> = {
   LOW: '#64748B',
-  MEDIUM: '#0F766E', // Now teal!
+  MEDIUM: '#102E60', // DTS Navy
   HIGH: '#f59e0b', // amber-500
   URGENT: '#ef4444', // red-500
 };

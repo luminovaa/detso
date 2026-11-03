@@ -14,17 +14,17 @@
         --popover: 0 0% 100%;
         --popover-foreground: 220 15% 10%;
 
-        --primary: 180 84% 25%;
-        /* Teal-700 - Deep teal untuk brand utama ISP */
+        --primary: 217 71% 22%;
+        /* Biru navy logo DTS (#102E60) */
         --primary-foreground: 0 0% 100%;
 
-        --secondary: 189 94% 43%;
-        /* Cyan-500 - Bright cyan untuk aksen sekunder */
+        --secondary: 217 36% 40%;
+        /* Biru sekunder (#415F8B) */
         --secondary-foreground: 0 0% 100%;
 
-        --muted: 180 20% 92%;
-        /* Teal-tinted gray untuk elemen muted */
-        --muted-foreground: 180 10% 45%;
+        --muted: 217 20% 92%;
+        /* Navy-tinted gray untuk elemen muted */
+        --muted-foreground: 220 10% 46%;
 
         --accent: 160 84% 39%;
         /* Emerald-500 - Vibrant green untuk highlight & success */
@@ -33,10 +33,10 @@
         --destructive: 0 72% 50%;
         --destructive-foreground: 0 0% 98%;
 
-        --border: 180 15% 85%;
-        /* Subtle teal tint untuk borders */
-        --input: 180 15% 85%;
-        --ring: 180 84% 25%;
+        --border: 217 15% 85%;
+        /* Subtle navy tint untuk borders */
+        --input: 217 15% 85%;
+        --ring: 217 71% 22%;
         /* Sama dengan primary */
         --radius: 0.5rem;
     }
@@ -52,17 +52,17 @@
             --popover: 220 15% 10%;
             --popover-foreground: 0 0% 98%;
 
-            --primary: 180 77% 47%;
-            /* Teal-400 - Bright teal untuk dark mode, lebih visible */
+            --primary: 217 82% 53%;
+            /* Royal Blue-600 (#2563EB) - Kontras tinggi di dark mode untuk bg-primary & text-primary */
             --primary-foreground: 0 0% 100%;
 
-            --secondary: 189 94% 57%;
-            /* Cyan-400 - Sky cyan untuk dark mode */
+            --secondary: 217 91% 60%;
+            /* Blue-500 (#3B82F6) untuk dark mode */
             --secondary-foreground: 0 0% 100%;
 
-            --muted: 180 10% 20%;
-            /* Dark teal-tinted muted */
-            --muted-foreground: 180 10% 70%;
+            --muted: 220 12% 20%;
+            /* Dark navy-tinted muted */
+            --muted-foreground: 215 12% 70%;
 
             --accent: 160 84% 51%;
             /* Emerald-400 - Light green untuk dark mode */
@@ -71,10 +71,10 @@
             --destructive: 0 72% 50%;
             --destructive-foreground: 0 0% 98%;
 
-            --border: 180 10% 30%;
-            /* Dark teal-tinted borders */
-            --input: 180 10% 30%;
-            --ring: 180 77% 47%;
+            --border: 220 12% 26%;
+            /* Dark navy-tinted borders */
+            --input: 220 12% 26%;
+            --ring: 217 82% 53%;
             /* Sama dengan primary dark */
         }
     }

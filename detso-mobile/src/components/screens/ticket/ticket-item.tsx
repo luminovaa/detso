@@ -10,11 +10,11 @@ import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 import { Ticket, TicketPriority, TicketStatus } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
 import { formatRelativeTime } from "@/src/lib/format-date";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface TicketItemProps {
   item: Ticket;
   searchQuery?: string;
@@ -24,6 +24,9 @@ interface TicketItemProps {
 
 export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: TicketItemProps) {
   const { t } = useT();
+  const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const canDelete = user?.role !== "TENANT_TEKNISI";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const statusLabelMap: Record<TicketStatus, string> = useMemo(() => ({
@@ -74,16 +77,22 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
 
   return (
     <>
-      <Card className="mb-3 overflow-hidden border-border/40">
+      <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
         <TouchableOpacity
           activeOpacity={0.7}
-          className="p-4"
+          className="flex-row items-center p-4"
           onPress={handlePress}
           onLongPress={handleLongPress}
           delayLongPress={250}
         >
-          {/* Priority + Status Badges */}
-          <View className="flex-row items-center gap-x-2 mb-2">
+          {/* Icon */}
+          <View className="w-12 h-12 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
+            <Ionicons name="document-text" size={24} color={colors.primary} />
+          </View>
+
+          <View className="flex-1 ml-3">
+            {/* Priority + Status Badges */}
+            <View className="flex-row items-center gap-x-2 mb-2">
             <Badge colorVariant={TICKET_PRIORITY_VARIANTS[item.priority] || "neutral"}>
               {priorityLabel}
             </Badge>
@@ -102,7 +111,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
 
           {/* Customer + Service */}
           <View className="flex-row items-center mb-0.5">
-            <Ionicons name="person-outline" size={12} color={COLORS.neutral.gray[500]} />
+            <Ionicons name="person-outline" size={12} color={colors.textMuted} />
             <HighlightedText
               text={`${item.customer.name}${item.service ? ` • ${item.service.package_name}` : ""}`}
               searchQuery={searchQuery}
@@ -114,7 +123,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
           {/* Technician */}
           {item.technician && (
             <View className="flex-row items-center mb-0.5">
-              <Ionicons name="construct-outline" size={12} color={COLORS.neutral.gray[500]} />
+              <Ionicons name="construct-outline" size={12} color={colors.textMuted} />
               <Text className="text-xs text-muted-foreground ml-1">
                 {item.technician.profile?.full_name || item.technician.username}
               </Text>
@@ -123,10 +132,11 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
 
           {/* Created Time */}
           <View className="flex-row items-center mt-1.5">
-            <Ionicons name="time-outline" size={11} color={COLORS.neutral.gray[500]} />
+            <Ionicons name="time-outline" size={11} color={colors.textMuted} />
             <Text className="text-[11px] text-muted-foreground ml-1">
               {formatRelativeTime(item.created_at)}
             </Text>
+          </View>
           </View>
         </TouchableOpacity>
       </Card>
@@ -142,25 +152,29 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
             key: "detail",
             label: t("ticket.detailTitle"),
             onPress: handlePress,
-            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="eye-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
           {
             key: "edit",
             label: t("ticket.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "delete",
-            label: t("ticket.deleteBtn"),
-            onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
-            variant: "destructive",
-            isLoading: isDeleting,
-            disabled: isDeleting,
-          },
+          ...(canDelete
+            ? [
+                {
+                  key: "delete",
+                  label: t("ticket.deleteBtn"),
+                  onPress: handleDelete,
+                  icon: <Ionicons name="trash-outline" size={20} color={colors.error} />,
+                  variant: "destructive" as const,
+                  isLoading: isDeleting,
+                  disabled: isDeleting,
+                },
+              ]
+            : []),
         ]}
       />
     </>

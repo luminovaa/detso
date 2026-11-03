@@ -89,7 +89,7 @@ export function MonitoringList() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: contentPaddingBottom }}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} colors={[colors.primary]} tintColor={colors.primary} />
         }
       >
         <View className="mt-4">

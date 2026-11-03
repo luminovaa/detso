@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ScrollView, ActivityIndicator, TouchableOpacity, Pressable } from "react-native";
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,16 +13,14 @@ import { FormInput } from "@/src/components/global/form-input";
 import { Label } from "@/src/components/global/label";
 import { AsyncSelect } from "@/src/components/global/select-searchable";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
+import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
 import { updateServiceConnectionSchema, UpdateServiceConnectionInput } from "@/src/features/connection-service/schema";
 import { useUpdateServiceConnection, useService } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
-import { customerService } from "@/src/features/customer/service";
-import { networkService } from "@/src/features/network/service";
 import { ServiceConnection } from "@/src/lib/types";
-import { useQuery } from "@tanstack/react-query";
 
 import { useThemeColor } from '@/src/lib/theme-colors';
 type StatusOption = "ACTIVE" | "INACTIVE" | "SUSPENDED";
@@ -70,8 +68,6 @@ export default function ServiceEditScreen() {
     if (serviceData) {
       setValue("package_id", serviceData.package_details?.id || "");
       setValue("address", serviceData.address || "");
-      setValue("ip_address", serviceData.ip_address || "");
-      setValue("mac_address", serviceData.mac_address || "");
       setValue("notes", serviceData.notes || "");
       setValue("status", serviceData.status);
       setSelectedStatus(serviceData.status);
@@ -96,23 +92,6 @@ export default function ServiceEditScreen() {
     [],
   );
 
-  const fetchOdpNodes = useCallback(
-    async (search: string, _page: number) => {
-      const res = await networkService.getNodes({ type: 'ODP' });
-      const nodes = res?.data?.nodes || [];
-      const filtered = search
-        ? nodes.filter((n: any) => n.name.toLowerCase().includes(search.toLowerCase()))
-        : nodes;
-      return {
-        data: filtered.map((n: any) => ({
-          label: `${n.name}${n.address ? ` • ${n.address}` : ''}${n.slot ? ` (${n.used_slot || 0}/${n.slot})` : ''}`,
-          value: n.id,
-        })),
-        hasNextPage: false,
-      };
-    },
-    [],
-  );
 
   const getStatusLabel = (status: StatusOption) => {
     switch (status) {
@@ -125,6 +104,7 @@ export default function ServiceEditScreen() {
   const getStatusStyle = (status: StatusOption, isActive: boolean) => {
     const baseStyle = {
       flex: 1,
+      minHeight: 44,
       paddingVertical: 10,
       paddingHorizontal: 12,
       borderRadius: 10,
@@ -132,6 +112,7 @@ export default function ServiceEditScreen() {
       borderColor: colors.border,
       backgroundColor: colors.input,
       alignItems: "center" as const,
+      justifyContent: "center" as const,
     };
     if (!isActive) return baseStyle;
     switch (status) {
@@ -149,8 +130,6 @@ export default function ServiceEditScreen() {
       formData.append("lat", location.lat);
       formData.append("long", location.lng);
     }
-    if (data.ip_address) formData.append("ip_address", data.ip_address);
-    if (data.mac_address) formData.append("mac_address", data.mac_address);
     if (data.notes) formData.append("notes", data.notes);
     formData.append("status", selectedStatus);
 
@@ -182,138 +161,131 @@ export default function ServiceEditScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("service.editTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-y-3">
-            {/* Customer Info (read-only) */}
-            {serviceData?.customer && (
-              <View className="bg-muted/30 rounded-xl p-3 border border-border/30 mb-2">
-                <Text className="text-xs text-muted-foreground">{t("service.customerLabel")}</Text>
-                <Text weight="semibold" className="text-foreground text-base mt-0.5">
-                  {serviceData.customer.name}
-                </Text>
-                {serviceData.customer.phone && (
-                  <Text className="text-xs text-muted-foreground mt-0.5">
-                    {serviceData.customer.phone}
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("service.editTitle")}
+            </Text>
+            <View className="gap-y-3">
+              {/* Customer Info (read-only) */}
+              {serviceData?.customer && (
+                <View className="bg-muted/30 rounded-xl p-3 border border-border/30 mb-1">
+                  <Text className="text-xs text-muted-foreground">{t("service.customerLabel")}</Text>
+                  <Text weight="semibold" className="text-foreground text-base mt-0.5">
+                    {serviceData.customer.name}
                   </Text>
-                )}
-              </View>
-            )}
+                  {serviceData.customer.phone && (
+                    <Text className="text-xs text-muted-foreground mt-0.5">
+                      {serviceData.customer.phone}
+                    </Text>
+                  )}
+                </View>
+              )}
 
-            {/* Package Selector */}
-            <AsyncSelect
-              key={`package-${serviceData?.id}`}
-              control={control}
-              name="package_id"
-              label={t("service.packageLabel")}
-              placeholder={t("service.packagePlaceholder")}
-              fetchOptions={fetchPackages}
-              initialLabel={serviceData ? `${serviceData.package_name} - ${serviceData.package_speed}` : ""}
-              highlightSearch
-              onSelectFullObject={(item) => {
-                setValue("package_name", item.name);
-                setValue("package_speed", item.speed);
-              }}
-            />
+              {/* Package Selector */}
+              <AsyncSelect
+                key={`package-${serviceData?.id}`}
+                control={control}
+                name="package_id"
+                label={t("service.packageLabel")}
+                placeholder={t("service.packagePlaceholder")}
+                fetchOptions={fetchPackages}
+                initialLabel={serviceData ? `${serviceData.package_name} - ${serviceData.package_speed}` : ""}
+                highlightSearch
+                onSelectFullObject={(item) => {
+                  setValue("package_name", item.name);
+                  setValue("package_speed", item.speed);
+                }}
+              />
 
-            {/* Map Picker (sets address automatically) */}
-            <View>
-              <Label>{t("service.addressLabel")}</Label>
-              <TouchableOpacity
-                onPress={() => setShowMap(true)}
-                activeOpacity={0.7}
-                className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
-              >
-                <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color={colors.icon} />
-                  <View className="ml-2 flex-1">
-                    {serviceData?.lat && serviceData?.long ? (
-                      <View>
-                        <Text className="text-foreground text-xs" numberOfLines={2}>
-                          {watch("address") || serviceData.address || "Lokasi tersimpan"}
-                        </Text>
-                        <Text className="text-muted-foreground text-[10px] mt-1">
-                          {serviceData.lat}, {serviceData.long}
-                        </Text>
-                      </View>
-                    ) : (
-                      <Text className="text-muted-foreground">{t("service.selectOnMap")}</Text>
-                    )}
+              <FormInput
+                control={control}
+                name="address"
+                label={t("service.addressLabel")}
+                placeholder={t("service.addressPlaceholder")}
+                isTextarea
+              />
+
+              {/* Map Picker (sets address automatically) */}
+              <View>
+                <Label>{t("service.selectOnMap")}</Label>
+                <TouchableOpacity
+                  onPress={() => setShowMap(true)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1 min-h-11"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
+                    <View className="ml-2 flex-1">
+                      {location?.lat && location?.lng ? (
+                        <View>
+                          <Text className="text-foreground text-xs" numberOfLines={2}>
+                            {watch("address") || serviceData?.address || "Lokasi tersimpan"}
+                          </Text>
+                          <Text className="text-muted-foreground text-[10px] mt-1">
+                            {location.lat}, {location.lng}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text className="text-muted-foreground">{t("service.selectOnMap")}</Text>
+                      )}
+                    </View>
                   </View>
-                </View>
-                <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color={colors.info} />
-                </View>
-              </TouchableOpacity>
-            </View>
+                  <View className="bg-primary/10 p-2 rounded-lg">
+                    <Ionicons name="map" size={20} color={colors.primary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
 
-            {/* Technical Info */}
-            <FormInput
-              control={control}
-              name="ip_address"
-              label={t("service.ipLabel")}
-              placeholder={t("service.ipPlaceholder")}
-              keyboardType="numeric"
-            />
 
-            <FormInput
-              control={control}
-              name="mac_address"
-              label={t("service.macLabel")}
-              placeholder={t("service.macPlaceholder")}
-              autoCapitalize="characters"
-            />
+              <FormInput
+                control={control}
+                name="notes"
+                label={t("service.notesLabel")}
+                placeholder={t("service.notesPlaceholder")}
+                isTextarea
+              />
 
-            <FormInput
-              control={control}
-              name="notes"
-              label={t("service.notesLabel")}
-              placeholder={t("service.notesPlaceholder")}
-              isTextarea
-            />
-
-            {/* ODP Selector (Optional) */}
-            <AsyncSelect
-              control={control}
-              name="odp_id"
-              label={t("service.odpLabel")}
-              placeholder={t("service.odpPlaceholder")}
-              fetchOptions={fetchOdpNodes}
-              highlightSearch
-            />
-
-            {/* Status Selector */}
-            <View className="mb-2">
-              <Label>{t("service.statusLabel")}</Label>
-              <View className="flex-row gap-x-2 mt-2">
-                {STATUS_OPTIONS.map((status) => {
-                  const isActive = selectedStatus === status;
-                  return (
-                    <Pressable
-                      key={status}
-                      onPress={() => setSelectedStatus(status)}
-                      style={getStatusStyle(status, isActive)}
-                    >
-                      <Text
-                        weight={isActive ? "bold" : "medium"}
-                        className={isActive ? "text-white text-xs" : "text-muted-foreground text-xs"}
+              {/* Status Selector */}
+              <View className="mb-1">
+                <Label>{t("service.statusLabel")}</Label>
+                <View className="flex-row gap-x-2 mt-2">
+                  {STATUS_OPTIONS.map((status) => {
+                    const isActive = selectedStatus === status;
+                    return (
+                      <Pressable
+                        key={status}
+                        onPress={() => setSelectedStatus(status)}
+                        style={getStatusStyle(status, isActive)}
                       >
-                        {getStatusLabel(status)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                        <Text
+                          weight={isActive ? "bold" : "medium"}
+                          className={isActive ? "text-primary-foreground text-xs" : "text-muted-foreground text-xs"}
+                        >
+                          {getStatusLabel(status)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
             </View>
-          </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("service.updating") : t("service.saveBtn")}
             size="lg"
@@ -323,7 +295,7 @@ export default function ServiceEditScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       <MapLocationPicker
         visible={showMap}

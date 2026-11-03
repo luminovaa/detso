@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, ActivityIndicator, Pressable } from "react-native";
+import { View, ScrollView, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,7 @@ import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
 import { Label } from "@/src/components/global/label";
+import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
@@ -100,85 +101,91 @@ export default function TeamEditScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("team.editTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-y-3">
-            <FormInput
-              control={control}
-              name="full_name"
-              label={t("team.fullNameLabel")}
-              placeholder={t("team.fullNamePlaceholder")}
-            />
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("team.editTitle")}
+            </Text>
+            <View className="gap-y-3">
+              <FormInput
+                control={control}
+                name="full_name"
+                label={t("team.fullNameLabel")}
+                placeholder={t("team.fullNamePlaceholder")}
+              />
 
-            <FormInput
-              control={control}
-              name="username"
-              label={t("team.usernameLabel")}
-              placeholder={t("team.usernamePlaceholder")}
-              autoCapitalize="none"
-            />
+              <FormInput
+                control={control}
+                name="username"
+                label={t("team.usernameLabel")}
+                placeholder={t("team.usernamePlaceholder")}
+                autoCapitalize="none"
+              />
 
-            <FormInput
-              control={control}
-              name="email"
-              label={t("team.emailLabel")}
-              placeholder={t("team.emailPlaceholder")}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+              <FormInput
+                control={control}
+                name="email"
+                label={t("team.emailLabel")}
+                placeholder={t("team.emailPlaceholder")}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
 
-            <FormInput
-              control={control}
-              name="phone"
-              label={t("team.phoneLabel")}
-              placeholder={t("team.phonePlaceholder")}
-              keyboardType="phone-pad"
-            />
+              <FormInput
+                control={control}
+                name="phone"
+                label={t("team.phoneLabel")}
+                placeholder={t("team.phonePlaceholder")}
+                keyboardType="phone-pad"
+              />
 
-            {/* Role Selector */}
-            <View className="mb-2">
-              <Label>{t("team.roleLabel")}</Label>
-              <View className="flex-row gap-x-3 mt-1">
-                {roleOptions.map((option) => {
-                  const isActive = selectedRole === option.value;
-                  return (
-                    <Pressable
-                      key={option.value}
-                      onPress={() => setSelectedRole(option.value)}
-                      style={{
-                        flex: 1,
-                        paddingVertical: 12,
-                        paddingHorizontal: 14,
-                        borderRadius: 12,
-                        borderWidth: 1.5,
-                        borderColor: isActive ? colors.info : colors.border,
-                        backgroundColor: isActive ? "#dbeafe" : colors.input,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        weight={isActive ? "bold" : "medium"}
-                        className={isActive ? "text-primary text-sm" : "text-foreground text-sm"}
+              {/* Role Selector */}
+              <View className="mb-1">
+                <Label>{t("team.roleLabel")}</Label>
+                <View className="flex-row gap-x-3 mt-1">
+                  {roleOptions.map((option) => {
+                    const isActive = selectedRole === option.value;
+                    return (
+                      <Pressable
+                        key={option.value}
+                        onPress={() => setSelectedRole(option.value)}
+                        className={`flex-1 min-h-11 py-3 px-3.5 rounded-xl border items-center justify-center ${
+                          isActive
+                            ? "bg-primary/10 border-primary"
+                            : "bg-card border-border"
+                        }`}
                       >
-                        {option.label}
-                      </Text>
-                      <Text className="text-[10px] text-muted-foreground mt-0.5">
-                        {option.description}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                        <Text
+                          weight={isActive ? "bold" : "medium"}
+                          className={isActive ? "text-primary text-sm" : "text-foreground text-sm"}
+                        >
+                          {option.label}
+                        </Text>
+                        <Text className="text-[10px] text-muted-foreground mt-0.5">
+                          {option.description}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
             </View>
-          </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("team.updating") : t("team.saveBtn")}
             size="lg"
@@ -188,7 +195,7 @@ export default function TeamEditScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }

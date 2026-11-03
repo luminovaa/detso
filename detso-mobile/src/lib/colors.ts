@@ -22,34 +22,34 @@
 export const COLORS = {
   // ─── Brand Colors ──────────────────────────────────────────────
   brand: {
-    /** Primary brand color - Deep Teal (teal-700) */
-    primary: '#0F766E',
-    /** Primary for dark mode - Bright Teal (teal-400) */
-    primaryLight: '#2DD4BF',
-    /** Secondary brand color - Cyan (cyan-500) */
-    secondary: '#06B6D4',
-    /** Secondary for dark mode - Sky Cyan (cyan-400) */
-    secondaryLight: '#22D3EE',
+    /** Primary brand color - DTS Navy (#102E60) */
+    primary: '#102E60',
+    /** Primary for dark mode - Royal Blue (#2563EB) */
+    primaryLight: '#2563EB',
+    /** Secondary brand color - Steel Blue (#415F8B) */
+    secondary: '#415F8B',
+    /** Secondary for dark mode - Blue-400 (#60A5FA) */
+    secondaryLight: '#60A5FA',
     /** Accent color - Emerald (emerald-500) */
     accent: '#10B981',
     /** Accent for dark mode - Light Emerald (emerald-400) */
     accentLight: '#34D399',
-    /** Tertiary/depth - Very Dark Teal (teal-900) */
-    tertiary: '#134E4A',
-    /** Tertiary light - Very Light Teal (teal-50) */
-    tertiaryLight: '#F0FDFA',
+    /** Tertiary/depth - Very Dark Navy */
+    tertiary: '#0A1E40',
+    /** Tertiary light - Very Light Blue (blue-50) */
+    tertiaryLight: '#EFF6FF',
   },
 
   // ─── Network Topology Colors ───────────────────────────────────
   network: {
-    /** Fiber optic lines - Teal (teal-500) */
-    fiberLine: '#14B8A6',
-    /** Drop cable lines - Cyan (cyan-400) */
+    /** Fiber optic lines - Blue (blue-500) */
+    fiberLine: '#3B82F6',
+    /** Drop cable lines - Sky Cyan (cyan-400) */
     dropCable: '#22D3EE',
-    /** Server node markers - Deep Teal (teal-700) */
-    nodeServer: '#0F766E',
-    /** ODP node markers - Cyan (cyan-600) */
-    nodeOdp: '#0891B2',
+    /** Server node markers - DTS Navy */
+    nodeServer: '#102E60',
+    /** ODP node markers - Royal Blue */
+    nodeOdp: '#2563EB',
     /** Active service markers - Emerald (emerald-500) */
     serviceActive: '#10B981',
     /** Inactive service markers - Red (red-500) */
@@ -117,15 +117,15 @@ export const COLORS = {
     /** Marker stroke color */
     markerStroke: '#FFFFFF',
     /** User location puck color */
-    userLocation: '#2DD4BF', // teal-400
+    userLocation: '#3B82F6', // blue-500
   },
 
   // ─── Priority Colors (for tickets, tasks, etc.) ────────────────
   priority: {
     /** Low priority - Gray */
     low: '#94A3B8', // slate-400
-    /** Medium priority - Teal */
-    medium: '#0F766E', // teal-700
+    /** Medium priority - DTS Navy */
+    medium: '#102E60',
     /** High priority - Amber */
     high: '#F59E0B', // amber-500
     /** Urgent priority - Red */
@@ -139,8 +139,8 @@ export const COLORS = {
  */
 export const COLORS_DARK = {
   brand: {
-    primary: '#2DD4BF', // teal-400
-    secondary: '#22D3EE', // cyan-400
+    primary: '#2563EB', // blue-600
+    secondary: '#60A5FA', // blue-400
     accent: '#34D399', // emerald-400
   },
   status: {
@@ -151,7 +151,7 @@ export const COLORS_DARK = {
   },
   priority: {
     low: '#CBD5E1', // slate-300
-    medium: '#2DD4BF', // teal-400
+    medium: '#3B82F6', // blue-500
     high: '#FBB040', // amber-400
     urgent: '#F87171', // red-400
   },

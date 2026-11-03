@@ -8,10 +8,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
+import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { EmptyState } from "@/src/components/global/empty-state";
 import { SearchBar } from "@/src/components/global/search-bar";
@@ -22,13 +22,12 @@ import { useT } from "@/src/features/i18n/store";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 import { useDebounceSearch } from "@/src/hooks/use-debounce-search";
 import { NetworkNode } from "@/src/features/network/types";
-import { COLORS } from "@/src/lib/colors";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export default function OdpListScreen() {
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
-  const { bottom: safeBottom } = useSafeAreaInsets();
-  const fabBottom = safeBottom + 24;
+  const fabBottom = 16;
 
   // State
   const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
@@ -76,55 +75,62 @@ export default function OdpListScreen() {
     [deleteNode, t]
   );
 
-  const primaryColor = COLORS.brand.primary;
+  const colors = useThemeColor();
 
   const renderItem = useCallback(
     ({ item }: { item: NetworkNode }) => (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => router.push(`/odp/${item.id}`)}
-        onLongPress={() => handleDelete(item)}
-        className="mb-3 p-4 bg-card rounded-2xl border border-border/50"
+      <Card
+        className="rounded-2xl mb-3 overflow-hidden border-border/40"
         style={{ opacity: deletingId === item.id ? 0.5 : 1 }}
       >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text weight="semibold" className="text-base text-foreground">
-              {item.name}
-            </Text>
-            {item.address && (
-              <Text className="text-sm text-muted-foreground mt-0.5" numberOfLines={1}>
-                {item.address}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push(`/odp/${item.id}`)}
+          onLongPress={() => handleDelete(item)}
+          className="p-4"
+        >
+          <View className="flex-row items-center justify-between">
+            <View className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center mr-3">
+              <Ionicons name="git-network-outline" size={20} color={colors.primary} />
+            </View>
+            <View className="flex-1">
+              <Text weight="semibold" className="text-base text-foreground">
+                {item.name}
               </Text>
-            )}
-          </View>
-          <View className="items-end">
-            {item.slot && (
-              <View className="flex-row items-center bg-primary/10 px-2.5 py-1 rounded-full">
-                <Ionicons name="git-branch-outline" size={14} color={primaryColor} />
-                <Text weight="semibold" className="text-xs text-primary ml-1">
-                  {item.used_slot || 0}/{item.slot}
+              {item.address && (
+                <Text className="text-sm text-muted-foreground mt-0.5" numberOfLines={1}>
+                  {item.address}
                 </Text>
-              </View>
-            )}
+              )}
+            </View>
+            <View className="items-end ml-2">
+              {item.slot && (
+                <View className="flex-row items-center bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
+                  <Ionicons name="git-branch-outline" size={14} color={colors.primary} />
+                  <Text weight="semibold" className="text-xs text-primary ml-1">
+                    {item.used_slot || 0}/{item.slot}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
 
-        {item.parent_name && (
-          <View className="flex-row items-center mt-2 pt-2 border-t border-border/30">
-            <Ionicons name="server-outline" size={14} color={COLORS.neutral.gray[500]} />
-            <Text className="text-xs text-muted-foreground ml-1.5">
-              {item.parent_name}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
+          {item.parent_name && (
+            <View className="flex-row items-center mt-2 pt-2 border-t border-border/30">
+              <Ionicons name="server-outline" size={14} color={colors.textMuted} />
+              <Text className="text-xs text-muted-foreground ml-1.5">
+                {item.parent_name}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </Card>
     ),
-    [deletingId, handleDelete, primaryColor]
+    [colors.textMuted, colors.primary, deletingId, handleDelete]
   );
 
   return (
-    <ScreenWrapper headerTitle={t("odp.title")} showBackButton isLoading={isLoading}>
+    <ScreenWrapper headerTitle={t("odp.title")} showBackButton isLoading={isLoading && !debouncedSearch}>
       {/* Search Bar */}
       <View className="pt-4 pb-2">
         <SearchBar
@@ -149,8 +155,8 @@ export default function OdpListScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={handleRefresh}
-            colors={[primaryColor]}
-            tintColor={primaryColor}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
@@ -174,7 +180,7 @@ export default function OdpListScreen() {
         className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
         style={{ bottom: fabBottom }}
       >
-        <Ionicons name="add" size={30} color="white" />
+        <Ionicons name="add" size={30} color={colors.white} />
       </TouchableOpacity>
     </ScreenWrapper>
   );

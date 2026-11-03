@@ -15,6 +15,8 @@ export const createServiceConnectionSchema = z.object({
     mac_address: z.string().regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
         message: 'Format MAC address tidak valid'
     }).optional().or(z.literal('')),
+    lat: z.string().optional(),
+    long: z.string().optional(),
     notes: z.string().optional(),
     photos: z.array(photoSchema).optional(),
     odp_id: z.string().optional().or(z.literal('')),

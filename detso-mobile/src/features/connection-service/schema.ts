@@ -25,6 +25,8 @@ export const createServiceConnectionSchema = z.object({
     })
     .optional()
     .or(z.literal('')),
+  lat: z.string().optional(),
+  long: z.string().optional(),
   notes: z.string().optional().nullable(),
   photos: z.array(photoSchema).optional(),
   odp_id: z.string().optional().or(z.literal('')),

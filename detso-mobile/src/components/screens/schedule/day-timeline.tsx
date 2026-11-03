@@ -18,7 +18,7 @@ import {
   assignColumns,
 } from '@/src/lib/calendar-utils';
 import { ScheduleBlock } from './schedule-block';
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 // ─── Sub-components ──────────────────────────────────────────────
 
@@ -42,6 +42,7 @@ function HourRow({ hour }: { hour: number }) {
 
 /** Red line indicating current time */
 function CurrentTimeIndicator({ top }: { top: number }) {
+  const colors = useThemeColor();
   return (
     <View
       style={{
@@ -67,7 +68,7 @@ function CurrentTimeIndicator({ top }: { top: number }) {
             width: 8,
             height: 8,
             borderRadius: 4,
-            backgroundColor: COLORS.status.error, // red-500
+            backgroundColor: colors.error,
           }}
         />
       </View>
@@ -77,7 +78,7 @@ function CurrentTimeIndicator({ top }: { top: number }) {
         style={{
           flex: 1,
           height: 2,
-          backgroundColor: COLORS.status.error, // red-500
+          backgroundColor: colors.error,
         }}
       />
     </View>

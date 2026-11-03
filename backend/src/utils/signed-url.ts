@@ -37,9 +37,9 @@ interface SignedUrlPayload {
  * ```
  */
 export const generateSignedUrl = (relativePath: string, expirySeconds: number = 180): string => {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET_TOKEN || process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT_SECRET_TOKEN is not configured');
   }
 
   const payload: SignedUrlPayload = {
@@ -48,7 +48,7 @@ export const generateSignedUrl = (relativePath: string, expirySeconds: number = 
   };
 
   const token = jwt.sign(payload, secret);
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || '6589'}`;
   
   return `${baseUrl}/api/files/signed?token=${token}`;
 };
@@ -67,9 +67,9 @@ export const generateSignedUrl = (relativePath: string, expirySeconds: number = 
  * ```
  */
 export const verifySignedUrl = (token: string): SignedUrlPayload => {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET_TOKEN || process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT_SECRET_TOKEN is not configured');
   }
 
   try {

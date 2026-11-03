@@ -7,11 +7,11 @@ import {
   Platform,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
+import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
 import { Text } from "@/src/components/global/text";
 import { Badge } from "@/src/components/global/badge";
@@ -39,7 +39,6 @@ const TYPE_OPTIONS: { value: TicketType; labelKey: string; variant: BadgeVariant
 
 export default function TicketCreateScreen() {
   const { t } = useT();
-  const { bottom: safeBottom } = useSafeAreaInsets();
   const params = useLocalSearchParams<{ service_id?: string }>();
 
   const [type, setType] = useState<TicketType>("PROBLEM");
@@ -61,7 +60,7 @@ export default function TicketCreateScreen() {
 
   // Fetch services for selector
   const fetchServices = async (search: string, page: number) => {
-    const res = await api.get("/customer", { params: { search, page, limit: 10 } });
+    const res = await api.get("/service-connection", { params: { search, page, limit: 10 } });
     const services = res.data?.data?.services || [];
     return {
       data: services.map((s: any) => ({
@@ -101,7 +100,8 @@ export default function TicketCreateScreen() {
   };
 
   const title = watch("title");
-  const isValid = (title?.trim()?.length || 0) >= 5;
+  const serviceId = watch("service_id");
+  const isValid = Boolean(serviceId) && (title?.trim()?.length || 0) >= 5;
 
   return (
     <ScreenWrapper headerTitle={t("ticket.createTitle")} showBackButton>
@@ -110,108 +110,122 @@ export default function TicketCreateScreen() {
         className="flex-1"
       >
         <ScrollView
-          className="flex-1 px-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          className="flex-1"
+          contentContainerStyle={{ paddingVertical: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-y-3">
-            {/* Service Selector */}
-            <AsyncSelect
-              control={control}
-              name="service_id"
-              label={t("ticket.serviceLabel")}
-              placeholder={t("ticket.servicePlaceholder")}
-              fetchOptions={fetchServices}
-              highlightSearch
-            />
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("ticket.problemDetails")}
+            </Text>
+            <View className="gap-y-3">
+              {/* Service Selector */}
+              <AsyncSelect
+                control={control}
+                name="service_id"
+                label={t("ticket.serviceLabel")}
+                placeholder={t("ticket.servicePlaceholder")}
+                fetchOptions={fetchServices}
+                required
+                highlightSearch
+              />
 
-            {/* Title */}
-            <FormInput
-              control={control}
-              name="title"
-              label={t("ticket.titleLabel")}
-              placeholder={t("ticket.titlePlaceholder")}
-            />
+              {/* Title */}
+              <FormInput
+                control={control}
+                name="title"
+                label={t("ticket.titleLabel")}
+                placeholder={t("ticket.titlePlaceholder")}
+              />
 
-            {/* Description */}
-            <FormInput
-              control={control}
-              name="description"
-              label={t("ticket.descriptionLabel")}
-              placeholder={t("ticket.descriptionPlaceholder")}
-              isTextarea
-              numberOfLines={4}
-            />
-
-            {/* Type Selector */}
-            <View>
-              <Text weight="medium" className="text-sm text-foreground mb-2">
-                {t("ticket.typeLabel")}
-              </Text>
-              <View className="flex-row gap-x-2">
-                {TYPE_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setType(option.value);
-                      setValue("type", option.value);
-                    }}
-                  >
-                    <Badge
-                      colorVariant={type === option.value ? option.variant : "neutral"}
-                      className={`px-4 py-1.5 ${type === option.value ? "opacity-100" : "opacity-50"}`}
-                    >
-                      {t(option.labelKey)}
-                    </Badge>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {/* Description */}
+              <FormInput
+                control={control}
+                name="description"
+                label={t("ticket.descriptionLabel")}
+                placeholder={t("ticket.descriptionPlaceholder")}
+                isTextarea
+                numberOfLines={4}
+              />
             </View>
+          </Card>
 
-            {/* Priority Selector */}
-            <View>
-              <Text weight="medium" className="text-sm text-foreground mb-2">
-                {t("ticket.priorityLabel")}
-              </Text>
-              <View className="flex-row gap-x-2">
-                {PRIORITY_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setPriority(option.value);
-                      setValue("priority", option.value);
-                    }}
-                  >
-                    <Badge
-                      colorVariant={priority === option.value ? option.variant : "neutral"}
-                      className={`px-4 py-1.5 ${priority === option.value ? "opacity-100" : "opacity-50"}`}
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("ticket.assignment")}
+            </Text>
+            <View className="gap-y-3">
+              {/* Type Selector */}
+              <View>
+                <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
+                  {t("ticket.typeLabel")}
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {TYPE_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      activeOpacity={0.7}
+                      className="min-h-11 justify-center"
+                      onPress={() => {
+                        setType(option.value);
+                        setValue("type", option.value);
+                      }}
                     >
-                      {t(option.labelKey)}
-                    </Badge>
-                  </TouchableOpacity>
-                ))}
+                      <Badge
+                        colorVariant={type === option.value ? option.variant : "neutral"}
+                        className={`px-4 py-1.5 ${type === option.value ? "opacity-100" : "opacity-50"}`}
+                      >
+                        {t(option.labelKey)}
+                      </Badge>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
 
-            {/* Assign to Technician */}
-            <AsyncSelect
-              control={control}
-              name="assigned_to"
-              label={t("ticket.assignToLabel")}
-              placeholder={t("ticket.assignToPlaceholder")}
-              fetchOptions={fetchTechnicians}
-              highlightSearch
-            />
-          </View>
+              {/* Priority Selector */}
+              <View>
+                <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
+                  {t("ticket.priorityLabel")}
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      activeOpacity={0.7}
+                      className="min-h-11 justify-center"
+                      onPress={() => {
+                        setPriority(option.value);
+                        setValue("priority", option.value);
+                      }}
+                    >
+                      <Badge
+                        colorVariant={priority === option.value ? option.variant : "neutral"}
+                        className={`px-4 py-1.5 ${priority === option.value ? "opacity-100" : "opacity-50"}`}
+                      >
+                        {t(option.labelKey)}
+                      </Badge>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Assign to Technician */}
+              <AsyncSelect
+                control={control}
+                name="assigned_to"
+                label={t("ticket.assignToLabel")}
+                placeholder={t("ticket.assignToPlaceholder")}
+                fetchOptions={fetchTechnicians}
+                highlightSearch
+              />
+            </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
         <View
-          className="border-t border-border bg-background px-6 pt-4"
-          style={{ paddingBottom: safeBottom + 16 }}
+          className="border-t border-border bg-background pt-3 pb-2"
         >
           <TouchableOpacity
             activeOpacity={0.8}

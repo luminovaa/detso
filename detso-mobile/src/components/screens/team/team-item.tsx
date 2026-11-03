@@ -10,10 +10,11 @@ import { Avatar } from "../../global/avatar";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 import { TeamMember } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface TeamItemProps {
   item: TeamMember;
   searchQuery?: string;
@@ -36,6 +37,9 @@ const getRoleBadgeColor = (role: string): BadgeVariantKey => {
 
 export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", onDelete, isDeleting }: TeamItemProps) {
   const { t } = useT();
+  const colors = useThemeColor();
+  const currentUser = useAuthStore((s) => s.user);
+  const canDelete = item.id !== currentUser?.id && item.role !== "TENANT_OWNER";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const displayName = item.profile?.full_name || item.username;
@@ -69,7 +73,7 @@ export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", o
 
   return (
     <>
-      <Card className="mb-3 overflow-hidden border-border/40">
+      <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
@@ -82,7 +86,7 @@ export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", o
             src={item.profile?.avatar}
             alt={displayName}
             size="lg"
-            className="border-2 border-primary/10"
+            className="bg-primary/10 border border-primary/20"
           />
 
           <View className="flex-1 ml-3">
@@ -123,18 +127,22 @@ export const TeamItem = React.memo(function TeamItem({ item, searchQuery = "", o
             key: "edit",
             label: t("team.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "delete",
-            label: t("team.deleteBtn"),
-            onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
-            variant: "destructive",
-            isLoading: isDeleting,
-            disabled: isDeleting,
-          },
+          ...(canDelete
+            ? [
+                {
+                  key: "delete",
+                  label: t("team.deleteBtn"),
+                  onPress: handleDelete,
+                  icon: <Ionicons name="trash-outline" size={20} color={colors.error} />,
+                  variant: "destructive" as const,
+                  isLoading: isDeleting,
+                  disabled: isDeleting,
+                },
+              ]
+            : []),
         ]}
       />
     </>

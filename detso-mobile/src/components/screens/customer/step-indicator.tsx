@@ -15,8 +15,8 @@ export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicator
   const styles = useMemo(() => StyleSheet.create({
     container: {
       alignItems: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      paddingVertical: 10,
+      paddingHorizontal: 0,
     },
     stepsRow: {
       flexDirection: "row",
@@ -33,11 +33,11 @@ export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicator
       justifyContent: "center",
     },
     circleActive: {
-      backgroundColor: colors.info,
-      borderColor: colors.info,
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
     },
     circleCurrent: {
-      shadowColor: colors.info,
+      shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
@@ -50,7 +50,7 @@ export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicator
       marginHorizontal: 4,
     },
     connectorActive: {
-      backgroundColor: colors.info,
+      backgroundColor: colors.primary,
     },
   }), [colors]);
 
@@ -76,7 +76,7 @@ export function StepIndicator({ currentStep, totalSteps, labels }: StepIndicator
               >
                 <Text
                   weight="bold"
-                  className={isActive ? "text-white text-[10px]" : "text-muted-foreground text-[10px]"}
+                  className={isActive ? "text-primary-foreground text-[11px]" : "text-muted-foreground text-[11px]"}
                 >
                   {stepNum}
                 </Text>

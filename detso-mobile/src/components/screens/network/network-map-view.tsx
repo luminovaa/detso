@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import { config } from '@/src/lib/config';
@@ -12,7 +12,6 @@ import {
   getCenter,
   getZoomForPoints,
 } from '@/src/lib/map-utils';
-import { COLORS } from '@/src/lib/colors';
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 Mapbox.setAccessToken(config.MAPBOX_PUBLIC_TOKEN);
@@ -144,7 +143,7 @@ export function NetworkMapView({
               id="fiber-lines"
               filter={['all', ['==', ['get', 'type'], 'FIBER'], ['!=', ['get', 'id'], editingLinkId || '']] as any}
               style={{
-                lineColor: COLORS.network.fiberLine,
+                lineColor: colors.networkFiber,
                 lineWidth: 3,
                 lineOpacity: 0.85,
                 lineCap: 'round',
@@ -156,7 +155,7 @@ export function NetworkMapView({
               id="drop-lines"
               filter={['all', ['==', ['get', 'type'], 'DROP_CABLE'], ['!=', ['get', 'id'], editingLinkId || '']] as any}
               style={{
-                lineColor: COLORS.network.dropCable,
+                lineColor: colors.networkDropCable,
                 lineWidth: 2,
                 lineOpacity: 0.8,
                 lineCap: 'round',
@@ -193,8 +192,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'status'], 'ACTIVE']}
               style={{
                 circleRadius: 6,
-                circleColor: COLORS.network.serviceActive,
-                circleStrokeColor: COLORS.map.markerStroke,
+                circleColor: colors.serviceActive,
+                circleStrokeColor: colors.white,
                 circleStrokeWidth: 2,
               }}
             />
@@ -204,8 +203,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'status'], 'INACTIVE']}
               style={{
                 circleRadius: 6,
-                circleColor: COLORS.network.serviceInactive,
-                circleStrokeColor: COLORS.map.markerStroke,
+                circleColor: colors.serviceInactive,
+                circleStrokeColor: colors.white,
                 circleStrokeWidth: 2,
               }}
             />
@@ -215,8 +214,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'status'], 'SUSPENDED']}
               style={{
                 circleRadius: 6,
-                circleColor: COLORS.network.serviceSuspended,
-                circleStrokeColor: COLORS.map.markerStroke,
+                circleColor: colors.serviceSuspended,
+                circleStrokeColor: colors.white,
                 circleStrokeWidth: 2,
               }}
             />
@@ -237,8 +236,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'type'], 'SERVER']}
               style={{
                 circleRadius: 12,
-                circleColor: COLORS.network.nodeServer,
-                circleStrokeColor: COLORS.map.markerStroke,
+                circleColor: colors.networkServer,
+                circleStrokeColor: colors.white,
                 circleStrokeWidth: 3,
               }}
             />
@@ -248,8 +247,8 @@ export function NetworkMapView({
               filter={['==', ['get', 'type'], 'ODP']}
               style={{
                 circleRadius: 9,
-                circleColor: COLORS.network.nodeOdp,
-                circleStrokeColor: COLORS.map.markerStroke,
+                circleColor: colors.networkOdp,
+                circleStrokeColor: colors.white,
                 circleStrokeWidth: 2.5,
               }}
             />
@@ -265,8 +264,8 @@ export function NetworkMapView({
               style={{
                 textField: ['get', 'name'],
                 textSize: 11,
-                textColor: COLORS.map.labelText,
-                textHaloColor: COLORS.map.labelHalo,
+                textColor: colors.text,
+                textHaloColor: colors.white,
                 textHaloWidth: 1,
                 textOffset: [0, 1.8],
                 textAnchor: 'top',

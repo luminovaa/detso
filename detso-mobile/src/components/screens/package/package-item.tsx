@@ -9,9 +9,9 @@ import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 import { Package } from "@/src/lib/types";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface PackageItemProps {
   item: Package;
   searchQuery?: string;
@@ -27,6 +27,9 @@ const priceFormatter = new Intl.NumberFormat('id-ID', {
 
 export const PackageItem = React.memo(function PackageItem({ item, searchQuery = "", onDelete, isDeleting }: PackageItemProps) {
   const { t } = useT();
+  const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const canManage = user?.role !== "TENANT_TEKNISI";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const formattedPrice = useMemo(() => priceFormatter.format(item.price), [item.price]);
@@ -66,16 +69,17 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
 
   return (
     <>
-      <Card className="mb-4 overflow-hidden border-border/40">
+      <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
+          onPress={handleDetail}
           onLongPress={handlePress}
           delayLongPress={250}
         >
           {/* Icon Package */}
           <View className="w-14 h-14 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
-            <Ionicons name="cube" size={28} color={COLORS.brand.primary} />
+            <Ionicons name="cube" size={28} color={colors.primary} />
           </View>
 
           <View className="flex-1 ml-4">
@@ -89,7 +93,7 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
             </View>
 
             <View className="flex-row items-center mb-2">
-              <Ionicons name="speedometer-outline" size={14} color={COLORS.neutral.gray[500]} />
+              <Ionicons name="speedometer-outline" size={14} color={colors.textMuted} />
               <View className="ml-1 flex-1">
                 <HighlightedText
                   text={item.speed}
@@ -107,12 +111,16 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
             </View>
           </View>
 
-          <Ionicons
-            name="ellipsis-vertical"
-            size={20}
-            color={COLORS.neutral.gray[500]}
-            className="ml-2"
-          />
+          <TouchableOpacity
+            onPress={handlePress}
+            className="min-w-11 min-h-11 items-center justify-center -mr-2"
+          >
+            <Ionicons
+              name="ellipsis-vertical"
+              size={20}
+              color={colors.textMuted}
+            />
+          </TouchableOpacity>
         </TouchableOpacity>
       </Card>
 
@@ -127,25 +135,29 @@ export const PackageItem = React.memo(function PackageItem({ item, searchQuery =
             key: "detail",
             label: t("package.detailTitle"),
             onPress: handleDetail,
-            icon: <Ionicons name="eye-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="eye-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "edit",
-            label: t("package.editTitle"),
-            onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
-            variant: "default",
-          },
-          {
-            key: "delete",
-            label: t("package.deleteBtn"),
-            onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
-            variant: "destructive",
-            isLoading: isDeleting,
-            disabled: isDeleting,
-          },
+          ...(canManage
+            ? [
+                {
+                  key: "edit",
+                  label: t("package.editTitle"),
+                  onPress: handleEdit,
+                  icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
+                  variant: "default" as const,
+                },
+                {
+                  key: "delete",
+                  label: t("package.deleteBtn"),
+                  onPress: handleDelete,
+                  icon: <Ionicons name="trash-outline" size={20} color={colors.error} />,
+                  variant: "destructive" as const,
+                  isLoading: isDeleting,
+                  disabled: isDeleting,
+                },
+              ]
+            : []),
         ]}
       />
     </>

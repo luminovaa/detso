@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
+import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
-import { showToast } from "@/src/components/global/toast";
 import { SpeedUnitToggle, SpeedUnit } from "@/src/components/global/speed-unit-toggle";
 
 // --- State & Logic ---
@@ -45,44 +45,55 @@ export default function PackageCreateScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("package.createTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-y-3">
-            <FormInput
-              control={control}
-              name="name"
-              label={t("package.nameLabel")}
-              placeholder={t("package.namePlaceholder")}
-            />
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("package.detailTitle")}
+            </Text>
+            <View className="gap-y-3">
+              <FormInput
+                control={control}
+                name="name"
+                label={t("package.nameLabel")}
+                placeholder={t("package.namePlaceholder")}
+              />
 
-            <FormInput
-              control={control}
-              name="speed"
-              label={t("package.speedLabel")}
-              placeholder="100"
-              keyboardType="numeric"
-              suffixComponent={
-                <SpeedUnitToggle value={speedUnit} onChange={setSpeedUnit} />
-              }
-            />
+              <FormInput
+                control={control}
+                name="speed"
+                label={t("package.speedLabel")}
+                placeholder="100"
+                keyboardType="numeric"
+                suffixComponent={
+                  <SpeedUnitToggle value={speedUnit} onChange={setSpeedUnit} />
+                }
+              />
 
-            <FormInput
-              control={control}
-              name="price"
-              label={t("package.priceLabel")}
-              placeholder={t("package.pricePlaceholder")}
-              keyboardType="numeric"
-              isCurrency
-            />
-          </View>
+              <FormInput
+                control={control}
+                name="price"
+                label={t("package.priceLabel")}
+                placeholder={t("package.pricePlaceholder")}
+                keyboardType="numeric"
+                isCurrency
+              />
+            </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("package.creating") : t("package.submitBtn")}
             size="lg"
@@ -92,7 +103,7 @@ export default function PackageCreateScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }

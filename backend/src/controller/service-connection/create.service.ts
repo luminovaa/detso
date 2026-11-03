@@ -40,14 +40,16 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
         // package_speed, // Kita ignore input dari frontend
         ip_address,
         mac_address,
+        lat,
+        long,
         notes,
         photos,
         odp_id,
     } = validationResult.data;
 
-    const servicePhotoFiles = files.photos;
+    const servicePhotoFiles = files?.photos;
 
-    if (photos && servicePhotoFiles?.length !== photos.length) {
+    if (photos && photos.length > 0 && (servicePhotoFiles?.length ?? 0) !== photos.length) {
         throw new ValidationError('Jumlah foto tidak sesuai dengan file yang diupload');
     }
 
@@ -106,6 +108,8 @@ export const createServiceConnection = asyncHandler(async (req: Request, res: Re
                     
                     ip_address,
                     mac_address,
+                    lat,
+                    long,
                     notes,
                     created_at: new Date()
                 },

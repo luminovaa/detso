@@ -29,7 +29,7 @@ export const ThemeSheet = forwardRef<BottomSheetModal>((_, ref) => {
       </BottomSheetHeader>
       
       <View className="flex-1 justify-between">
-        <Card className="overflow-hidden border-border/50">
+        <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
           <SelectionItem 
             label={t("settings.preferences.themeLight")} 
             isActive={theme === "light"} 

@@ -8,7 +8,7 @@ import { Text } from '@/src/components/global/text';
 import { Button } from '@/src/components/global/button';
 import { useT } from '@/src/features/i18n/store';
 import { Schedule } from '@/src/lib/types';
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface CompleteScheduleSectionProps {
   schedule: Schedule;
@@ -30,6 +30,7 @@ export function CompleteScheduleSection({
   isLoading,
 }: CompleteScheduleSectionProps) {
   const { t } = useT();
+  const colors = useThemeColor();
   const hasTicket = !!schedule.ticket_id;
 
   const handleTakePhoto = useCallback(async () => {
@@ -84,7 +85,7 @@ export function CompleteScheduleSection({
               className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 items-center justify-center"
               onPress={() => setPhoto(null)}
             >
-              <Ionicons name="close" size={20} color="white" />
+              <Ionicons name="close" size={20} color={colors.white} />
             </TouchableOpacity>
           </View>
         ) : (
@@ -96,7 +97,7 @@ export function CompleteScheduleSection({
               onPress={handleTakePhoto}
             >
               <View className="flex-row items-center gap-2">
-                <Ionicons name="camera" size={16} color={COLORS.brand.primary} />
+                <Ionicons name="camera" size={16} color={colors.primary} />
                 <Text className="text-primary text-sm">{t('schedule.takePhoto')}</Text>
               </View>
             </Button>
@@ -107,7 +108,7 @@ export function CompleteScheduleSection({
               onPress={handlePickPhoto}
             >
               <View className="flex-row items-center gap-2">
-                <Ionicons name="images" size={16} color={COLORS.brand.primary} />
+                <Ionicons name="images" size={16} color={colors.primary} />
                 <Text className="text-primary text-sm">{t('schedule.pickPhoto')}</Text>
               </View>
             </Button>
@@ -123,7 +124,7 @@ export function CompleteScheduleSection({
         <BottomSheetTextInput
           className="border border-border rounded-lg p-3 text-foreground min-h-[80px]"
           placeholder={t('schedule.completeNotesPlaceholder')}
-          placeholderTextColor={COLORS.neutral.gray[400]}
+          placeholderTextColor={colors.textMuted}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -139,8 +140,8 @@ export function CompleteScheduleSection({
         isLoading={isLoading}
       >
         <View className="flex-row items-center gap-2">
-          <Ionicons name="checkmark-circle" size={16} color="white" />
-          <Text className="text-white font-semibold">
+          <Ionicons name="checkmark-circle" size={16} color={colors.white} />
+          <Text className="text-primary-foreground font-semibold">
             {hasTicket 
               ? t('schedule.completeBtnWithTicket')
               : t('schedule.completeBtn')

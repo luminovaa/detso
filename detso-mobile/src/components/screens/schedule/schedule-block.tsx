@@ -3,8 +3,7 @@ import { TouchableOpacity, View } from 'react-native';
 import { Text } from '@/src/components/global/text';
 import { Schedule, ScheduleStatus } from '@/src/lib/types';
 import { HOUR_HEIGHT, TIME_LABEL_WIDTH, getBlockPosition } from '@/src/lib/calendar-utils';
-import { hexToRgba, hexToRgb } from '@/src/lib/colors';
-import { useThemeColor } from '@/src/lib/theme-colors';
+import { useThemeColor, withOpacity } from '@/src/lib/theme-colors';
 
 // ─── Time Formatter ──────────────────────────────────────────────
 
@@ -32,19 +31,19 @@ export const ScheduleBlock = React.memo(function ScheduleBlock({ schedule, segme
 
   const STATUS_STYLES: Record<ScheduleStatus, { bg: string; border: string; text: string }> = useMemo(() => ({
     SCHEDULED: {
-      bg: hexToRgba(colors.primary, 0.15),
-      border: hexToRgb(colors.primary),
-      text: hexToRgb(colors.primary),
+      bg: withOpacity(colors.primary, 0.15),
+      border: colors.primary,
+      text: colors.primary,
     },
     COMPLETED: {
-      bg: hexToRgba(colors.success, 0.15),
-      border: hexToRgb(colors.success),
-      text: hexToRgb(colors.success),
+      bg: withOpacity(colors.success, 0.15),
+      border: colors.success,
+      text: colors.success,
     },
     CANCELLED: {
-      bg: hexToRgba(colors.textDisabled, 0.15),
-      border: hexToRgb(colors.textDisabled),
-      text: hexToRgb(colors.icon),
+      bg: withOpacity(colors.textDisabled, 0.15),
+      border: colors.textDisabled,
+      text: colors.icon,
     },
   }), [colors]);
 

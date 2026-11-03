@@ -21,7 +21,6 @@ import { Button } from '@/src/components/global/button';
 import { NetworkNode } from '@/src/features/network/types';
 import { useDeleteNode } from '@/src/features/network/hooks';
 import { useT } from '@/src/features/i18n/store';
-import { COLORS } from '@/src/lib/colors';
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 interface NodeDetailSheetProps {

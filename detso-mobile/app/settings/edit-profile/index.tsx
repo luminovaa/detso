@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
 
 import { Text } from "@/src/components/global/text";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Avatar } from "@/src/components/global/avatar";
+import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
 import { Button } from "@/src/components/global/button";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
@@ -20,11 +20,12 @@ import { userService } from "@/src/features/user/service";
 import { updateUserSchema, UpdateUserInput } from "@/src/features/user/schema";
 import { useMutation } from "@tanstack/react-query";
 import { showErrorToast } from "@/src/lib/api-error";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export default function EditProfileScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const { user, refreshUserData } = useAuthStore();
-  
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: async (formData: FormData) => {
       await userService.update(user!.id, formData);
@@ -135,7 +136,7 @@ export default function EditProfileScreen() {
                 onPress={() => setShowImagePicker(true)}
                 className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background shadow-lg"
               >
-                <Ionicons name="camera" size={18} color="white" />
+                <Ionicons name="camera" size={18} color={colors.white} />
               </TouchableOpacity>
             </View>
             
@@ -145,38 +146,42 @@ export default function EditProfileScreen() {
           </View>
 
           {/* --- FORM SECTION --- */}
-          <View className="px-4 gap-y-3">
-            <FormInput
-              control={control}
-              name="full_name"
-              label={t("profile.fullNameLabel")}
-              placeholder={t("profile.fullNamePlaceholder")}
-            />
-            
-            <FormInput
-              control={control}
-              name="username"
-              label={t("profile.usernameLabel")}
-              placeholder={t("profile.usernamePlaceholder")}
-              autoCapitalize="none"
-            />
-            
-            <FormInput
-              control={control}
-              name="email"
-              label={t("profile.emailLabel")}
-              placeholder={t("profile.emailPlaceholder")}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            
-            <FormInput
-              control={control}
-              name="phone"
-              label={t("profile.phoneLabel")}
-              placeholder={t("profile.phonePlaceholder")}
-              keyboardType="phone-pad"
-            />
+          <View className="px-4">
+            <Card className="rounded-2xl p-4 mb-4">
+              <View className="gap-y-3">
+                <FormInput
+                  control={control}
+                  name="full_name"
+                  label={t("profile.fullNameLabel")}
+                  placeholder={t("profile.fullNamePlaceholder")}
+                />
+                
+                <FormInput
+                  control={control}
+                  name="username"
+                  label={t("profile.usernameLabel")}
+                  placeholder={t("profile.usernamePlaceholder")}
+                  autoCapitalize="none"
+                />
+                
+                <FormInput
+                  control={control}
+                  name="email"
+                  label={t("profile.emailLabel")}
+                  placeholder={t("profile.emailPlaceholder")}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                
+                <FormInput
+                  control={control}
+                  name="phone"
+                  label={t("profile.phoneLabel")}
+                  placeholder={t("profile.phonePlaceholder")}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </Card>
           </View>
         </ScrollView>
 

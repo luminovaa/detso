@@ -10,6 +10,7 @@ import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { FormInput } from "@/src/components/global/form-input";
 import { Avatar } from "@/src/components/global/avatar";
+import { Card } from "@/src/components/global/card";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
 import { Label } from "@/src/components/global/label";
 import { showToast } from "@/src/components/global/toast";
@@ -119,7 +120,7 @@ export default function EditTenantScreen() {
       <View className="flex-1">
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
@@ -138,7 +139,7 @@ export default function EditTenantScreen() {
                 />
               </View>
               <View className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background">
-                <Ionicons name="camera" size={20} color="white" />
+                <Ionicons name="camera" size={20} color={colors.white} />
               </View>
             </TouchableOpacity>
             <Text weight="semibold" className="text-foreground mt-4 text-sm">
@@ -147,63 +148,65 @@ export default function EditTenantScreen() {
           </View>
 
           {/* Form Fields */}
-          <View className="gap-y-3">
-            <Text weight="bold" className="text-lg mb-1">
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
               {t("editTenant.infoSection")}
             </Text>
 
-            <FormInput
-              control={control}
-              name="name"
-              label={t("editTenant.nameLabel")}
-              placeholder={t("editTenant.namePlaceholder")}
-            />
+            <View className="gap-y-3">
+              <FormInput
+                control={control}
+                name="name"
+                label={t("editTenant.nameLabel")}
+                placeholder={t("editTenant.namePlaceholder")}
+              />
 
-            <FormInput
-              control={control}
-              name="phone"
-              label={t("editTenant.phoneLabel")}
-              placeholder={t("editTenant.phonePlaceholder")}
-              keyboardType="phone-pad"
-            />
+              <FormInput
+                control={control}
+                name="phone"
+                label={t("editTenant.phoneLabel")}
+                placeholder={t("editTenant.phonePlaceholder")}
+                keyboardType="phone-pad"
+              />
 
-            {/* Location Picker */}
-            <View>
-              <Label>{t("editTenant.locationLabel")}</Label>
-              <TouchableOpacity
-                onPress={() => setShowMap(true)}
-                activeOpacity={0.7}
-                className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
-              >
-                <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color={colors.icon} />
-                  <View className="ml-2 flex-1">
-                    {watch("address") ? (
-                      <View>
-                        <Text className="text-foreground text-xs" numberOfLines={2}>
-                          {watch("address")}
+              {/* Location Picker */}
+              <View>
+                <Label>{t("editTenant.locationLabel")}</Label>
+                <TouchableOpacity
+                  onPress={() => setShowMap(true)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
+                    <View className="ml-2 flex-1">
+                      {watch("address") ? (
+                        <View>
+                          <Text className="text-foreground text-xs" numberOfLines={2}>
+                            {watch("address")}
+                          </Text>
+                          <Text className="text-muted-foreground text-[10px] mt-1">
+                            {watch("lat")}, {watch("long")}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text className="text-muted-foreground">
+                          {t("editTenant.selectOnMap")}
                         </Text>
-                        <Text className="text-muted-foreground text-[10px] mt-1">
-                          {watch("lat")}, {watch("long")}
-                        </Text>
-                      </View>
-                    ) : (
-                      <Text className="text-muted-foreground">
-                        {t("editTenant.selectOnMap")}
-                      </Text>
-                    )}
+                      )}
+                    </View>
                   </View>
-                </View>
-                <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color={colors.info} />
-                </View>
-              </TouchableOpacity>
+                  <View className="bg-primary/10 p-2 rounded-lg">
+                    <Ionicons name="map" size={20} color={colors.primary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View className="pt-3 pb-2 border-t border-border/10 bg-background">
           <Button
             title={isSubmitting ? t("editTenant.saving") : t("editTenant.save")}
             size="lg"

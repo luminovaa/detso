@@ -2,19 +2,16 @@ import React from "react";
 import { View, ScrollView, RefreshControl, Alert } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "nativewind";
-
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
-import { Badge } from "@/src/components/global/badge";
 import { Skeleton } from "@/src/components/global/skeleton";
 import { Button } from "@/src/components/global/button";
-
+import { GroupedSection } from "@/src/components/screens/dashboard/grouped-section";
 // --- State & Logic ---
 import { usePackage, useDeletePackage } from "@/src/features/package/hooks";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 
 import { useThemeColor } from '@/src/lib/theme-colors';
 
@@ -31,8 +28,8 @@ export default function PackageDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
   const colors = useThemeColor();
-  const { colorScheme } = useColorScheme();
-
+  const user = useAuthStore((s) => s.user);
+  const canManage = user?.role !== "TENANT_TEKNISI";
   const { data: response, isLoading, refetch, isRefetching } = usePackage(id!);
   const packageData = response?.data as PackageData | undefined;
   const isRefreshing = isRefetching;
@@ -86,8 +83,24 @@ export default function PackageDetailScreen() {
     });
   };
 
-  const isDark = colorScheme === "dark";
-
+  const infoRows = [
+    {
+      label: t("package.priceLabel"),
+      value: packageData ? formatPrice(packageData.price) : "-",
+    },
+    {
+      label: t("package.speedLabel"),
+      value: packageData?.speed ?? "-",
+    },
+    {
+      label: t("package.createdAt"),
+      value: packageData ? formatDate(packageData.created_at) : "-",
+    },
+    {
+      label: t("package.updatedAt"),
+      value: packageData ? formatDate(packageData.updated_at) : "-",
+    },
+  ];
   if (isLoading && !packageData) {
     return (
       <ScreenWrapper headerTitle={t("package.detailTitle")} showBackButton>
@@ -111,14 +124,21 @@ export default function PackageDetailScreen() {
       headerTitle={t("package.detailTitle")}
       showBackButton
       headerRightNode={
-        <Button variant="ghost" size="sm" onPress={handleEdit}>
-          <Ionicons name="pencil" size={20} color={colors.primary} />
-        </Button>
+        canManage ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="min-h-11 min-w-11"
+            onPress={handleEdit}
+          >
+            <Ionicons name="pencil" size={20} color={colors.white} />
+          </Button>
+        ) : undefined
       }
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingVertical: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -129,79 +149,50 @@ export default function PackageDetailScreen() {
           />
         }
       >
-        {/* Package Icon & Name */}
-        <View className="items-center mb-8">
-          <View className="w-24 h-24 rounded-3xl bg-primary/10 items-center justify-center border border-primary/20 mb-4">
-            <Ionicons name="cube" size={48} color={colors.primary} />
+        {/* Package Hero Summary */}
+        <View className="bg-card border border-border rounded-2xl p-6 items-center mb-6">
+          <View className="w-20 h-20 rounded-2xl bg-primary/10 items-center justify-center border border-primary/20 mb-4">
+            <Ionicons name="cube" size={40} color={colors.primary} />
           </View>
-          <Text weight="bold" className="text-2xl text-foreground text-center">
+          <Text weight="bold" className="text-2xl text-foreground text-center mb-1">
             {packageData?.name}
+          </Text>
+          <Text weight="bold" className="text-lg text-primary">
+            {packageData ? formatPrice(packageData.price) : "-"}
           </Text>
         </View>
 
-        {/* Price Card */}
-        <Card className="mb-4 border-border/40">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-x-3">
-              <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center">
-                <Ionicons name="pricetag" size={20} color={colors.success} />
-              </View>
-              <View>
-                <Text className="text-muted-foreground text-xs">
-                  {t("package.priceLabel")}
+        {/* Package Details Grouped Section */}
+        <GroupedSection title={t("package.detailTitle")}>
+          {infoRows.map((row, index) => {
+            const isLast = index === infoRows.length - 1;
+            return (
+              <View
+                key={row.label}
+                className={`flex-row items-center justify-between px-4 py-3.5 gap-3 ${isLast ? "" : "border-b border-border/60"}`}
+              >
+                <Text className="text-sm text-muted-foreground">{row.label}</Text>
+                <Text weight="semibold" className="text-sm text-foreground text-right flex-1">
+                  {row.value}
                 </Text>
-                <Text weight="bold" className="text-xl text-green-600">
-                  {packageData ? formatPrice(packageData.price) : "-"}
-                </Text>
               </View>
-            </View>
-          </View>
-        </Card>
+            );
+          })}
+        </GroupedSection>
 
-        {/* Speed Card */}
-        <Card className="mb-4 border-border/40">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-x-3">
-              <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center">
-                <Ionicons name="speedometer" size={20} color={colors.info} />
-              </View>
-              <View>
-                <Text className="text-muted-foreground text-xs">
-                  {t("package.speedLabel")}
-                </Text>
-                <Text weight="semibold" className="text-lg text-foreground">
-                  {packageData?.speed}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Card>
-
-        {/* Info Card */}
-        <Card className="mb-6 border-border/40">
-          <View className="gap-y-4">
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">{t("package.createdAt")}</Text>
-              <Text weight="medium">{packageData ? formatDate(packageData.created_at) : "-"}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-muted-foreground">{t("package.updatedAt")}</Text>
-              <Text weight="medium">{packageData ? formatDate(packageData.updated_at) : "-"}</Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Delete Button */}
-        <Button
-          variant="destructive"
-          size="lg"
-          className="w-full"
-          onPress={handleDelete}
-          isLoading={isDeleting}
-          disabled={isDeleting}
-          title={t("package.deleteBtn")}
-          leftIcon={<Ionicons name="trash-outline" size={20} color="white" />}
-        />
+        {/* Delete Button (Owner & Admin only) */}
+        {canManage && (
+          <Button
+            variant="destructive"
+            size="lg"
+            className="w-full min-h-11"
+            onPress={handleDelete}
+            isLoading={isDeleting}
+            disabled={isDeleting}
+            title={t("package.deleteBtn")}
+            leftIcon={<Ionicons name="trash-outline" size={20} color={colors.white} />}
+          />
+        )}
       </ScrollView>
     </ScreenWrapper>
   );

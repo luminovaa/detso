@@ -46,17 +46,17 @@ export default function NotFoundScreen() {
         </Text>
 
         {/* --- TERMINAL DIAGNOSTIC LOG (TAMPILKAN PATH YANG SALAH) --- */}
-        <View className="bg-[#0F172A] w-full p-5 rounded-2xl border border-slate-700/50 shadow-inner mb-10">
-          <View className="flex-row items-center mb-3 border-b border-slate-700/50 pb-2">
+        <View className="bg-card w-full p-5 rounded-2xl border border-border shadow-inner mb-10">
+          <View className="flex-row items-center mb-3 border-b border-border pb-2">
             <Ionicons name="terminal-outline" size={14} color={colors.icon} className="mr-2" />
-            <Text weight="semibold" className="text-slate-400 text-[10px] tracking-widest uppercase">
+            <Text weight="semibold" className="text-muted-foreground text-[10px] tracking-widest uppercase">
               {t("notFound.logTitle")}
             </Text>
           </View>
           
-          <Text className="text-emerald-400 text-xs font-mono leading-relaxed">
+          <Text className="text-foreground text-xs font-mono leading-relaxed">
             {'>'} {t("notFound.logStart")}{'\n'}
-            {'>'} {t("notFound.logTarget")} <Text weight="bold" className="text-amber-400">{pathname}</Text>{'\n'}
+            {'>'} {t("notFound.logTarget")} <Text weight="bold" className="text-primary">{pathname}</Text>{'\n'}
             {'>'} {t("notFound.logResolving")} <Text className="text-destructive">{t("notFound.logFailed")}</Text>{'\n'}
             {'>'} {t("notFound.logReason")}
           </Text>

@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "@/src/components/global/text";
 import { cn } from "@/src/lib/utils";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface SettingRowProps {
   label: string;
   iconName: keyof typeof Ionicons.glyphMap;
@@ -28,6 +28,7 @@ export function SettingRow({
   value,
   destructive = false,
 }: SettingRowProps) {
+  const colors = useThemeColor();
   const Container = onPress ? TouchableOpacity : View;
 
   return (
@@ -35,15 +36,16 @@ export function SettingRow({
       onPress={onPress}
       activeOpacity={0.7}
       className={cn(
-        "flex-row items-center justify-between p-4",
-        !isLast && "border-b border-border"
+        "flex-row items-center justify-between p-4 gap-3",
+        !isLast && "border-b border-border/60"
       )}
     >
-      <View className="flex-row items-center">
-        <View className={cn("w-10 h-10 rounded-xl items-center justify-center mr-4", iconBgColor)}>
+      <View className="flex-row items-center gap-3 flex-1">
+        <View className={cn("w-10 h-10 rounded-xl items-center justify-center", iconBgColor)}>
           <Ionicons 
             name={iconName} 
             size={20} 
+            color={destructive ? colors.error : colors.primary}
             className={destructive ? "text-destructive" : iconColor || "text-primary"}
           />
         </View>
@@ -62,7 +64,7 @@ export function SettingRow({
           <Ionicons 
             name="chevron-forward" 
             size={18} 
-            color={destructive ? COLORS.status.error : COLORS.brand.primary} 
+            color={destructive ? colors.error : colors.primary} 
             style={destructive ? { opacity: 0.5 } : {}}
           />
         )}
@@ -86,21 +88,24 @@ export function SelectionItem({
   onSelect,
   isLast = false,
 }: SelectionItemProps) {
+  const colors = useThemeColor();
+
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onSelect}
       className={cn(
-        "flex-row items-center justify-between p-4",
-        !isLast && "border-b border-border"
+        "flex-row items-center justify-between p-4 gap-3",
+        !isLast && "border-b border-border/60"
       )}
     >
-      <View className="flex-row items-center">
+      <View className="flex-row items-center gap-3">
         {iconName && (
-          <View className="w-8 h-8 rounded-lg bg-muted items-center justify-center mr-3">
+          <View className="w-8 h-8 rounded-lg bg-muted items-center justify-center">
             <Ionicons
               name={iconName}
               size={16}
+              color={isActive ? colors.primary : colors.textMuted}
               className={isActive ? "text-primary" : "text-muted-foreground"}
             />
           </View>
@@ -113,7 +118,7 @@ export function SelectionItem({
         </Text>
       </View>
       {isActive && (
-        <Ionicons name="checkmark-circle" size={22} color={COLORS.brand.primary} />
+        <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
       )}
     </TouchableOpacity>
   );

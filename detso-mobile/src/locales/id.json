@@ -9,24 +9,32 @@
     "failed": "Gagal",
     "user": "Pengguna",
     "edit": "Edit",
-    "notFound": "Data tidak ditemukan"
+    "notFound": "Data tidak ditemukan",
+    "refresh": "Muat Ulang"
   },
 
   "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
   "auth": {
-    "welcome": "Selamat datang kembali",
+    "eyebrow": "Detso Network Cloud",
+    "welcome": "Masuk ke akun Anda",
     "subtitle": "Masuk ke akun Anda untuk melanjutkan mengelola layanan.",
+    "identifierLabel": "Username atau Email",
     "emailLabel": "Username atau Email",
     "emailPlaceholder": "Masukkan username atau email",
-    "passwordLabel": "Kata Sandi",
+    "passwordLabel": "Password",
     "passwordPlaceholder": "Masukkan kata sandi",
-    "forgotPassword": "Lupa Sandi?",
+    "languageToggle": "Ganti bahasa",
     "loginBtn": "Masuk",
     "needHelp": "Belum punya akun?",
     "contactAdmin": "Hubungi Admin",
+    "helpTitle": "Belum punya akun staf?",
+    "helpDesc": "Akun dibuat oleh Owner/Admin ISP Anda.",
+    "helpAction": "Info",
     "loginSuccessTitle": "Otorisasi Berhasil",
     "loginSuccessDesc": "Selamat datang kembali di Detso!",
-    "loginFailedTitle": "Login Gagal"
+    "loginFailedTitle": "Login Gagal",
+    "rateLimitedTitle": "Terlalu banyak percobaan. Coba lagi dalam {{seconds}} detik.",
+    "networkErrorTitle": "Tidak dapat terhubung ke server. Periksa koneksi Anda."
   },
 
   "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
@@ -268,8 +276,8 @@
     "macLabel": "MAC Address",
     "macPlaceholder": "Contoh: AA:BB:CC:DD:EE:FF",
     "photoFront": "Foto Rumah Depan",
-    "photoSide": "Foto Rumah Samping",
-    "photoFar": "Foto Rumah Jauh",
+    "photoSide": "Foto Rumah Sisi Kanan",
+    "photoFar": "Foto Rumah Sisi Kiri",
     "photoCustomer": "Foto dengan Pelanggan",
     "photoDevice": "Foto Alat",
     "photoHint": "Ketuk untuk ambil foto atau pilih dari galeri",
@@ -474,7 +482,9 @@
     "todayScheduleSection": "Jadwal Hari Ini",
     "ticketSection": "Tiket Aktif Saya",
     "noActiveTickets": "Tidak ada tiket aktif",
-    "noActiveTicketsDesc": "Tiket baru yang ditugaskan ke kamu akan muncul di sini."
+    "noActiveTicketsDesc": "Tiket baru yang ditugaskan ke kamu akan muncul di sini.",
+    "openDetail": "Buka Detail",
+    "newCustomer": "Daftar Baru"
   },
 
   "_comment_ticket": "Ticket Management Screens (app/ticket/)",
@@ -499,7 +509,8 @@
     "customerLabel": "Pelanggan",
     "customerPlaceholder": "Pilih pelanggan",
     "serviceLabel": "Layanan",
-    "servicePlaceholder": "Pilih layanan (opsional)",
+    "servicePlaceholder": "Pilih layanan",
+    "statusLabel": "Status",
     "titleLabel": "Judul",
     "titlePlaceholder": "Deskripsi singkat masalah",
     "descriptionLabel": "Deskripsi",

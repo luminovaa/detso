@@ -21,7 +21,7 @@ export function ScheduleControls({ onAddSchedule }: ScheduleControlsProps) {
         style={createShadow(colors.shadow, 0.3, 8, 8)}
         activeOpacity={0.9}
       >
-        <Ionicons name="add" size={28} color="white" />
+        <Ionicons name="add" size={28} color={colors.white} />
       </TouchableOpacity>
     </View>
   );

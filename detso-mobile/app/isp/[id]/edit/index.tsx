@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Switch, TouchableOpacity } from "react-native";
+import { View, ScrollView, Switch, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,17 +16,16 @@ import { Label } from "@/src/components/global/label";
 import { showToast } from "@/src/components/global/toast";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
 import { FormSkeleton } from "@/src/components/global/form-skeleton";
+import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
-import { tenantService } from "@/src/features/tenant/service";
 import {
   updateTenantSchema,
   UpdateTenantInput,
 } from "@/src/features/tenant/schema";
 import { Tenant } from "@/src/lib/types";
 import { useTenant, useUpdateTenant } from "@/src/features/tenant/hooks";
-import { showErrorToast } from "@/src/lib/api-error";
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ISPEditScreen() {
@@ -121,11 +120,15 @@ export default function ISPEditScreen() {
 
     return (
     <ScreenWrapper headerTitle={t("isp.editTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Logo Section */}
           <View className="items-center mb-6">
@@ -143,7 +146,7 @@ export default function ISPEditScreen() {
                 />
               </View>
               <View className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full items-center justify-center border-4 border-background">
-                <Ionicons name="camera" size={20} color="white" />
+                <Ionicons name="camera" size={20} color={colors.white} />
               </View>
             </TouchableOpacity>
             <Text weight="semibold" className="text-foreground mt-4 text-sm">
@@ -152,78 +155,81 @@ export default function ISPEditScreen() {
           </View>
 
           {/* Form Fields */}
-          <View className="gap-y-3">
-            <Text weight="bold" className="text-lg mb-1">
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
               {t("isp.companySection")}
             </Text>
-
-            <FormInput
-              control={control}
-              name="name"
-              label={t("isp.nameLabel")}
-              placeholder={t("isp.namePlaceholder")}
-            />
-
-            <FormInput
-              control={control}
-              name="phone"
-              label={t("isp.phoneLabel")}
-              placeholder={t("isp.phonePlaceholder")}
-              keyboardType="phone-pad"
-            />
-
-            <View>
-              <Label>{t("isp.latLabel")} & {t("isp.longLabel")}</Label>
-              <TouchableOpacity
-                onPress={() => setShowMap(true)}
-                activeOpacity={0.7}
-                className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20"
-              >
-                <View className="flex-row items-center flex-1">
-                  <Ionicons name="location-outline" size={20} color={colors.icon} />
-                  <View className="ml-2 flex-1">
-                    {watch("address") ? (
-                      <View>
-                        <Text className="text-foreground text-xs" numberOfLines={2}>
-                          {watch("address")}
-                        </Text>
-                        <Text className="text-muted-foreground text-[10px] mt-1">
-                          {watch("lat")}, {watch("long")}
-                        </Text>
-                      </View>
-                    ) : (
-                      <Text className="text-muted-foreground">
-                        {t("isp.selectOnMap")}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-                <View className="bg-primary/10 p-2 rounded-lg">
-                  <Ionicons name="map" size={20} color={colors.info} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Active Status Switch */}
-            <View className="flex-row items-center justify-between py-4 border-t border-border/40 mt-2">
-              <View>
-                <Label className="mb-0">{t("isp.isActiveLabel")}</Label>
-                <Text className="text-[12px] text-muted-foreground mt-1">
-                  {isActive ? t("isp.active") : t("isp.inactive")}
-                </Text>
-              </View>
-              <Switch
-                value={isActive}
-                onValueChange={(val) => setValue("is_active", val)}
-                trackColor={{ false: colors.border, true: "#bfdbfe" }}
-                thumbColor={isActive ? colors.info : colors.textMuted}
+            <View className="gap-y-3">
+              <FormInput
+                control={control}
+                name="name"
+                label={t("isp.nameLabel")}
+                placeholder={t("isp.namePlaceholder")}
               />
+
+              <FormInput
+                control={control}
+                name="phone"
+                label={t("isp.phoneLabel")}
+                placeholder={t("isp.phonePlaceholder")}
+                keyboardType="phone-pad"
+              />
+
+              <View>
+                <Label>{t("isp.latLabel")} & {t("isp.longLabel")}</Label>
+                <TouchableOpacity
+                  onPress={() => setShowMap(true)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 min-h-11 mt-1"
+                >
+                  <View className="flex-row items-center flex-1">
+                    <Ionicons name="location-outline" size={20} color={colors.icon} />
+                    <View className="ml-2 flex-1">
+                      {watch("address") ? (
+                        <View>
+                          <Text className="text-foreground text-xs" numberOfLines={2}>
+                            {watch("address")}
+                          </Text>
+                          <Text className="text-muted-foreground text-[10px] mt-1">
+                            {watch("lat")}, {watch("long")}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text className="text-muted-foreground">
+                          {t("isp.selectOnMap")}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  <View className="bg-primary/10 p-2 rounded-lg">
+                    <Ionicons name="map" size={20} color={colors.primary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              {/* Active Status Switch */}
+              <View className="flex-row items-center justify-between py-3 border-t border-border/40 mt-2">
+                <View>
+                  <Label className="mb-0">{t("isp.isActiveLabel")}</Label>
+                  <Text className="text-[12px] text-muted-foreground mt-1">
+                    {isActive ? t("isp.active") : t("isp.inactive")}
+                  </Text>
+                </View>
+                <Switch
+                  value={isActive}
+                  onValueChange={(val) => setValue("is_active", val)}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={isActive ? colors.white : colors.textMuted}
+                />
+              </View>
             </View>
-          </View>
+          </Card>
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("isp.updating") : t("isp.saveBtn")}
             size="lg"
@@ -233,7 +239,7 @@ export default function ISPEditScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       <ImagePickerSheet
         visible={showImagePicker}

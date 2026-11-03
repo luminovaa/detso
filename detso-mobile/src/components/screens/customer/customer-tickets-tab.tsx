@@ -13,19 +13,19 @@ import { useTicketsByCustomer } from "@/src/features/ticket/hooks";
 import { Ticket } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
 import { formatRelativeTime } from "@/src/lib/format-date";
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
 interface CustomerTicketsTabProps {
   customerId: string;
 }
 
 const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
+  const colors = useThemeColor();
   const handlePress = useCallback(() => {
     router.push(`/ticket/${item.id}/detail` as any);
   }, [item.id]);
 
   return (
-    <Card className="mb-3 border-border/40">
+    <Card className="rounded-2xl mb-3 border-border/40">
       <View className="p-4" onTouchEnd={handlePress}>
         {/* Badges */}
         <View className="flex-row items-center gap-x-2 mb-2">
@@ -53,14 +53,14 @@ const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
         <View className="flex-row items-center gap-x-3">
           {item.technician && (
             <View className="flex-row items-center">
-              <Ionicons name="construct-outline" size={11} color={COLORS.neutral.gray[500]} />
+              <Ionicons name="construct-outline" size={11} color={colors.textMuted} />
               <Text className="text-[11px] text-muted-foreground ml-1">
                 {item.technician.profile?.full_name || item.technician.username}
               </Text>
             </View>
           )}
           <View className="flex-row items-center">
-            <Ionicons name="time-outline" size={11} color={COLORS.neutral.gray[500]} />
+            <Ionicons name="time-outline" size={11} color={colors.textMuted} />
             <Text className="text-[11px] text-muted-foreground ml-1">
               {formatRelativeTime(item.created_at)}
             </Text>

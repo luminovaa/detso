@@ -32,14 +32,15 @@ import { LanguageSheet } from "@/src/components/screens/settings/language-sheet"
 import { ThemeSheet } from "@/src/components/screens/settings/theme-sheet";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
 
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from "@/src/lib/theme-colors";
+
 export default function SettingsScreen() {
   const { user, logout, refreshUserData } = useAuthStore();
   const { locale, setLocale } = useLanguageStore();
   const { theme } = useThemeStore();
   const { t } = useT();
   const { contentPaddingBottom } = useTabBarHeight();
-
+  const colors = useThemeColor();
   const langSheetRef = useRef<BottomSheetModal>(null);
   const themeSheetRef = useRef<BottomSheetModal>(null);
 
@@ -106,8 +107,8 @@ export default function SettingsScreen() {
     >
       <>
         
-        <View className="flex-1 pt-4" style={{ paddingBottom: contentPaddingBottom }}>
-          <Card className="mb-8 overflow-hidden">
+        <View className="flex-1 pt-4 gap-6" style={{ paddingBottom: contentPaddingBottom }}>
+          <Card className="bg-card border border-border rounded-2xl overflow-hidden shadow-none">
             <CardContent className="flex-row items-center p-5">
               <Avatar 
                 src={user?.profile?.avatar}
@@ -135,36 +136,34 @@ export default function SettingsScreen() {
                 onPress={() => router.push("/settings/edit-profile")}
                 className="w-10 h-10 bg-muted rounded-full items-center justify-center border border-border/50"
               >
-                <Ionicons name="pencil" size={18} color={COLORS.neutral.gray[900]} />
+                <Ionicons name="pencil" size={18} color={colors.text} />
               </TouchableOpacity>
             </CardContent>
           </Card>
 
           {/* --- 1.5. COMPANY SECTION (Owner only) --- */}
           {user?.role === "TENANT_OWNER" && (
-            <>
-              <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
+            <View className="gap-3">
+              <Text weight="bold" className="text-lg font-sf-bold text-foreground">
                 {t("settingsCompany.sectionTitle")}
               </Text>
-              <Card className="mb-8">
-                <CardContent className="p-0">
-                  <SettingRow
-                    label={t("settingsCompany.editIspProfile")}
-                    iconName="business"
-                    onPress={() => router.push("/settings/edit-tenant")}
-                    isLast
-                  />
-                </CardContent>
-              </Card>
-            </>
+              <View className="bg-card border border-border rounded-2xl overflow-hidden">
+                <SettingRow
+                  label={t("settingsCompany.editIspProfile")}
+                  iconName="business"
+                  onPress={() => router.push("/settings/edit-tenant")}
+                  isLast
+                />
+              </View>
+            </View>
           )}
 
           {/* --- 2. PREFERENCES SECTION --- */}
-          <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
-            {t("settings.preferences.title")}
-          </Text>
-          <Card className="mb-8">
-            <CardContent className="p-0">
+          <View className="gap-3">
+            <Text weight="bold" className="text-lg font-sf-bold text-foreground">
+              {t("settings.preferences.title")}
+            </Text>
+            <View className="bg-card border border-border rounded-2xl overflow-hidden">
               <SettingRow 
                 label={t("settings.preferences.language")}
                 iconName="language"
@@ -187,15 +186,15 @@ export default function SettingsScreen() {
                 isLast
                 onPress={() => themeSheetRef.current?.present()}
               />
-            </CardContent>
-          </Card>
+            </View>
+          </View>
 
           {/* --- 3. SUPPORT SECTION --- */}
-          <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
-            {t("settings.support.title")}
-          </Text>
-          <Card className="mb-10">
-            <CardContent className="p-0">
+          <View className="gap-3">
+            <Text weight="bold" className="text-lg font-sf-bold text-foreground">
+              {t("settings.support.title")}
+            </Text>
+            <View className="bg-card border border-border rounded-2xl overflow-hidden">
               <SettingRow 
                 label={t("settings.support.helpCenter")}
                 iconName="help-buoy"
@@ -207,15 +206,15 @@ export default function SettingsScreen() {
                 rightNode={<Text weight="medium" className="text-muted-foreground text-sm">v1.0.0</Text>}
                 isLast
               />
-            </CardContent>
-          </Card>
+            </View>
+          </View>
 
           {/* --- 4. SECURITY SECTION --- */}
-          <Text weight="bold" className="text-sm text-muted-foreground uppercase tracking-widest mb-3 ml-2">
-            {t("settings.security.title")}
-          </Text>
-          <Card className="mb-10">
-            <CardContent className="p-0">
+          <View className="gap-3 pb-4">
+            <Text weight="bold" className="text-lg font-sf-bold text-foreground">
+              {t("settings.security.title")}
+            </Text>
+            <View className="bg-card border border-border rounded-2xl overflow-hidden">
               <SettingRow 
                 label={t("settings.security.changePassword")}
                 iconName="lock-closed"
@@ -234,8 +233,8 @@ export default function SettingsScreen() {
                 isLast
                 onPress={() => setIsLogoutDialogOpen(true)}
               />
-            </CardContent>
-          </Card>
+            </View>
+          </View>
         </View>
 
         {/* --- MODALS & SHEETS --- */}

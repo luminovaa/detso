@@ -9,24 +9,32 @@
     "failed": "Failed",
     "user": "User",
     "edit": "Edit",
-    "notFound": "Data not found"
+    "notFound": "Data not found",
+    "refresh": "Refresh"
   },
 
   "_comment_auth": "Authentication & Login Screen (app/sign-in/index.tsx)",
   "auth": {
-    "welcome": "Welcome Back",
+    "eyebrow": "Detso Network Cloud",
+    "welcome": "Sign in to your account",
     "subtitle": "Sign in to your account to continue managing services.",
+    "identifierLabel": "Username or Email",
     "emailLabel": "Username or Email",
     "emailPlaceholder": "Enter username or email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter password",
-    "forgotPassword": "Forgot Password?",
+    "languageToggle": "Switch language",
     "loginBtn": "Sign In",
     "needHelp": "Don't have an account?",
     "contactAdmin": "Contact Admin",
+    "helpTitle": "No staff account yet?",
+    "helpDesc": "Accounts are created by your ISP Owner/Admin.",
+    "helpAction": "Info",
     "loginSuccessTitle": "Authorization Successful",
     "loginSuccessDesc": "Welcome back to Detso!",
-    "loginFailedTitle": "Login Failed"
+    "loginFailedTitle": "Login Failed",
+    "rateLimitedTitle": "Too many attempts. Try again in {{seconds}} seconds.",
+    "networkErrorTitle": "Cannot reach the server. Check your connection."
   },
 
   "_comment_settings": "Settings Screen (app/(tabs)/settings.tsx, app/settings/edit-profile/index.tsx, app/settings/change-password/index.tsx)",
@@ -268,8 +276,8 @@
     "macLabel": "MAC Address",
     "macPlaceholder": "e.g. AA:BB:CC:DD:EE:FF",
     "photoFront": "House Front Photo",
-    "photoSide": "House Side Photo",
-    "photoFar": "House Far Photo",
+    "photoSide": "House Right Side Photo",
+    "photoFar": "House Left Side Photo",
     "photoCustomer": "Photo with Customer",
     "photoDevice": "Device Photo",
     "photoHint": "Tap to take photo or select from gallery",
@@ -474,7 +482,9 @@
     "todayScheduleSection": "Today's Schedule",
     "ticketSection": "My Active Tickets",
     "noActiveTickets": "No active tickets",
-    "noActiveTicketsDesc": "New tickets assigned to you will show up here."
+    "noActiveTicketsDesc": "New tickets assigned to you will show up here.",
+    "openDetail": "Open Detail",
+    "newCustomer": "New Customer"
   },
 
   "_comment_ticket": "Ticket Management Screens (app/ticket/)",
@@ -499,7 +509,8 @@
     "customerLabel": "Customer",
     "customerPlaceholder": "Select customer",
     "serviceLabel": "Service",
-    "servicePlaceholder": "Select service (optional)",
+    "servicePlaceholder": "Select service",
+    "statusLabel": "Status",
     "titleLabel": "Title",
     "titlePlaceholder": "Brief description of the issue",
     "descriptionLabel": "Description",

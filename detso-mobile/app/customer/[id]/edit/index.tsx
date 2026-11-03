@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +13,7 @@ import { FormInput } from "@/src/components/global/form-input";
 import { Label } from "@/src/components/global/label";
 import { FormDatePicker } from "@/src/components/global/date-picker";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
+import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
@@ -95,34 +96,43 @@ export default function CustomerEditScreen() {
 
   return (
     <ScreenWrapper headerTitle={t("customer.editTitle")} showBackButton>
-      <View className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Personal Data Section */}
-          <View className="gap-y-3">
-            <Text weight="bold" className="text-lg mb-1">{t("customer.stepPersonal")}</Text>
-
-            <FormInput control={control} name="name" label={t("customer.nameLabel")} placeholder={t("customer.namePlaceholder")} />
-            <FormInput control={control} name="nik" label={t("customer.nikLabel")} placeholder={t("customer.nikPlaceholder")} keyboardType="numeric" />
-            <FormInput control={control} name="phone" label={t("customer.phoneLabel")} placeholder={t("customer.phonePlaceholder")} keyboardType="phone-pad" />
-            <FormInput control={control} name="email" label={t("customer.emailLabel")} placeholder={t("customer.emailPlaceholder")} keyboardType="email-address" autoCapitalize="none" />
-            <FormInput control={control} name="birth_place" label={t("customer.birthPlaceLabel")} placeholder={t("customer.birthPlacePlaceholder")} />
-            <FormDatePicker control={control} name="birth_date" label={t("customer.birthDateLabel")} placeholder={t("customer.birthDatePlaceholder")} maximumDate={new Date()} />
-          </View>
+          <Card className="rounded-2xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-3">
+              {t("customer.stepPersonal")}
+            </Text>
+            <View className="gap-y-3">
+              <FormInput control={control} name="name" label={t("customer.nameLabel")} placeholder={t("customer.namePlaceholder")} />
+              <FormInput control={control} name="nik" label={t("customer.nikLabel")} placeholder={t("customer.nikPlaceholder")} keyboardType="numeric" />
+              <FormInput control={control} name="phone" label={t("customer.phoneLabel")} placeholder={t("customer.phonePlaceholder")} keyboardType="phone-pad" />
+              <FormInput control={control} name="email" label={t("customer.emailLabel")} placeholder={t("customer.emailPlaceholder")} keyboardType="email-address" autoCapitalize="none" />
+              <FormInput control={control} name="birth_place" label={t("customer.birthPlaceLabel")} placeholder={t("customer.birthPlacePlaceholder")} />
+              <FormDatePicker control={control} name="birth_date" label={t("customer.birthDateLabel")} placeholder={t("customer.birthDatePlaceholder")} maximumDate={new Date()} />
+            </View>
+          </Card>
 
           {/* Installation Location (read-only info) */}
           {(lat || long || serviceAddress) && (
-            <View className="mt-6">
-              <Text weight="bold" className="text-lg mb-3">{t("customer.stepService")}</Text>
+            <Card className="rounded-2xl p-4 mb-4">
+              <Text weight="bold" className="text-base text-foreground mb-3">
+                {t("customer.stepService")}
+              </Text>
               <View>
                 <Label>{t("customer.selectOnMap")}</Label>
                 <TouchableOpacity
                   onPress={() => setShowMap(true)}
                   activeOpacity={0.7}
-                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1"
+                  className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 mt-1 min-h-11"
                 >
                   <View className="flex-row items-center flex-1">
                     <Ionicons name="location-outline" size={20} color={colors.icon} />
@@ -142,16 +152,18 @@ export default function CustomerEditScreen() {
                     </View>
                   </View>
                   <View className="bg-primary/10 p-2 rounded-lg">
-                    <Ionicons name="map" size={20} color={colors.info} />
+                    <Ionicons name="map" size={20} color={colors.primary} />
                   </View>
                 </TouchableOpacity>
               </View>
-            </View>
+            </Card>
           )}
         </ScrollView>
 
         {/* Fixed Bottom Button */}
-        <View className="px-4 py-3 border-t border-border/10 bg-background">
+        <View
+          className="pt-3 pb-2 border-t border-border/10 bg-background"
+        >
           <Button
             title={isSubmitting ? t("customer.updating") : t("customer.saveBtn")}
             size="lg"
@@ -161,7 +173,7 @@ export default function CustomerEditScreen() {
             disabled={isSubmitting}
           />
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       <MapLocationPicker
         visible={showMap}

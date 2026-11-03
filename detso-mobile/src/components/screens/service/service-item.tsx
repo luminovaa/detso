@@ -3,16 +3,16 @@ import { TouchableOpacity, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { useColorScheme } from "nativewind";
 
 import { Card } from "../../global/card";
 import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
 import { ServiceConnection } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
-import { getColor, COLORS } from "@/src/lib/colors";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 interface ServiceItemProps {
   item: ServiceConnection;
@@ -23,9 +23,10 @@ interface ServiceItemProps {
 
 export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery = "", onDelete, isDeleting }: ServiceItemProps) {
   const { t } = useT();
+  const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const canDelete = user?.role !== "TENANT_TEKNISI";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
 
   const customerName = item.customer?.name || "-";
   const statusColorVariant = SERVICE_STATUS_VARIANTS[item.status] || "neutral";
@@ -57,7 +58,7 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
 
   return (
     <>
-      <Card className="mb-3 overflow-hidden border-border/40">
+      <Card className="rounded-2xl mb-3 overflow-hidden border-border/40">
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
@@ -66,8 +67,8 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
           delayLongPress={250}
         >
           {/* Icon */}
-          <View className="w-12 h-12 rounded-xl bg-blue-500/10 items-center justify-center border border-blue-500/20">
-            <Ionicons name="wifi" size={22} color={getColor('brand.primary', isDark)} />
+          <View className="w-12 h-12 rounded-xl bg-primary/10 items-center justify-center border border-primary/20">
+            <Ionicons name="wifi" size={22} color={colors.primary} />
           </View>
 
           <View className="flex-1 ml-3">
@@ -120,18 +121,22 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
             key: "edit",
             label: t("service.editTitle"),
             onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={COLORS.brand.primary} />,
+            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "delete",
-            label: t("service.deleteBtn"),
-            onPress: handleDelete,
-            icon: <Ionicons name="trash-outline" size={20} color={COLORS.status.error} />,
-            variant: "destructive",
-            isLoading: isDeleting,
-            disabled: isDeleting,
-          },
+          ...(canDelete
+            ? [
+                {
+                  key: "delete",
+                  label: t("service.deleteBtn"),
+                  onPress: handleDelete,
+                  icon: <Ionicons name="trash-outline" size={20} color={colors.error} />,
+                  variant: "destructive" as const,
+                  isLoading: isDeleting,
+                  disabled: isDeleting,
+                },
+              ]
+            : []),
         ]}
       />
     </>

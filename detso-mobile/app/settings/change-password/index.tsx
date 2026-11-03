@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { FormInput } from "@/src/components/global/form-input";
 import { Button } from "@/src/components/global/button";
+import { Card } from "@/src/components/global/card";
 import { Text } from "@/src/components/global/text";
 import { showToast } from "@/src/components/global/toast";
 import { FormSkeleton } from "@/src/components/global/form-skeleton";
@@ -74,7 +75,7 @@ export default function ChangePasswordScreen() {
     <ScreenWrapper headerTitle={t("settings.security.changePassword")} showBackButton>
 
       <ScrollView
-        className="flex-1 px-4 pt-6"
+        className="flex-1 pt-6"
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
@@ -82,7 +83,7 @@ export default function ChangePasswordScreen() {
           {t("settings.security.useStrongPassword")}
         </Text>
 
-        <View className="gap-y-2">
+        <Card className="rounded-2xl p-4 mb-4">
           <FormInput
             control={control}
             name="oldPassword"
@@ -90,25 +91,27 @@ export default function ChangePasswordScreen() {
             placeholder={t("settings.security.oldPasswordPlaceholder")}
             isPassword
           />
+        </Card>
 
-          <View className="h-px bg-border/50 my-4" />
+        <Card className="rounded-2xl p-4 mb-4">
+          <View className="gap-y-3">
+            <FormInput
+              control={control}
+              name="password"
+              label={t("settings.security.newPasswordLabel")}
+              placeholder={t("settings.security.newPasswordPlaceholder")}
+              isPassword
+            />
 
-          <FormInput
-            control={control}
-            name="password"
-            label={t("settings.security.newPasswordLabel")}
-            placeholder={t("settings.security.newPasswordPlaceholder")}
-            isPassword
-          />
-
-          <FormInput
-            control={control}
-            name="confirmPassword"
-            label={t("settings.security.confirmPasswordLabel")}
-            placeholder={t("settings.security.confirmPasswordPlaceholder")}
-            isPassword
-          />
-        </View>
+            <FormInput
+              control={control}
+              name="confirmPassword"
+              label={t("settings.security.confirmPasswordLabel")}
+              placeholder={t("settings.security.confirmPasswordPlaceholder")}
+              isPassword
+            />
+          </View>
+        </Card>
 
         <View className="mt-10 gap-y-4">
           <Button

@@ -14,8 +14,7 @@ import Mapbox from '@rnmapbox/maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../../global/card';
 import { Text } from '../../global/text';
-
-import { COLORS } from '@/src/lib/colors';
+import { useThemeColor } from '@/src/lib/theme-colors';
 interface Service {
   id: string;
   lat: string | null;
@@ -36,6 +35,7 @@ interface MarkerGroup {
 }
 
 export function CustomerLocationMap({ services }: CustomerLocationMapProps) {
+  const colors = useThemeColor();
   const cameraRef = useRef<Mapbox.Camera>(null);
   const [activeIndices, setActiveIndices] = useState<Record<string, number>>({});
 
@@ -117,7 +117,7 @@ export function CustomerLocationMap({ services }: CustomerLocationMapProps) {
   }
 
   return (
-    <Card className="overflow-hidden border-border/40">
+    <Card className="rounded-2xl overflow-hidden border-border/40">
       <View className="h-[200px] w-full">
         <Mapbox.MapView
           style={{ flex: 1 }}
@@ -129,7 +129,19 @@ export function CustomerLocationMap({ services }: CustomerLocationMapProps) {
           logoEnabled={false}
           attributionEnabled={false}
         >
-          <Mapbox.Camera ref={cameraRef} />
+          <Mapbox.Camera
+            ref={cameraRef}
+            defaultSettings={{
+              centerCoordinate: [markerGroups[0].long, markerGroups[0].lat],
+              zoomLevel: 14,
+            }}
+            centerCoordinate={
+              markerGroups.length === 1
+                ? [markerGroups[0].long, markerGroups[0].lat]
+                : undefined
+            }
+            zoomLevel={markerGroups.length === 1 ? 14 : undefined}
+          />
 
           {markerGroups.map((group) => {
             const activeIndex = activeIndices[group.key] || 0;
@@ -150,7 +162,7 @@ export function CustomerLocationMap({ services }: CustomerLocationMapProps) {
                   <View className="relative">
                     {/* Pin Icon */}
                     <View className="w-8 h-8 items-center justify-center">
-                      <Ionicons name="location" size={28} color={COLORS.brand.primary} />
+                      <Ionicons name="location" size={28} color={colors.primary} />
                     </View>
 
                     {/* Badge for multiple services */}

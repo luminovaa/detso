@@ -80,7 +80,7 @@ export function MonitoringDetail({ routerId }: Props) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: contentPaddingBottom }}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} colors={[colors.primary]} tintColor={colors.primary} />
         }
       >
         {isLoading ? (
