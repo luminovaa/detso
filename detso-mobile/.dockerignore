@@ -1,0 +1,14 @@
+node_modules
+.expo
+dist
+web-build
+ios
+android/.gradle
+android/build
+android/app/build
+android/.cxx
+android/app/.cxx
+.env*
+!.env.example
+*.apk
+*.log

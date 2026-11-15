@@ -1,0 +1,49 @@
+# Android APK build toolchain for detso-mobile (Expo SDK 54 / RN 0.81)
+# Keeps host Windows clean without needing local JDK 17 or Android SDK.
+
+FROM eclipse-temurin:17-jdk-jammy
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ANDROID_HOME=/opt/android-sdk \
+    ANDROID_SDK_ROOT=/opt/android-sdk \
+    NODE_MAJOR=22
+
+# Base build dependencies + Node.js 22 LTS
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    file \
+    git \
+    gnupg \
+    make \
+    g++ \
+    python3 \
+    unzip \
+    xz-utils \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Android SDK Command-line Tools
+ARG CMDLINE_TOOLS_URL=https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip
+RUN mkdir -p "${ANDROID_HOME}/cmdline-tools" \
+    && curl -fsSL "${CMDLINE_TOOLS_URL}" -o /tmp/cmdline-tools.zip \
+    && unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-extract \
+    && mv /tmp/cmdline-extract/cmdline-tools "${ANDROID_HOME}/cmdline-tools/latest" \
+    && rm -rf /tmp/cmdline-tools.zip /tmp/cmdline-extract
+
+ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+
+# Accept Android SDK licenses and install baseline packages for Expo SDK 54 / RN 0.81
+RUN yes | sdkmanager --licenses >/dev/null \
+    && sdkmanager --install \
+      "platform-tools" \
+      "platforms;android-36" \
+      "build-tools;36.0.0" \
+      "platforms;android-35" \
+      "build-tools;35.0.0" \
+      "cmake;3.22.1"
+
+WORKDIR /app
