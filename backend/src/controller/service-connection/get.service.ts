@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Detso_Role } from '@prisma/client';
 import { z } from 'zod';
 import { asyncHandler, AuthenticationError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
@@ -172,6 +173,8 @@ export const getServiceById = asyncHandler(async (req: Request, res: Response): 
     throw new NotFoundError('Layanan tidak ditemukan atau telah dihapus');
   }
 
+  const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
+
   const formatted = {
     id: service.id,
     id_pel: service.id_pel,
@@ -186,7 +189,12 @@ export const getServiceById = asyncHandler(async (req: Request, res: Response): 
     status: service.status,
     notes: service.notes,
     created_at: service.created_at,
-    customer: service.customer,
+    customer: service.customer
+      ? {
+          ...service.customer,
+          nik: isTeknisi ? null : service.customer.nik,
+        }
+      : null,
     package_details: service.package,
     photos: service.photos.map(photo => ({
       ...photo,

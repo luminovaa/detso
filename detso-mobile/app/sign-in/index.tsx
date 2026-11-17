@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   ScrollView,
@@ -28,7 +28,7 @@ import {
   DialogFooter,
 } from "@/src/components/global/dialog";
 
-import { loginSchema, LoginInput } from "@/src/features/auth/schema";
+import { createLoginSchema, LoginInput } from "@/src/features/auth/schema";
 import { useAuthStore } from "@/src/features/auth/store";
 import { useT, useLanguageStore } from "@/src/features/i18n/store";
 import { useThemeColor } from "@/src/lib/theme-colors";
@@ -66,12 +66,14 @@ export default function SignInScreen() {
     return () => clearInterval(interval);
   }, [retryAfterSeconds]);
 
+  const resolver = useMemo(() => zodResolver(createLoginSchema()), [locale]);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+    resolver,
     defaultValues: {
       identifier: "",
       password: "",

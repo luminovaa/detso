@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Detso_Role } from '@prisma/client';
 import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { createCustomerSchema } from './validation/validation.customer';
@@ -255,8 +256,16 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
             console.error('Error generating/sending PDF:', pdfError);
         }
 
+        const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
+        const visibleDocuments = isTeknisi
+            ? result.createdDocuments.filter(doc => doc.document_type.toLowerCase() !== 'ktp')
+            : result.createdDocuments;
+
         responseData(res, 201, 'Customer dan service connection berhasil dibuat', {
-            customer: result.customer,
+            customer: {
+                ...result.customer,
+                nik: isTeknisi ? null : result.customer.nik,
+            },
             serviceConnection: {
                 ...result.serviceConnection,
                 photos: result.createdPhotos.map(photo => ({
@@ -264,12 +273,12 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                     photo_url: generateFullUrl(photo.photo_url)
                 }))
             },
-            documents: result.createdDocuments.map(doc => ({
+            documents: visibleDocuments.map(doc => ({
                 ...doc,
                 document_url: generateFullUrl(doc.document_url)
             })),
-            pdfGenerated: pdfPath !== null,
-            pdfPath: pdfPath,
+            pdfGenerated: isTeknisi ? false : pdfPath !== null,
+            pdfPath: isTeknisi ? null : pdfPath,
             whatsappSent: whatsappSent,
             idPel: result.idPel
         });

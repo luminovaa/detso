@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import api from '@/src/lib/api';
 import { LoginInput, RegisterInput } from './schema';
 
@@ -34,7 +35,10 @@ export const authService = {
         return response.data;
     },
     activeSessions: async () => {
-        const response = await api.get('/auth/active-sessions');
+        const refreshToken = await SecureStore.getItemAsync('refreshToken');
+        const response = await api.get('/auth/active-sessions', {
+            headers: refreshToken ? { 'x-refresh-token': refreshToken } : undefined,
+        });
         return response.data;
     },
     revokeSession: async (sessionId: string) => {

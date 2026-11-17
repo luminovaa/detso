@@ -49,6 +49,10 @@ export const normalizePhoneNumber = (phone: string, countryCode: string = '62'):
   return `+${countryCode}${cleaned}`;
 };
 
+const formatWhatsAppDigits = (phone: string): string => {
+  return normalizePhoneNumber(phone).replace('+', '');
+};
+
 /**
  * Generate WhatsApp URL for a phone number
  * 
@@ -66,15 +70,28 @@ export const normalizePhoneNumber = (phone: string, countryCode: string = '62'):
  * ```
  */
 export const getWhatsAppUrl = (phone: string, message?: string): string => {
-  const normalized = normalizePhoneNumber(phone);
-  // Remove + for WhatsApp URL format
-  const phoneNumber = normalized.replace('+', '');
-  
+  const phoneNumber = formatWhatsAppDigits(phone);
+
   let url = `whatsapp://send?phone=${phoneNumber}`;
   if (message) {
     url += `&text=${encodeURIComponent(message)}`;
   }
-  
+
+  return url;
+};
+
+/**
+ * Generate universal HTTPS WhatsApp URL (https://wa.me/...)
+ * Works across standard WhatsApp, WhatsApp Business, and browser fallback
+ */
+export const getWhatsAppWebUrl = (phone: string, message?: string): string => {
+  const phoneNumber = formatWhatsAppDigits(phone);
+
+  let url = `https://wa.me/${phoneNumber}`;
+  if (message) {
+    url += `?text=${encodeURIComponent(message)}`;
+  }
+
   return url;
 };
 

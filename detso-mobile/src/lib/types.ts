@@ -99,7 +99,7 @@ export type ServiceConnection = {
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
   created_at: string;
   notes: string | null;
-  customer: CustomerInfo;
+  customer: CustomerInfo | null;
   package_details: {
     id?: string;
     name: string;

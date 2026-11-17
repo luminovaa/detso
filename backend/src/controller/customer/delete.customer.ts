@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { asyncHandler, AuthenticationError, AuthorizationError, NotFoundError } from '../../utils/error-handler';
+import { asyncHandler, AuthenticationError, AuthorizationError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { deleteFile } from '../../config/upload-file';
@@ -27,6 +27,7 @@ export const deleteCustomer = asyncHandler(async (req: Request, res: Response): 
     include: {
       documents: true,
       service: {
+        where: { deleted_at: null },
         include: {
           photos: true
         }
@@ -36,6 +37,12 @@ export const deleteCustomer = asyncHandler(async (req: Request, res: Response): 
 
   if (!customer) {
     throw new NotFoundError('Customer tidak ditemukan');
+  }
+
+  // Enforce domain constraint: customers with an active service cannot be deleted
+  const hasActiveService = customer.service.some((s) => s.status === 'ACTIVE');
+  if (hasActiveService) {
+    throw new ValidationError('Customer tidak dapat dihapus karena masih memiliki layanan aktif');
   }
 
   // Kumpulkan semua file yang perlu dihapus

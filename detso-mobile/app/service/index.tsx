@@ -16,7 +16,9 @@ import { EmptyState } from "@/src/components/global/empty-state";
 import { SearchBar } from "@/src/components/global/search-bar";
 
 import { useInfiniteServices, useDeleteServiceConnection } from "@/src/features/connection-service/hooks";
+import { useAuthStore } from "@/src/features/auth/store";
 import { useT } from "@/src/features/i18n/store";
+import { canManageRecords } from "@/src/lib/route-roles";
 import { ServiceItem } from "@/src/components/screens/service/service-item";
 import { ServiceSkeletonLoading } from "@/src/components/screens/service/skeleton-loading";
 import { useTabBarHeight } from "@/src/hooks/use-tab-bar-height";
@@ -25,8 +27,9 @@ import { ServiceConnection } from "@/src/lib/types";
 
 export default function ServiceScreen() {
   const { t } = useT();
+  const user = useAuthStore((s) => s.user);
+  const canManage = canManageRecords(user?.role);
   const { contentPaddingBottom } = useTabBarHeight();
-  const fabBottom = 16;
 
   // State
   const { searchQuery, debouncedSearch, handleSearchChange, clearSearch } = useDebounceSearch();
@@ -134,15 +137,16 @@ export default function ServiceScreen() {
         />
       )}
 
-      {/* FAB */}
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => router.push("/service/create")}
-        className="absolute right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
-        style={{ bottom: fabBottom }}
-      >
-        <Ionicons name="add" size={30} color={colors.white} />
-      </TouchableOpacity>
+      {/* FAB (Owner & Admin only) */}
+      {canManage && (
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push("/service/create")}
+          className="absolute right-6 bottom-4 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg shadow-primary/40 elevation-5"
+        >
+          <Ionicons name="add" size={30} color={colors.white} />
+        </TouchableOpacity>
+      )}
     </ScreenWrapper>
   );
 }

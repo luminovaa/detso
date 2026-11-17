@@ -198,7 +198,7 @@ export default function SettingsScreen() {
               <SettingRow 
                 label={t("settings.support.helpCenter")}
                 iconName="help-buoy"
-                onPress={() => {}}
+                onPress={() => router.push("/settings/help-center")}
               />
               <SettingRow 
                 label={t("settings.support.version")}
@@ -223,7 +223,7 @@ export default function SettingsScreen() {
               <SettingRow 
                 label={t("settings.security.sessions")}
                 iconName="phone-portrait"
-                onPress={() => {}}
+                onPress={() => router.push("/settings/active-sessions")}
               />
               <SettingRow 
                 label={t("settings.logout")}

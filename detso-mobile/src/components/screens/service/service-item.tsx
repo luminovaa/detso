@@ -10,6 +10,7 @@ import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
+import { canManageRecords } from "@/src/lib/route-roles";
 import { ServiceConnection } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
 import { useThemeColor } from "@/src/lib/theme-colors";
@@ -25,15 +26,20 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
   const { t } = useT();
   const colors = useThemeColor();
   const user = useAuthStore((s) => s.user);
-  const canDelete = user?.role !== "TENANT_TEKNISI";
+  const canManage = canManageRecords(user?.role);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const customerName = item.customer?.name || "-";
   const statusColorVariant = SERVICE_STATUS_VARIANTS[item.status] || "neutral";
 
+  const handleDetail = useCallback(() => {
+    bottomSheetRef.current?.close();
+    router.push(`/service/${item.id}/detail`);
+  }, [item.id]);
+
   const handleEdit = useCallback(() => {
     bottomSheetRef.current?.close();
-    router.push(`/service/${item.id}/edit` as any);
+    router.push(`/service/${item.id}/edit`);
   }, [item.id]);
 
   const handleLongPress = useCallback(() => {
@@ -62,7 +68,7 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center p-4"
-          onPress={handleEdit}
+          onPress={canManage ? handleEdit : handleDetail}
           onLongPress={handleLongPress}
           delayLongPress={250}
         >
@@ -118,14 +124,21 @@ export const ServiceItem = React.memo(function ServiceItem({ item, searchQuery =
         cancelLabel={t("service.cancelBtn")}
         actions={[
           {
-            key: "edit",
-            label: t("service.editTitle"),
-            onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
+            key: "detail",
+            label: t("service.detailTitle"),
+            onPress: handleDetail,
+            icon: <Ionicons name="eye-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          ...(canDelete
+          ...(canManage
             ? [
+                {
+                  key: "edit",
+                  label: t("service.editTitle"),
+                  onPress: handleEdit,
+                  icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
+                  variant: "default" as const,
+                },
                 {
                   key: "delete",
                   label: t("service.deleteBtn"),

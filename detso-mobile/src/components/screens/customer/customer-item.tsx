@@ -10,6 +10,7 @@ import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
+import { canManageRecords } from "@/src/lib/route-roles";
 import { CustomerListItem } from "@/src/lib/types";
 import { SERVICE_STATUS_VARIANTS } from "@/src/lib/status-variants";
 import { useThemeColor } from "@/src/lib/theme-colors";
@@ -24,11 +25,11 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
   const { t } = useT();
   const colors = useThemeColor();
   const user = useAuthStore((s) => s.user);
-  const canDelete = user?.role !== "TENANT_TEKNISI";
+  const canManage = canManageRecords(user?.role);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const handlePress = useCallback(() => {
-    router.push(`/customer/${item.id}/detail` as any);
+    router.push(`/customer/${item.id}/detail`);
   }, [item.id]);
 
   const handleEdit = useCallback(() => {
@@ -94,7 +95,7 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
             {/* Service count + Status badges */}
             <View className="flex-row items-center mt-2 gap-x-2 flex-wrap">
               <Badge colorVariant="info">
-                {item.service_count} Layanan
+                {t("customer.servicesCount", { count: item.service_count })}
               </Badge>
               {uniqueStatuses.map((status) => (
                 <Badge key={status} colorVariant={SERVICE_STATUS_VARIANTS[status] || "neutral"}>
@@ -120,15 +121,15 @@ export const CustomerItem = React.memo(function CustomerItem({ item, searchQuery
             icon: <Ionicons name="eye-outline" size={20} color={colors.primary} />,
             variant: "default",
           },
-          {
-            key: "edit",
-            label: t("customer.editTitle"),
-            onPress: handleEdit,
-            icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
-            variant: "default",
-          },
-          ...(canDelete
+          ...(canManage
             ? [
+                {
+                  key: "edit",
+                  label: t("customer.editTitle"),
+                  onPress: handleEdit,
+                  icon: <Ionicons name="pencil-outline" size={20} color={colors.primary} />,
+                  variant: "default" as const,
+                },
                 {
                   key: "delete",
                   label: t("customer.deleteBtn"),

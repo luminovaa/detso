@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo } from 'react';
 import { View, Keyboard } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,22 +14,18 @@ import { useT, useLanguageStore } from '@/src/features/i18n/store';
 import { useCreateSchedule } from '@/src/features/schedule/hooks';
 import { userService } from '@/src/features/user/service';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
-// Form schema for create schedule
-const _t = (key: string) => {
-  const { locale, i18n } = useLanguageStore.getState();
-  return i18n.t(key, { locale });
-};
+const buildCreateScheduleSchema = (t: (key: string) => string) =>
+  z.object({
+    title: z.string().optional(),
+    technician_id: z.string().min(1, t('validation.technicianRequired')),
+    start_time: z.date(),
+    end_time: z.date().optional(),
+    notes: z.string().optional(),
+  });
 
-const createScheduleFormSchema = z.object({
-  title: z.string().optional(),
-  technician_id: z.string().min(1, _t('validation.technicianRequired')),
-  start_time: z.date(),
-  end_time: z.date().optional(),
-  notes: z.string().optional(),
-});
-
-type CreateScheduleFormData = z.infer<typeof createScheduleFormSchema>;
+type CreateScheduleFormData = z.infer<ReturnType<typeof buildCreateScheduleSchema>>;
 
 interface CreateScheduleSheetProps {
   defaultDate?: Date;
@@ -41,8 +37,11 @@ function CreateScheduleSheetInner(
   ref: React.ForwardedRef<BottomSheetModal>
 ) {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
+  const colors = useThemeColor();
   const createMutation = useCreateSchedule();
   const { contentPaddingBottom } = useTabBarHeight();
+  const resolver = useMemo(() => zodResolver(buildCreateScheduleSchema(t)), [t, locale]);
 
   const {
     control,
@@ -50,7 +49,7 @@ function CreateScheduleSheetInner(
     reset,
     formState: { isSubmitting },
   } = useForm<CreateScheduleFormData>({
-    resolver: zodResolver(createScheduleFormSchema),
+    resolver,
     defaultValues: {
       title: '',
       technician_id: '',
@@ -141,6 +140,8 @@ function CreateScheduleSheetInner(
       ref={ref}
       snapPoints={['90%']}
       backdropComponent={renderBackdrop}
+      backgroundStyle={{ backgroundColor: colors.card }}
+      handleIndicatorStyle={{ backgroundColor: colors.textMuted }}
       enablePanDownToClose
       enableDismissOnClose
       enableContentPanningGesture={false}

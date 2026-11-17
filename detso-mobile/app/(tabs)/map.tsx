@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { useColorScheme } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Mapbox from '@rnmapbox/maps';
@@ -37,9 +38,25 @@ import { useT } from '@/src/features/i18n/store';
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function NetworkMap() {
+  const { user } = useAuthStore();
+  if (user?.role !== 'TENANT_OWNER') {
+    return null;
+  }
+  return <NetworkMapContent />;
+}
+
+function NetworkMapContent() {
   const { t } = useT();
   const colors = useThemeColor();
+  const { colorScheme } = useColorScheme();
   const cameraRef = useRef<Mapbox.Camera>(null);
+  const statusBarNode = (
+    <StatusBar
+      barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+      backgroundColor="transparent"
+      translucent
+    />
+  );
 
   // ─── Data ──────────────────────────────────────────────────────
   const { user } = useAuthStore();
@@ -222,6 +239,7 @@ export default function NetworkMap() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
+        {statusBarNode}
         <ActivityIndicator size="large" color={colors.primary} />
         <Text className="text-muted-foreground mt-3">{t('network.mapScreen.loading')}</Text>
       </View>
@@ -232,6 +250,7 @@ export default function NetworkMap() {
   if (autoCreating) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
+        {statusBarNode}
         <ActivityIndicator size="large" color={colors.primary} />
         <Text weight="medium" className="text-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         <Text className="text-muted-foreground mt-1 text-sm">
@@ -245,6 +264,7 @@ export default function NetworkMap() {
   if (isError) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
+        {statusBarNode}
         <Ionicons name="cloud-offline" size={48} color={colors.error} />
         <Text weight="bold" className="text-foreground mt-3 text-lg">{t('network.mapScreen.loadFailed')}</Text>
         <Text className="text-muted-foreground mt-1 text-center">
@@ -266,6 +286,7 @@ export default function NetworkMap() {
       if (createNode.isError) {
         return (
           <View className="flex-1 items-center justify-center bg-background px-6">
+            {statusBarNode}
             <Ionicons name="cloud-offline" size={48} color={colors.error} />
             <Text weight="bold" className="text-foreground mt-3 text-lg">
               {t('network.mapScreen.autoCreateFailed')}
@@ -287,6 +308,7 @@ export default function NetworkMap() {
       }
       return (
         <View className="flex-1 items-center justify-center bg-background">
+          {statusBarNode}
           <ActivityIndicator size="large" color={colors.primary} />
           <Text className="text-muted-foreground mt-3">{t('network.mapScreen.preparing')}</Text>
         </View>
@@ -296,6 +318,7 @@ export default function NetworkMap() {
     // Tenant has NO location → prompt to set it first
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
+        {statusBarNode}
         <View className="w-20 h-20 rounded-full bg-amber-500/10 items-center justify-center mb-4">
           <Ionicons name="location" size={40} color={colors.warning} />
         </View>

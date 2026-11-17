@@ -6,7 +6,10 @@ import { Request, Response } from 'express'
 
 export const getActiveSessions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.id;
-    const currentToken = req.cookies.refreshToken;
+    const headerToken = req.headers['x-refresh-token'];
+    const currentToken =
+        req.cookies?.refreshToken ||
+        (typeof headerToken === 'string' ? headerToken : undefined);
 
     const sessions = await prisma.detso_Refresh_Token.findMany({
         where: {

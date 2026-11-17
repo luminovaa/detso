@@ -191,18 +191,30 @@ export function DayTimeline({
         {/* Current time indicator */}
         {currentTimeTop != null && <CurrentTimeIndicator top={currentTimeTop} />}
 
-        {/* Schedule blocks */}
-        {layoutItems.map(({ schedule, column, totalColumns }) => (
-          <ScheduleBlock
-            key={schedule.id}
-            schedule={schedule}
-            segmentStart={schedule._segmentStart}
-            segmentEnd={schedule._segmentEnd}
-            column={column}
-            totalColumns={totalColumns}
-            onPress={onSchedulePress}
-          />
-        ))}
+        {/* Schedule blocks container aligned inside grid width */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: TIME_LABEL_WIDTH + 8,
+            right: 16,
+            zIndex: 10,
+          }}
+          pointerEvents="box-none"
+        >
+          {layoutItems.map(({ schedule, column, totalColumns }) => (
+            <ScheduleBlock
+              key={schedule.id}
+              schedule={schedule}
+              segmentStart={schedule._segmentStart}
+              segmentEnd={schedule._segmentEnd}
+              column={column}
+              totalColumns={totalColumns}
+              onPress={onSchedulePress}
+            />
+          ))}
+        </View>
 
         {/* Empty state */}
         {daySchedules.length === 0 && (

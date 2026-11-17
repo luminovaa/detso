@@ -10,7 +10,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Aplikasi membutuhkan akses kamera"
+        "NSCameraUsageDescription": "Aplikasi membutuhkan akses kamera",
+        "LSApplicationQueriesSchemes": [
+          "whatsapp"
+        ]
       },
       "bundleIdentifier": "com.neoncode.detso"
     },
@@ -79,7 +82,8 @@
         {
           "RNMapboxMapsImpl": "mapbox"
         }
-      ]
+      ],
+      "./plugins/withAndroidQueries"
     ],
     "experiments": {
       "typedRoutes": true,

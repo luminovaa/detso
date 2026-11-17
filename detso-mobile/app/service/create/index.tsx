@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,8 @@ import { MapLocationPicker } from "@/src/components/global/map-picker";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
+import { isTechnicianRole } from "@/src/lib/route-roles";
 import { createServiceConnectionSchema, CreateServiceConnectionInput } from "@/src/features/connection-service/schema";
 import { useCreateServiceConnection } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
@@ -25,6 +27,17 @@ import { useThemeColor } from '@/src/lib/theme-colors';
 export default function ServiceCreateScreen() {
   const { t } = useT();
   const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const isTeknisi = isTechnicianRole(user?.role);
+
+  useEffect(() => {
+    if (!isTeknisi) return;
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
+  }, [isTeknisi]);
   const createService = useCreateServiceConnection();
   const isSubmitting = createService.isPending;
   const [showMap, setShowMap] = useState(false);
@@ -96,6 +109,10 @@ export default function ServiceCreateScreen() {
       onSuccess: () => router.back(),
     });
   };
+
+  if (isTeknisi) {
+    return null;
+  }
 
   return (
     <ScreenWrapper headerTitle={t("service.createTitle")} showBackButton>

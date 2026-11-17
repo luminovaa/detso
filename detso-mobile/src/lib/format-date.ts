@@ -1,29 +1,37 @@
-export const formatDate = (date: Date) => {
+import { useLanguageStore } from "@/src/features/i18n/store";
+
+const resolveLocaleTag = (locale?: string): string => {
+    const active = locale || useLanguageStore.getState().locale;
+    return active === "en" ? "en-US" : "id-ID";
+};
+
+export const formatDate = (date: Date, locale?: string) => {
     const options: Intl.DateTimeFormatOptions = {
         day: "numeric",
         month: "short",
         year: "numeric",
     };
-    return date.toLocaleDateString("id-ID", options);
+    return date.toLocaleDateString(resolveLocaleTag(locale), options);
 };
 
-export const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("id-ID", {
+export const formatTime = (date: Date, locale?: string) => {
+    return date.toLocaleTimeString(resolveLocaleTag(locale), {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false, // ✅ 24 jam
     });
 };
 
-export const formatDateTime = (date: Date) => {
-    return `${formatDate(date)}, ${formatTime(date)}`;
+export const formatDateTime = (date: Date, locale?: string) => {
+    return `${formatDate(date, locale)}, ${formatTime(date, locale)}`;
 };
 
 /**
- * Format relative time (e.g., "2 hari yang lalu", "3 jam yang lalu")
+ * Format relative time (e.g., "2 hari yang lalu", "3 hours ago")
  * Manual implementation untuk React Native
  */
-export const formatRelativeTime = (date: Date | string, locale: string = "id") => {
+export const formatRelativeTime = (date: Date | string, locale?: string) => {
+    const activeLocale = locale || useLanguageStore.getState().locale || "id";
     const now = new Date();
     const targetDate = typeof date === "string" ? new Date(date) : date;
     const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
@@ -52,7 +60,7 @@ export const formatRelativeTime = (date: Date | string, locale: string = "id") =
         },
     };
 
-    const t = translations[locale as keyof typeof translations] || translations.en;
+    const t = translations[activeLocale as keyof typeof translations] || translations.en;
 
     // Calculate intervals
     const intervals = [

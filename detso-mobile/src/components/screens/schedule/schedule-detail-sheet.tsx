@@ -201,6 +201,8 @@ function ScheduleDetailSheetInner(
       ref={ref}
       snapPoints={['70%']}
       backdropComponent={renderBackdrop}
+      backgroundStyle={{ backgroundColor: colors.card }}
+      handleIndicatorStyle={{ backgroundColor: colors.textMuted }}
       enablePanDownToClose
       enableDismissOnClose
       onDismiss={onDismiss}

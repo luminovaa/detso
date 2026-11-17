@@ -1,4 +1,24 @@
+import { Linking, Platform } from 'react-native';
 import { NetworkTopology, NetworkNode, NetworkService } from '@/src/features/network/types';
+
+/**
+ * Return true when string lat/long represent non-zero numeric coordinates.
+ */
+export function hasValidCoords(lat?: string | null, long?: string | null): boolean {
+  if (!lat || !long) return false;
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(long);
+  return Number.isFinite(latNum) && Number.isFinite(lngNum) && latNum !== 0 && lngNum !== 0;
+}
+
+/**
+ * Return true if at least one item has valid coordinates.
+ */
+export function hasAnyValidLocation(
+  services: ReadonlyArray<{ lat?: string | null; long?: string | null }>
+): boolean {
+  return services.some((s) => hasValidCoords(s.lat, s.long));
+}
 
 /**
  * Convert lat/lng strings to Mapbox coordinate [lng, lat].
@@ -184,4 +204,40 @@ export function getAllCoordinates(topology: NetworkTopology): [number, number][]
   });
 
   return coords;
+}
+
+/**
+ * Open coordinates in Google Maps / device default maps app.
+ */
+export async function openLocationInMaps(
+  lat: string | number,
+  long: string | number,
+  label?: string
+): Promise<boolean> {
+  const latStr = String(lat).trim();
+  const lngStr = String(long).trim();
+  const encodedLabel = label ? encodeURIComponent(label) : '';
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latStr},${lngStr}`;
+
+  if (Platform.OS === 'android') {
+    const geoUrl = encodedLabel
+      ? `geo:0,0?q=${latStr},${lngStr}(${encodedLabel})`
+      : `geo:0,0?q=${latStr},${lngStr}`;
+    try {
+      const canOpenGeo = await Linking.canOpenURL(geoUrl);
+      if (canOpenGeo) {
+        await Linking.openURL(geoUrl);
+        return true;
+      }
+    } catch {
+      // Fallback to universal Google Maps URL
+    }
+  }
+
+  try {
+    await Linking.openURL(googleMapsUrl);
+    return true;
+  } catch {
+    return false;
+  }
 }

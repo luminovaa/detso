@@ -17,6 +17,8 @@ import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
+import { isTechnicianRole } from "@/src/lib/route-roles";
 import { updateServiceConnectionSchema, UpdateServiceConnectionInput } from "@/src/features/connection-service/schema";
 import { useUpdateServiceConnection, useService } from "@/src/features/connection-service/hooks";
 import { packageService } from "@/src/features/package/service";
@@ -30,14 +32,25 @@ const STATUS_OPTIONS: StatusOption[] = ["ACTIVE", "INACTIVE", "SUSPENDED"];
 export default function ServiceEditScreen() {
   const { t } = useT();
   const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const isTeknisi = isTechnicianRole(user?.role);
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  useEffect(() => {
+    if (!isTeknisi) return;
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
+  }, [isTeknisi]);
   const [showMap, setShowMap] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<StatusOption>("ACTIVE");
   const [serviceData, setServiceData] = useState<ServiceConnection | null>(null);
   const [location, setLocation] = useState<{ lat: string; lng: string } | null>(null);
 
   // Fetch service data from dedicated endpoint
-  const { data: serviceResponse, isLoading: isLoadingData } = useService(id!);
+  const { data: serviceResponse, isLoading: isLoadingData } = useService(isTeknisi ? "" : id!);
 
   // Set service data when response arrives
   useEffect(() => {
@@ -148,6 +161,10 @@ export default function ServiceEditScreen() {
       { onSuccess: () => router.back() },
     );
   };
+
+  if (isTeknisi) {
+    return null;
+  }
 
   if (isLoadingData && !serviceData) {
     return (

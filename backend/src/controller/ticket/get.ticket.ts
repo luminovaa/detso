@@ -228,6 +228,8 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         throw new NotFoundError('Tiket tidak ditemukan');
     }
 
+    const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
+
     const formattedTicket = {
         id: ticket.id,
         title: ticket.title,
@@ -245,7 +247,12 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
             address: ticket.service.address,
             mac_address: ticket.service.mac_address,
             package_speed: ticket.service.package_speed,
-            customer: ticket.service.customer,
+            customer: ticket.service.customer
+                ? {
+                    ...ticket.service.customer,
+                    nik: isTeknisi ? null : ticket.service.customer.nik,
+                }
+                : null,
         } : null,
         schedule: ticket.schedule ? {
             id: ticket.schedule.id,

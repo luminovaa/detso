@@ -49,7 +49,7 @@ export default function TabLayout() {
         name="map"
         options={{
           title: t("tabs.map"),
-          href: user?.role === "SAAS_SUPER_ADMIN" ? null : undefined,
+          href: user?.role !== "TENANT_OWNER" ? null : undefined,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons name={focused ? "map" : "map-outline"} size={24} color={color} />
           ),

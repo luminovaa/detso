@@ -86,7 +86,7 @@ export default function AllMenuScreen() {
     {
       icon: "help-circle",
       label: t("allMenu.helpCenter"),
-      onPress: () => console.log("Navigate to Help Center"),
+      onPress: () => router.push("/settings/help-center"),
     },
   ];
 

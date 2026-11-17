@@ -12,13 +12,14 @@ import { Button } from "@/src/components/global/button";
 import { GroupedSection } from "@/src/components/screens/dashboard/grouped-section";
 // --- State & Logic ---
 import { useTenant } from "@/src/features/tenant/hooks";
-import { useT } from "@/src/features/i18n/store";
+import { useT, useLanguageStore } from "@/src/features/i18n/store";
 import { Tenant } from "@/src/lib/types";
 import { useThemeColor } from '@/src/lib/theme-colors';
 
 export default function ISPDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
   const colors = useThemeColor();
   const { data: response, isLoading, refetch, isRefetching } = useTenant(id!);
   const tenant = response?.data as Tenant | undefined;
@@ -120,11 +121,14 @@ export default function ISPDetailScreen() {
     },
     {
       label: t("isp.createdAt"),
-      value: new Date(tenant.created_at).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
+      value: new Date(tenant.created_at).toLocaleDateString(
+        locale === "en" ? "en-US" : "id-ID",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
+      ),
     },
   ];
 

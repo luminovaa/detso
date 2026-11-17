@@ -13,10 +13,13 @@ export enum Detso_Role {
   TENANT_TEKNISI = 'TENANT_TEKNISI',
 }
 
-export const loginSchema = z.object({
-  identifier: z.string().min(3, t('validation.identifierMin3')),
-  password: z.string().min(3, t('validation.passwordMin3')),
-});
+export const createLoginSchema = () =>
+  z.object({
+    identifier: z.string().min(3, t('validation.identifierMin3')),
+    password: z.string().min(3, t('validation.passwordMin3')),
+  });
+
+export const loginSchema = createLoginSchema();
 
 export type LoginInput = z.infer<typeof loginSchema>;
 

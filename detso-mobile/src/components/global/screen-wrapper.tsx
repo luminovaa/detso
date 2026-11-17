@@ -53,7 +53,27 @@ export function ScreenWrapper({
   const { colorScheme } = useColorScheme();
   const hasHeader = !!headerTitle;
   
-    // Konten utama
+  const body = onRefresh ? (
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ flexGrow: 1 }}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["hsl(217, 71%, 22%)"]} // Android
+          tintColor={"hsl(217, 71%, 22%)"} // iOS
+        />
+      }
+    >
+      {children}
+    </ScrollView>
+  ) : (
+    children
+  );
+
+  // Konten utama dengan header sticky di atas area scroll agar isi tidak menabrak status bar
   const content = (
     <>
       {/* Header di luar padding, full-width dengan status bar */}
@@ -74,14 +94,14 @@ export function ScreenWrapper({
       
       {/* Content dengan padding dan rounded top */}
       <View 
-        className={`flex-1 bg-background rounded-t-[32px] ${noPadding ? "" : "px-4"}`}
+        className={`flex-1 bg-background rounded-t-[32px] overflow-hidden ${noPadding ? "" : "px-4"}`}
         style={{ 
           marginTop: hasHeader ? -24 : 0, 
           paddingTop: hasHeader ? 24 : 0,
           zIndex: 1,
         }}
       >
-        {children}
+        {body}
       </View>
     </>
   );
@@ -97,26 +117,7 @@ export function ScreenWrapper({
         backgroundColor="transparent" 
         translucent 
       />
-      
-      {onRefresh ? (
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["hsl(217, 71%, 22%)"]} // Android
-              tintColor={"hsl(217, 71%, 22%)"} // iOS
-            />
-          }
-        >
-          {content}
-        </ScrollView>
-      ) : (
-        content
-      )}
+      {content}
     </SafeAreaView>
   );
 }

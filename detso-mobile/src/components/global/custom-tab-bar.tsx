@@ -138,8 +138,12 @@ export function CustomTabBar({
       return new Set(["index", "isp", "settings"]);
     }
 
-    if (user?.role === "TENANT_OWNER" || user?.role === "TENANT_ADMIN" || user?.role === "TENANT_TEKNISI") {
+    if (user?.role === "TENANT_OWNER") {
       return new Set(["index", "schedule", "map", "settings"]);
+    }
+
+    if (user?.role === "TENANT_ADMIN" || user?.role === "TENANT_TEKNISI") {
+      return new Set(["index", "schedule", "settings"]);
     }
 
     return new Set(["index", "settings"]);

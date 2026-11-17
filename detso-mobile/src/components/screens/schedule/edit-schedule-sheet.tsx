@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo } from 'react';
 import { View, Keyboard } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,22 +15,18 @@ import { useUpdateSchedule } from '@/src/features/schedule/hooks';
 import { userService } from '@/src/features/user/service';
 import { useTabBarHeight } from '@/src/hooks/use-tab-bar-height';
 import { Schedule } from '@/src/lib/types';
+import { useThemeColor } from '@/src/lib/theme-colors';
 
-// Form schema for edit schedule
-const _t = (key: string) => {
-  const { locale, i18n } = useLanguageStore.getState();
-  return i18n.t(key, { locale });
-};
+const buildEditScheduleSchema = (t: (key: string) => string) =>
+  z.object({
+    title: z.string().optional(),
+    technician_id: z.string().min(1, t('validation.technicianRequired')),
+    start_time: z.date(),
+    end_time: z.date().optional().nullable(),
+    notes: z.string().optional(),
+  });
 
-const editScheduleFormSchema = z.object({
-  title: z.string().optional(),
-  technician_id: z.string().min(1, _t('validation.technicianRequired')),
-  start_time: z.date(),
-  end_time: z.date().optional().nullable(),
-  notes: z.string().optional(),
-});
-
-type EditScheduleFormData = z.infer<typeof editScheduleFormSchema>;
+type EditScheduleFormData = z.infer<ReturnType<typeof buildEditScheduleSchema>>;
 
 interface EditScheduleSheetProps {
   schedule: Schedule | null;
@@ -42,8 +38,11 @@ function EditScheduleSheetInner(
   ref: React.ForwardedRef<BottomSheetModal>
 ) {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
+  const colors = useThemeColor();
   const updateMutation = useUpdateSchedule();
   const { contentPaddingBottom } = useTabBarHeight();
+  const resolver = useMemo(() => zodResolver(buildEditScheduleSchema(t)), [t, locale]);
 
   const {
     control,
@@ -51,7 +50,7 @@ function EditScheduleSheetInner(
     reset,
     formState: { isSubmitting },
   } = useForm<EditScheduleFormData>({
-    resolver: zodResolver(editScheduleFormSchema),
+    resolver,
     defaultValues: {
       title: schedule?.title || '',
       technician_id: schedule?.technician_id || '',
@@ -158,6 +157,8 @@ function EditScheduleSheetInner(
       ref={ref}
       snapPoints={['90%']}
       backdropComponent={renderBackdrop}
+      backgroundStyle={{ backgroundColor: colors.card }}
+      handleIndicatorStyle={{ backgroundColor: colors.textMuted }}
       enablePanDownToClose
       enableDismissOnClose
       enableContentPanningGesture={false}

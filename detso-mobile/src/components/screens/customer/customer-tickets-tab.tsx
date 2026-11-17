@@ -9,6 +9,7 @@ import { Badge } from "../../global/badge";
 import { EmptyState } from "../../global/empty-state";
 import { Skeleton } from "../../global/skeleton";
 import { useTicketsByCustomer } from "@/src/features/ticket/hooks";
+import { useT, useLanguageStore } from "@/src/features/i18n/store";
 
 import { Ticket } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
@@ -20,6 +21,7 @@ interface CustomerTicketsTabProps {
 
 const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
   const colors = useThemeColor();
+  const locale = useLanguageStore((s) => s.locale);
   const handlePress = useCallback(() => {
     router.push(`/ticket/${item.id}/detail` as any);
   }, [item.id]);
@@ -62,7 +64,7 @@ const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
           <View className="flex-row items-center">
             <Ionicons name="time-outline" size={11} color={colors.textMuted} />
             <Text className="text-[11px] text-muted-foreground ml-1">
-              {formatRelativeTime(item.created_at)}
+              {formatRelativeTime(item.created_at, locale)}
             </Text>
           </View>
         </View>
@@ -72,6 +74,7 @@ const TicketRow = React.memo(function TicketRow({ item }: { item: Ticket }) {
 });
 
 export function CustomerTicketsTab({ customerId }: CustomerTicketsTabProps) {
+  const { t } = useT();
   const { data, isLoading, refetch, isRefetching } = useTicketsByCustomer(customerId);
 
   const tickets: Ticket[] = data?.data?.tickets || [];
@@ -96,8 +99,8 @@ export function CustomerTicketsTab({ customerId }: CustomerTicketsTabProps) {
       ListEmptyComponent={
         <EmptyState
           icon="document-text-outline"
-          title="Belum ada tiket"
-          description="Customer ini belum memiliki tiket support"
+          title={t("customer.noTicketsTitle")}
+          description={t("customer.noTicketsDesc")}
           actionLabel="Refresh"
           onAction={refetch}
           isLoading={isRefetching}

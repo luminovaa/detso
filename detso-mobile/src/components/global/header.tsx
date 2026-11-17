@@ -63,8 +63,7 @@ export function Header({
     };
 
     const handleNotificationPress = () => {
-      // TODO: Navigate to notification screen
-      console.log("Notification pressed");
+      router.push("/notifications");
     };
 
     // Tinggi status bar tanpa perlu hook navigation
@@ -142,8 +141,6 @@ export function Header({
                   className="w-10 h-10 bg-white/20 rounded-full items-center justify-center"
                 >
                   <Ionicons name="notifications-outline" size={22} color="white" />
-                  {/* Badge untuk unread notification */}
-                  <View className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                 </TouchableOpacity>
               )}
               

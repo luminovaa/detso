@@ -67,7 +67,6 @@ export const ScheduleBlock = React.memo(function ScheduleBlock({ schedule, segme
         left: `${left + gap / 2}%` as any,
         width: `${columnWidth - gap}%` as any,
         height: Math.max(height, 28),
-        marginLeft: TIME_LABEL_WIDTH + 8, // offset for time labels
         zIndex: 10,
       }}
     >

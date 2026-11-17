@@ -17,7 +17,7 @@ import { Badge } from "@/src/components/global/badge";
 import { Avatar } from "@/src/components/global/avatar";
 
 import { useTicket, useTicketHistory, useDeleteTicket } from "@/src/features/ticket/hooks";
-import { useT } from "@/src/features/i18n/store";
+import { useT, useLanguageStore } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
 import { TicketStatus, TicketPriority, TicketAction } from "@/src/lib/types";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
@@ -63,6 +63,7 @@ const getActionIcon = (action: TicketAction): string => {
 
 export default function TicketDetailScreen() {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
   const colors = useThemeColor();
   const user = useAuthStore((s) => s.user);
   const canDelete = user?.role !== "TENANT_TEKNISI";
@@ -195,7 +196,7 @@ export default function TicketDetailScreen() {
             </Text>
           ) : null}
           <Text className="text-xs text-muted-foreground">
-            {t("ticket.createdAt")}: {formatRelativeTime(ticket.created_at)}
+            {t("ticket.createdAt")}: {formatRelativeTime(ticket.created_at, locale)}
           </Text>
         </View>
 
@@ -212,7 +213,7 @@ export default function TicketDetailScreen() {
           <View className="flex-row items-center justify-between px-4 py-3.5 gap-3">
             <Text className="text-sm text-muted-foreground">{t("ticket.createdAt")}</Text>
             <Text weight="semibold" className="text-sm text-foreground text-right flex-1">
-              {formatRelativeTime(ticket.created_at)}
+              {formatRelativeTime(ticket.created_at, locale)}
             </Text>
           </View>
         </GroupedSection>
@@ -258,14 +259,17 @@ export default function TicketDetailScreen() {
               </View>
               {ticket.schedule.start_time && (
                 <View className="flex-row items-center justify-between px-4 py-3.5 gap-3">
-                  <Text className="text-sm text-muted-foreground">Jadwal</Text>
+                  <Text className="text-sm text-muted-foreground">{t("ticket.scheduleLabel")}</Text>
                   <Text weight="semibold" className="text-sm text-foreground text-right flex-1">
-                    {new Date(ticket.schedule.start_time).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(ticket.schedule.start_time).toLocaleDateString(
+                      locale === "en" ? "en-US" : "id-ID",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
                   </Text>
                 </View>
               )}
@@ -313,7 +317,7 @@ export default function TicketDetailScreen() {
                     )}
                   </View>
                   <Text className="text-xs text-muted-foreground text-right">
-                    {formatRelativeTime(history.created_at)}
+                    {formatRelativeTime(history.created_at, locale)}
                   </Text>
                 </View>
               );

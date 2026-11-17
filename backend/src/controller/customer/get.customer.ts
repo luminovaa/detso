@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Detso_Role } from '@prisma/client';
 import { paginationSchema } from './validation/validation.customer';
 import { asyncHandler, AuthenticationError, NotFoundError, ValidationError } from '../../utils/error-handler';
 import { responseData } from '../../utils/response-handler';
@@ -14,6 +15,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
     const tenant_id = user.tenant_id;
+    const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
 
     const validationResult = paginationSchema.safeParse(req.query);
     if (!validationResult.success) {
@@ -34,7 +36,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
             { name: { contains: search, mode: 'insensitive' } },
             { phone: { contains: search } },
             { email: { contains: search, mode: 'insensitive' } },
-            { nik: { contains: search } },
+            ...(!isTeknisi ? [{ nik: { contains: search } }] : []),
             {
                 service: {
                     some: {
@@ -88,7 +90,7 @@ export const getAllCustomers = asyncHandler(async (req: Request, res: Response):
         name: customer.name,
         phone: customer.phone,
         email: customer.email,
-        nik: customer.nik,
+        nik: isTeknisi ? null : customer.nik,
         created_at: customer.created_at,
         service_count: customer._count.service,
         services_summary: customer.service.map(s => ({
@@ -110,6 +112,7 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
     if (!user || !user.tenant_id) {
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
+    const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
 
     const customer = await prisma.detso_Customer.findFirst({
         where: {
@@ -156,26 +159,32 @@ export const getCustomerById = asyncHandler(async (req: Request, res: Response):
         throw new NotFoundError('Customer tidak ditemukan atau telah dihapus');
     }
 
-    // Check if installation report PDF exists
-    const installationReport = await prisma.detso_Customer_PDF.findFirst({
-        where: {
-            customer_id: customerId,
-            pdf_type: 'installation_report'
-        },
-        select: { id: true }
-    });
+    // Check if installation report PDF exists (skip for technician role)
+    const installationReport = isTeknisi
+        ? null
+        : await prisma.detso_Customer_PDF.findFirst({
+              where: {
+                  customer_id: customerId,
+                  pdf_type: 'installation_report'
+              },
+              select: { id: true }
+          });
+
+    const visibleDocuments = isTeknisi
+        ? customer.documents.filter(doc => doc.document_type.toLowerCase() !== 'ktp')
+        : customer.documents;
 
     const formattedCustomer = {
         id: customer.id,
         name: customer.name,
         phone: customer.phone,
         email: customer.email,
-        nik: customer.nik,
+        nik: isTeknisi ? null : customer.nik,
         birth_place: customer.birth_place,
         birth_date: customer.birth_date,
         created_at: customer.created_at,
-        has_installation_report: !!installationReport,
-        documents: customer.documents.map(doc => ({
+        has_installation_report: isTeknisi ? false : !!installationReport,
+        documents: visibleDocuments.map(doc => ({
             ...doc,
             document_url: generateSignedUrl(doc.document_url, 180) // 3 minutes expiry
         })),

@@ -17,6 +17,8 @@ import { Card } from "@/src/components/global/card";
 
 // --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
+import { isTechnicianRole } from "@/src/lib/route-roles";
 import { updateCustomerSchema, UpdateCustomerInput } from "@/src/features/customer/schema";
 import { useCustomer, useUpdateCustomer } from "@/src/features/customer/hooks";
 
@@ -25,13 +27,24 @@ import { useThemeColor } from '@/src/lib/theme-colors';
 export default function CustomerEditScreen() {
   const { t } = useT();
   const colors = useThemeColor();
+  const user = useAuthStore((s) => s.user);
+  const isTeknisi = isTechnicianRole(user?.role);
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  useEffect(() => {
+    if (!isTeknisi) return;
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
+  }, [isTeknisi]);
   const [showMap, setShowMap] = useState(false);
   const [serviceAddress, setServiceAddress] = useState("");
   const [lat, setLat] = useState("");
   const [long, setLong] = useState("");
 
-  const { data: response, isLoading: isLoadingData } = useCustomer(id!);
+  const { data: response, isLoading: isLoadingData } = useCustomer(isTeknisi ? "" : id!);
   const customerData = response?.data as any;
 
   const updateCustomer = useUpdateCustomer();
@@ -83,6 +96,10 @@ export default function CustomerEditScreen() {
       { onSuccess: () => router.back() },
     );
   };
+
+  if (isTeknisi) {
+    return null;
+  }
 
   if (isLoadingData) {
     return (

@@ -9,7 +9,7 @@ import { Text } from "../../global/text";
 import { Badge } from "../../global/badge";
 import { HighlightedText } from "../../global/highlighted-text";
 import { ActionSheet } from "../../global/action-sheet";
-import { useT } from "@/src/features/i18n/store";
+import { useT, useLanguageStore } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
 import { Ticket, TicketPriority, TicketStatus } from "@/src/lib/types";
 import { TICKET_STATUS_VARIANTS, TICKET_PRIORITY_VARIANTS } from "@/src/lib/ticket-constants";
@@ -24,6 +24,7 @@ interface TicketItemProps {
 
 export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "", onDelete, isDeleting }: TicketItemProps) {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
   const colors = useThemeColor();
   const user = useAuthStore((s) => s.user);
   const canDelete = user?.role !== "TENANT_TEKNISI";
@@ -134,7 +135,7 @@ export const TicketItem = React.memo(function TicketItem({ item, searchQuery = "
           <View className="flex-row items-center mt-1.5">
             <Ionicons name="time-outline" size={11} color={colors.textMuted} />
             <Text className="text-[11px] text-muted-foreground ml-1">
-              {formatRelativeTime(item.created_at)}
+              {formatRelativeTime(item.created_at, locale)}
             </Text>
           </View>
           </View>

@@ -17,11 +17,11 @@ const customerRouter = express.Router();
 customerRouter.post(
   '/',
   authMiddleware,
+  requireRole(ALL_STAFF),
   uploadLimiter, // Rate limit untuk upload
   uploadCustomerFiles,
   sanitizeUploadedFiles, // Sanitize filenames
   validateFileUpload({ allowedTypes: 'all', maxSize: 5 * 1024 * 1024 }), // Validate files
-  requireRole(ALL_STAFF), 
   createCustomer
 );
 
@@ -41,15 +41,15 @@ customerRouter.get(
   getCustomerById
 );
 
-// Edit Customer: Semua staff boleh (Teknisi mungkin perlu update foto/dokumen)
+// Edit Customer: HANYA Owner dan Admin (Teknisi DILARANG)
 customerRouter.put(
   '/:id', 
   authMiddleware,
+  requireRole(ADMIN_ONLY),
   uploadLimiter, // Rate limit untuk upload
   uploadCustomerFiles,
   sanitizeUploadedFiles, // Sanitize filenames
   validateFileUpload({ allowedTypes: 'all', maxSize: 5 * 1024 * 1024 }), // Validate files
-  requireRole(ALL_STAFF), 
   editCustomer
 );
 
@@ -61,18 +61,18 @@ customerRouter.delete(
   deleteCustomer
 );
 
-// Reports: Semua staff boleh lihat/download
+// Reports: HANYA Owner dan Admin (Teknisi DILARANG)
 customerRouter.get(
   '/pdf/:customerId/download', 
   authMiddleware, 
-  requireRole(ALL_STAFF), 
+  requireRole(ADMIN_ONLY), 
   downloadInstallationReport
 );
 
 customerRouter.get(
   '/pdf/:customerId/view', 
   authMiddleware, 
-  requireRole(ALL_STAFF), 
+  requireRole(ADMIN_ONLY), 
   viewInstallationReport
 );
 
@@ -80,7 +80,7 @@ customerRouter.get(
 customerRouter.get(
   '/pdf/:customerId/signed-url',
   authMiddleware,
-  requireRole(ALL_STAFF),
+  requireRole(ADMIN_ONLY),
   getSignedPdfUrl
 );
 
