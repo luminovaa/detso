@@ -10,19 +10,10 @@ export const createNodeSchema = z.object({
   address: z.string().max(255).optional().nullable(),
   slot: z.number().int().min(1).max(256).optional().nullable(),
   notes: z.string().max(500).optional().nullable(),
-  parent_id: z.string().min(1).optional().nullable(),
-}).refine((data) => {
-  // ODP wajib punya parent_id (Server)
-  if (data.type === 'ODP' && !data.parent_id) {
-    return false;
-  }
-  return true;
-}, {
-  message: 'ODP harus memiliki parent Server',
-  path: ['parent_id'],
+  parent_id: z.string().optional().nullable().or(z.literal('')),
 }).refine((data) => {
   // SERVER tidak boleh punya parent_id
-  if (data.type === 'SERVER' && data.parent_id) {
+  if (data.type === 'SERVER' && data.parent_id && data.parent_id.trim().length > 0) {
     return false;
   }
   return true;
@@ -38,7 +29,7 @@ export const editNodeSchema = z.object({
   address: z.string().max(255).optional().nullable(),
   slot: z.number().int().min(1).max(256).optional().nullable(),
   notes: z.string().max(500).optional().nullable(),
-  parent_id: z.string().min(1).optional().nullable(),
+  parent_id: z.string().optional().nullable().or(z.literal('')),
 });
 
 // ─── Link Schemas ────────────────────────────────────────────────

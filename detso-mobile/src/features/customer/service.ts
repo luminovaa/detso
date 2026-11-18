@@ -1,5 +1,5 @@
 import api from '@/src/lib/api';
-import { CreateCustomerInput, GettAllInput, UpdateCustomerInput } from './schema';
+import { CreateCustomerInput, GettAllInput, UpdateCustomerInput, UpdateCustomerPayload } from './schema';
 
 export const customerService = {
     getAll : async (params?: GettAllInput) => {
@@ -17,7 +17,7 @@ export const customerService = {
         });
         return response.data;
     },
-    update : async (id: string, data: UpdateCustomerInput) => {
+    update : async (id: string, data: UpdateCustomerInput | UpdateCustomerPayload) => {
         const response = await api.put(`/customer/${id}`, data);
         return response.data;
     },

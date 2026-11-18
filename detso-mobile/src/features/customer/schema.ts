@@ -1,15 +1,9 @@
 import { z } from 'zod';
-import { useLanguageStore } from '@/src/features/i18n/store';
+import { translateSchema } from '@/src/features/i18n/store';
 import { basePaginationSchema } from '@/src/lib/base-schemas';
 
-// Helper to get translation outside React components
-const t = (key: string) => {
-  const { locale, i18n } = useLanguageStore.getState();
-  return i18n.t(key, { locale });
-};
-
 const documentSchema = z.object({
-  type: z.string().min(1, { message: t('validation.docTypeRequired') }),
+  type: z.string().min(1, { message: translateSchema('validation.docTypeRequired') }),
   id: z.string().optional(),
 });
 
@@ -17,39 +11,37 @@ const documentSchema = z.object({
 export const updateCustomerSchema = z.object({
   name: z
     .string()
-    .min(1, { message: t('validation.nameRequired') })
-    .max(100, { message: t('validation.nameMax100') })
+    .trim()
+    .min(1, { message: translateSchema('validation.nameRequired') })
+    .max(100, { message: translateSchema('validation.nameMax100') })
     .optional(),
 
   phone: z
     .string()
-    .min(1, { message: t('validation.phoneRequired') })
-    .regex(/^[\d+][\d\s\-()]{6,15}$/, { message: t('validation.phoneInvalid') })
-    .optional(),
-
-  email: z
-    .email({ message: t('validation.emailInvalid') })
     .optional()
     .nullable()
     .or(z.literal('')),
 
-  birth_date: z.preprocess((arg) => {
-    if (!arg || arg === '') return undefined;
-    const date = new Date(String(arg));
-    return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()).optional(),
-  
-  birth_place: z.string().optional(),
-  
+  email: z
+    .email({ message: translateSchema('validation.emailInvalid') })
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+
+  birth_date: z.date().optional(),
+
+  birth_place: z.string().optional().nullable(),
+
   nik: z
     .string()
-    .length(16, { message: t('validation.nikLength') })
-    .regex(/^\d{16}$/, { message: t('validation.nikOnlyNumbers') })
-    .optional(),
+    .regex(/^\d{16}$/, { message: translateSchema('validation.nikLength') })
+    .optional()
+    .nullable()
+    .or(z.literal('')),
 
   documents: z
     .array(documentSchema)
-    .max(5, { message: t('validation.maxDocuments') })
+    .max(5, { message: translateSchema('validation.maxDocuments') })
     .optional(),
 }).refine(data => {
   const types = data.documents?.map(d => d.type);
@@ -59,38 +51,37 @@ export const updateCustomerSchema = z.object({
   }
   return true;
 }, {
-  message: t('validation.duplicateDocType'),
+  message: translateSchema('validation.duplicateDocType'),
   path: ['documents']
 });
 
 export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+export type UpdateCustomerPayload = Omit<UpdateCustomerInput, 'birth_date'> & {
+  birth_date?: string;
+};
 
 // Schema untuk foto
 const photoSchema = z.object({
-  type: z.string().min(1, t('validation.photoTypeRequired')),
+  type: z.string().min(1, translateSchema('validation.photoTypeRequired')),
 });
 
 export const createCustomerSchema = z.object({
-  name: z.string().min(3, t('validation.nameMin3')),
-  phone: z.string().min(10, t('validation.phoneMin10')).optional(),
-  email: z.email(t('validation.emailInvalid')).optional().or(z.literal('')),
-  nik: z.string().length(16, t('validation.nikLength')).regex(/^\d+$/, t('validation.nikOnlyNumbers')).optional().or(z.literal('')),
-  package_id: z.string().min(1, t('validation.packageRequired')),
-  address_service: z.string().min(10, t('validation.addressServiceMin')),
-  address: z.string().min(10, t('validation.addressKtpMin')),
+  name: z.string().trim().min(1, translateSchema('validation.nameRequired')),
+  phone: z.string().optional().or(z.literal('')),
+  email: z.email(translateSchema('validation.emailInvalid')).optional().or(z.literal('')),
+  nik: z.string().regex(/^\d{16}$/, translateSchema('validation.nikLength')).optional().or(z.literal('')),
+  package_id: z.string().optional().or(z.literal('')),
+  address_service: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
   package_name: z.string().optional(),
   package_speed: z.string().optional(),
   package_price: z.number().optional(),
-  ip_address: z.ipv4(t('validation.ipInvalid')).optional().or(z.literal('')),
+  ip_address: z.ipv4(translateSchema('validation.ipInvalid')).optional().or(z.literal('')),
   lat: z.string().optional(),
   long: z.string().optional(),
-  birth_date: z.preprocess((arg) => {
-    if (!arg || arg === '') return undefined;
-    const date = new Date(String(arg));
-    return isNaN(date.getTime()) ? undefined : date;
-  }, z.date().optional()).optional(),
+  birth_date: z.date().optional(),
   birth_place: z.string().optional(),
-  mac_address: z.string().min(12, t('validation.macMin12')).optional().or(z.literal('')),
+  mac_address: z.string().min(12, translateSchema('validation.macMin12')).optional().or(z.literal('')),
   notes: z.string().optional(),
   documents: z.array(documentSchema).optional(),
   photos: z.array(photoSchema).optional(),

@@ -1,6 +1,6 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customerService } from './service';
-import { CreateCustomerInput, GettAllInput, UpdateCustomerInput } from './schema';
+import { CreateCustomerInput, GettAllInput, UpdateCustomerInput, UpdateCustomerPayload } from './schema';
 import { eventBus, EVENTS } from '@/src/lib/event-bus';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
@@ -56,7 +56,7 @@ export function useCreateCustomer() {
   const { t } = useT();
 
   return useMutation({
-    mutationFn: (data: CreateCustomerInput) => customerService.create(data),
+    mutationFn: (data: CreateCustomerInput | FormData) => customerService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: customerKeys.lists() });
       eventBus.emit(EVENTS.CUSTOMER.CREATED, { customerId: res?.data?.id ?? '' });
@@ -74,7 +74,7 @@ export function useUpdateCustomer() {
   const { t } = useT();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateCustomerInput }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateCustomerInput | UpdateCustomerPayload }) =>
       customerService.update(id, data),
     onSuccess: (_res, { id }) => {
       qc.invalidateQueries({ queryKey: customerKeys.detail(id) });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -14,46 +14,38 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { FormInput } from "@/src/components/global/form-input";
 import { Text } from "@/src/components/global/text";
-import { Badge } from "@/src/components/global/badge";
 import { AsyncSelect } from "@/src/components/global/select-searchable";
 import { Card } from "@/src/components/global/card";
+import { TicketTypePriorityFields } from "@/src/components/screens/ticket/ticket-form-fields";
 
 import { useTicket, useUpdateTicket } from "@/src/features/ticket/hooks";
-import { updateTicketSchema, UpdateTicketInput } from "@/src/features/ticket/schema";
-import { useT } from "@/src/features/i18n/store";
+import { createUpdateTicketSchema, UpdateTicketInput } from "@/src/features/ticket/schema";
+import { fetchTicketTechnicianOptions } from "@/src/features/ticket/form-helpers";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
+import { isTechnicianRole } from "@/src/lib/route-roles";
 import { TicketPriority, TicketType } from "@/src/lib/types";
-import { BadgeVariantKey } from "@/src/lib/badge-variants";
-import api from "@/src/lib/api";
-
 import { useThemeColor } from "@/src/lib/theme-colors";
-const PRIORITY_OPTIONS: { value: TicketPriority; labelKey: string; variant: BadgeVariantKey }[] = [
-  { value: "LOW", labelKey: "ticket.priorityLow", variant: "neutral" },
-  { value: "MEDIUM", labelKey: "ticket.priorityMedium", variant: "info" },
-  { value: "HIGH", labelKey: "ticket.priorityHigh", variant: "warning" },
-  { value: "URGENT", labelKey: "ticket.priorityUrgent", variant: "error" },
-];
-
-const TYPE_OPTIONS: { value: TicketType; labelKey: string; variant: BadgeVariantKey }[] = [
-  { value: "PROBLEM", labelKey: "ticket.typeProblem", variant: "error" },
-  { value: "UPGRADE", labelKey: "ticket.typeUpgrade", variant: "success" },
-  { value: "DOWNGRADE", labelKey: "ticket.typeDowngrade", variant: "warning" },
-];
 
 export default function TicketEditScreen() {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
+  const user = useAuthStore((s) => s.user);
+  const isTeknisi = isTechnicianRole(user?.role);
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useThemeColor();
 
   const { data: ticketRes, isLoading } = useTicket(id);
   const updateTicket = useUpdateTicket();
-
   const ticket = ticketRes?.data?.ticket;
 
   const [type, setType] = useState<TicketType>("PROBLEM");
   const [priority, setPriority] = useState<TicketPriority>("MEDIUM");
 
-  const { control, handleSubmit, setValue, watch, reset } = useForm<UpdateTicketInput>({
-    resolver: zodResolver(updateTicketSchema) as any,
+  const editSchema = useMemo(() => createUpdateTicketSchema(locale), [locale]);
+
+  const { control, handleSubmit, setValue, reset } = useForm<UpdateTicketInput>({
+    resolver: zodResolver(editSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -63,7 +55,6 @@ export default function TicketEditScreen() {
     },
   });
 
-  // Pre-fill form when ticket data loads
   useEffect(() => {
     if (ticket) {
       reset({
@@ -78,19 +69,6 @@ export default function TicketEditScreen() {
     }
   }, [ticket, reset]);
 
-  // Fetch technicians for selector
-  const fetchTechnicians = async (search: string, page: number) => {
-    const res = await api.get("/user", { params: { search, page, limit: 10, role: "TENANT_TEKNISI" } });
-    const users = res.data?.data?.users || [];
-    return {
-      data: users.map((u: any) => ({
-        label: u.profile?.full_name || u.username,
-        value: u.id,
-      })),
-      hasNextPage: res.data?.data?.pagination?.hasNextPage || false,
-    };
-  };
-
   const onSubmit = (data: UpdateTicketInput) => {
     updateTicket.mutate(
       {
@@ -100,7 +78,8 @@ export default function TicketEditScreen() {
           description: data.description || undefined,
           type,
           priority,
-          assigned_to: data.assigned_to || undefined,
+          // Teknisi cannot reassign or unassign tickets ("khusus yang ditugaskan")
+          assigned_to: isTeknisi ? undefined : data.assigned_to || undefined,
         },
       },
       {
@@ -108,9 +87,6 @@ export default function TicketEditScreen() {
       },
     );
   };
-
-  const title = watch("title");
-  const isValid = (title?.trim()?.length || 0) >= 5;
 
   if (isLoading) {
     return (
@@ -134,12 +110,11 @@ export default function TicketEditScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("ticket.editTitle")}
             </Text>
             <View className="gap-y-3">
-              {/* Title */}
               <FormInput
                 control={control}
                 name="title"
@@ -147,7 +122,6 @@ export default function TicketEditScreen() {
                 placeholder={t("ticket.titlePlaceholder")}
               />
 
-              {/* Description */}
               <FormInput
                 control={control}
                 name="description"
@@ -157,89 +131,51 @@ export default function TicketEditScreen() {
                 numberOfLines={4}
               />
 
-              {/* Type Selector */}
-              <View>
-                <Text weight="medium" className="text-sm text-foreground mb-2">
-                  {t("ticket.typeLabel")}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {TYPE_OPTIONS.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      activeOpacity={0.7}
-                      className="min-h-11 justify-center"
-                      onPress={() => {
-                        setType(option.value);
-                        setValue("type", option.value);
-                      }}
-                    >
-                      <Badge
-                        colorVariant={type === option.value ? option.variant : "neutral"}
-                        className={`px-4 py-1.5 ${type === option.value ? "opacity-100" : "opacity-50"}`}
-                      >
-                        {t(option.labelKey)}
-                      </Badge>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Priority Selector */}
-              <View>
-                <Text weight="medium" className="text-sm text-foreground mb-2">
-                  {t("ticket.priorityLabel")}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {PRIORITY_OPTIONS.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      activeOpacity={0.7}
-                      className="min-h-11 justify-center"
-                      onPress={() => {
-                        setPriority(option.value);
-                        setValue("priority", option.value);
-                      }}
-                    >
-                      <Badge
-                        colorVariant={priority === option.value ? option.variant : "neutral"}
-                        className={`px-4 py-1.5 ${priority === option.value ? "opacity-100" : "opacity-50"}`}
-                      >
-                        {t(option.labelKey)}
-                      </Badge>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Assign to Technician */}
-              <AsyncSelect
-                control={control}
-                name="assigned_to"
-                label={t("ticket.assignToLabel")}
-                placeholder={t("ticket.assignToPlaceholder")}
-                fetchOptions={fetchTechnicians}
-                highlightSearch
-                initialLabel={ticket?.technician?.profile?.full_name || ticket?.technician?.username || ticket?.schedule?.technician?.full_name || ""}
+              <TicketTypePriorityFields
+                type={type}
+                priority={priority}
+                onSelectType={(value) => {
+                  setType(value);
+                  setValue("type", value);
+                }}
+                onSelectPriority={(value) => {
+                  setPriority(value);
+                  setValue("priority", value);
+                }}
               />
+
+              {!isTeknisi && (
+                <AsyncSelect
+                  control={control}
+                  name="assigned_to"
+                  label={t("ticket.assignToLabel")}
+                  placeholder={t("ticket.assignToPlaceholder")}
+                  fetchOptions={fetchTicketTechnicianOptions}
+                  highlightSearch
+                  initialLabel={
+                    ticket?.technician?.profile?.full_name ||
+                    ticket?.technician?.username ||
+                    ticket?.schedule?.technician?.full_name ||
+                    ""
+                  }
+                />
+              )}
             </View>
           </Card>
         </ScrollView>
 
-        {/* Fixed Bottom Button */}
-        <View
-          className="border-t border-border bg-background pt-3 pb-2"
-        >
+        <View className="border-t border-border bg-background pt-3 pb-2">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit(onSubmit)}
-            disabled={!isValid || updateTicket.isPending}
+            disabled={updateTicket.isPending}
             className={`h-12 rounded-xl items-center justify-center ${
-              isValid && !updateTicket.isPending ? "bg-primary" : "bg-muted"
+              !updateTicket.isPending ? "bg-primary" : "bg-muted"
             }`}
           >
             <Text
               weight="semibold"
-              className={`text-base ${isValid && !updateTicket.isPending ? "text-primary-foreground" : "text-muted-foreground"}`}
+              className={`text-base ${!updateTicket.isPending ? "text-primary-foreground" : "text-muted-foreground"}`}
             >
               {updateTicket.isPending ? t("ticket.updating") : t("ticket.saveBtn")}
             </Text>

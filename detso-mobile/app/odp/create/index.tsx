@@ -1,10 +1,9 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { View, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
-import { z } from "zod";
 
 // --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
@@ -16,37 +15,26 @@ import { AsyncSelect } from "@/src/components/global/select-searchable";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
 
 // --- State & Logic ---
-import { useT } from "@/src/features/i18n/store";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
 import { useCreateNode } from "@/src/features/network/hooks";
 import { networkService } from "@/src/features/network/service";
-import { useThemeColor } from '@/src/lib/theme-colors';
-
-interface OdpFormValues {
-  name: string;
-  address: string;
-  slot: string;
-  parent_id: string;
-  notes: string;
-}
+import { createOdpSchema, OdpFormValues } from "@/src/features/network/schema";
+import { NetworkNode } from "@/src/features/network/types";
+import { useThemeColor } from "@/src/lib/theme-colors";
 
 export default function OdpCreateScreen() {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
   const colors = useThemeColor();
   const createNode = useCreateNode();
   const isSubmitting = createNode.isPending;
   const [showMap, setShowMap] = useState(false);
   const [location, setLocation] = useState<{ lat: string; lng: string } | null>(null);
 
-  const odpSchema = z.object({
-    name: z.string().min(1, t("odp.nameRequired")),
-    address: z.string().optional(),
-    slot: z.string().optional(),
-    parent_id: z.string().min(1, t("odp.parentServerPlaceholder")),
-    notes: z.string().optional(),
-  });
+  const odpSchema = useMemo(() => createOdpSchema(locale), [locale]);
 
   const { control, handleSubmit, setValue, watch } = useForm<OdpFormValues>({
-    resolver: zodResolver(odpSchema) as any,
+    resolver: zodResolver(odpSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -59,14 +47,12 @@ export default function OdpCreateScreen() {
   const fetchServers = useCallback(
     async (search: string, _page: number) => {
       const res = await networkService.getNodes({ type: "SERVER" });
-      const nodes = res?.data?.nodes || [];
+      const nodes: NetworkNode[] = res?.data?.nodes || [];
       const filtered = search
-        ? nodes.filter((n: any) =>
-            n.name.toLowerCase().includes(search.toLowerCase())
-          )
+        ? nodes.filter((n) => n.name.toLowerCase().includes(search.toLowerCase()))
         : nodes;
       return {
-        data: filtered.map((n: any) => ({
+        data: filtered.map((n) => ({
           label: `${n.name}${n.address ? ` • ${n.address}` : ""}`,
           value: n.id,
         })),
@@ -106,7 +92,7 @@ export default function OdpCreateScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("odp.detail")}
             </Text>
@@ -170,7 +156,6 @@ export default function OdpCreateScreen() {
                 label={t("odp.parentServerLabel")}
                 placeholder={t("odp.parentServerPlaceholder")}
                 fetchOptions={fetchServers}
-                required
                 highlightSearch
               />
 

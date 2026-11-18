@@ -1,6 +1,12 @@
 import React, { forwardRef, useState, useCallback } from "react";
 import { View, TouchableOpacity, Image } from "react-native";
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 
@@ -9,6 +15,7 @@ import { Badge } from "../../global/badge";
 import { useT } from "@/src/features/i18n/store";
 import { useUpdateTicketStatus } from "@/src/features/ticket/hooks";
 import { TicketStatus } from "@/src/lib/types";
+import { appendFormDataFile } from "@/src/lib/form-data";
 import { BadgeVariantKey } from "@/src/lib/badge-variants";
 import { useThemeColor } from "@/src/lib/theme-colors";
 interface UpdateStatusSheetProps {
@@ -35,14 +42,13 @@ function UpdateStatusSheetInner(
     const updateStatus = useUpdateTicketStatus();
 
     const isResolvingOrClosing = selectedStatus === "RESOLVED" || selectedStatus === "CLOSED";
-    const photoRequired = selectedStatus === "RESOLVED";
-    const canSubmit = selectedStatus !== currentStatus && (!photoRequired || photo);
+    const canSubmit = selectedStatus !== currentStatus;
 
     const handlePickPhoto = async () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.7,
-        allowsEditing: true,
+        allowsEditing: false,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -56,7 +62,7 @@ function UpdateStatusSheetInner(
 
       const result = await ImagePicker.launchCameraAsync({
         quality: 0.7,
-        allowsEditing: true,
+        allowsEditing: false,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -71,14 +77,7 @@ function UpdateStatusSheetInner(
         formData.append("description", note.trim());
       }
       if (photo) {
-        const filename = photo.split("/").pop() || "photo.jpg";
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : "image/jpeg";
-        formData.append("image", {
-          uri: photo,
-          name: filename,
-          type,
-        } as any);
+        appendFormDataFile(formData, "image", photo, `ticket-${ticketId}`);
       }
 
       updateStatus.mutate(
@@ -87,14 +86,16 @@ function UpdateStatusSheetInner(
           onSuccess: () => {
             setNote("");
             setPhoto(null);
-            (ref as any)?.current?.close();
+            if (ref && typeof ref !== "function") {
+              ref.current?.close();
+            }
           },
         },
       );
     };
 
     const renderBackdrop = useCallback(
-      (props: any) => (
+      (props: BottomSheetBackdropProps) => (
         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
       ),
       [],
@@ -160,15 +161,15 @@ function UpdateStatusSheetInner(
           {isResolvingOrClosing && (
             <View className="mb-4">
               <Text className="text-xs text-muted-foreground mb-2">
-                {photoRequired ? t("ticket.photoRequired") : t("ticket.photoOptional")}
+                {t("ticket.photoOptional")}
               </Text>
 
               {photo ? (
-                <View className="relative">
+                <View className="relative aspect-[3/4] w-44 self-center rounded-xl overflow-hidden bg-muted">
                   <Image
                     source={{ uri: photo }}
-                    className="w-full h-32 rounded-xl"
-                    resizeMode="cover"
+                    className="w-full h-full"
+                    resizeMode="contain"
                   />
                   <TouchableOpacity
                     onPress={() => setPhoto(null)}

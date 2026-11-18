@@ -57,7 +57,7 @@ export function CustomCamera({
   visible,
   onClose,
   onCapture,
-  aspectRatio = "4:3",
+  aspectRatio = "3:4",
   enableGeoTag = false,
   allowClose = true,
 }: CustomCameraProps) {

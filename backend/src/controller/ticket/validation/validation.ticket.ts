@@ -19,7 +19,7 @@ export const paginationSchema = z.object({
 
 export const createTicketSchema = z.object({
     service_id: z.string().optional(),
-    title: z.string().min(5, 'Judul ticket minimal 5 karakter'),
+    title: z.string().trim().min(1, 'Judul ticket wajib diisi'),
     description: z.string().optional(),
     type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional().default('PROBLEM'),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional().default('MEDIUM'),
@@ -27,7 +27,7 @@ export const createTicketSchema = z.object({
 });
 
 export const updateTicketSchema = z.object({
-    title: z.string().optional(),
+    title: z.string().trim().min(1, 'Judul ticket wajib diisi').optional(),
     description: z.string().optional(),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
     type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional().default('PROBLEM'),

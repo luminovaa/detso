@@ -1,42 +1,29 @@
-import React, { useState, useCallback } from "react";
-import { View, ScrollView, TouchableOpacity, Switch, Image, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Ionicons } from "@expo/vector-icons";
 
-// --- Global Components ---
 import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
-import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
-import { Card } from "@/src/components/global/card";
-import { FormInput } from "@/src/components/global/form-input";
-import { FormDatePicker } from "@/src/components/global/date-picker";
 import { ImagePickerSheet } from "@/src/components/global/image-picker";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
-import { AsyncSelect } from "@/src/components/global/select-searchable";
-
-// --- Feature Components ---
 import { StepIndicator } from "@/src/components/screens/customer/step-indicator";
+import { CustomerCreateSteps } from "@/src/components/screens/customer/customer-create-steps";
 
-// --- State & Logic ---
 import { useT } from "@/src/features/i18n/store";
 import { createCustomerSchema, CreateCustomerInput } from "@/src/features/customer/schema";
 import { useCreateCustomer } from "@/src/features/customer/hooks";
-import { packageService } from "@/src/features/package/service";
 import { customerService } from "@/src/features/customer/service";
+import {
+  CustomerPhotoState,
+  buildCreateCustomerFormData,
+} from "@/src/features/customer/form-helpers";
 
-import { useThemeColor } from '@/src/lib/theme-colors';
 const TOTAL_STEPS = 4;
-
-interface PhotoState {
-  uri: string;
-  base64?: string;
-}
 
 export default function CustomerCreateScreen() {
   const { t } = useT();
-  const colors = useThemeColor();
   const createCustomer = useCreateCustomer();
   const isSubmitting = createCustomer.isPending;
 
@@ -44,24 +31,21 @@ export default function CustomerCreateScreen() {
   const [sameAddress, setSameAddress] = useState(false);
   const [showMap, setShowMap] = useState(false);
 
-  // NIK check state
   const [existingCustomer, setExistingCustomer] = useState<{ id: string; name: string } | null>(null);
   const [nikChecking, setNikChecking] = useState(false);
-  const nikCheckTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nikCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Photo states
-  const [ktpPhoto, setKtpPhoto] = useState<PhotoState | null>(null);
-  const [ktpTouched, setKtpTouched] = useState(false);
+  const [ktpPhoto, setKtpPhoto] = useState<CustomerPhotoState | null>(null);
   const [showKtpPicker, setShowKtpPicker] = useState(false);
-  const [photoFront, setPhotoFront] = useState<PhotoState | null>(null);
+  const [photoFront, setPhotoFront] = useState<CustomerPhotoState | null>(null);
   const [showFrontPicker, setShowFrontPicker] = useState(false);
-  const [photoSide, setPhotoSide] = useState<PhotoState | null>(null);
+  const [photoSide, setPhotoSide] = useState<CustomerPhotoState | null>(null);
   const [showSidePicker, setShowSidePicker] = useState(false);
-  const [photoFar, setPhotoFar] = useState<PhotoState | null>(null);
+  const [photoFar, setPhotoFar] = useState<CustomerPhotoState | null>(null);
   const [showFarPicker, setShowFarPicker] = useState(false);
-  const [photoCustomer, setPhotoCustomer] = useState<PhotoState | null>(null);
+  const [photoCustomer, setPhotoCustomer] = useState<CustomerPhotoState | null>(null);
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
-  const [photoDevice, setPhotoDevice] = useState<PhotoState | null>(null);
+  const [photoDevice, setPhotoDevice] = useState<CustomerPhotoState | null>(null);
   const [showDevicePicker, setShowDevicePicker] = useState(false);
 
   const stepLabels = [
@@ -72,7 +56,7 @@ export default function CustomerCreateScreen() {
   ];
 
   const { control, handleSubmit, setValue, watch, trigger } = useForm<CreateCustomerInput>({
-    resolver: zodResolver(createCustomerSchema) as any,
+    resolver: zodResolver(createCustomerSchema),
     defaultValues: {
       name: "",
       phone: "",
@@ -92,27 +76,31 @@ export default function CustomerCreateScreen() {
 
   const addressValue = watch("address");
   const nikValue = watch("nik");
+  const packageIdValue = watch("package_id");
+  const latValue = watch("lat");
+  const longValue = watch("long");
 
-  // Sync address if checkbox is checked
-  React.useEffect(() => {
+  const hasPackage = Boolean(packageIdValue);
+  // Skip installation photo steps when saving a legacy customer without selecting a package
+  const canFinishAtStep2 = currentStep === 2 && !hasPackage && !existingCustomer;
+  const isSubmitStep = currentStep === TOTAL_STEPS || canFinishAtStep2;
+
+  useEffect(() => {
     if (sameAddress && addressValue) {
       setValue("address_service", addressValue);
     }
   }, [sameAddress, addressValue, setValue]);
 
-  // Debounced NIK check — triggers when NIK reaches 16 digits
-  React.useEffect(() => {
+  useEffect(() => {
     if (nikCheckTimerRef.current) {
       clearTimeout(nikCheckTimerRef.current);
     }
 
-    // Reset if NIK is cleared or incomplete
     if (!nikValue || nikValue.length < 16) {
       setExistingCustomer(null);
       return;
     }
 
-    // Only check when exactly 16 digits
     if (nikValue.length === 16 && /^\d{16}$/.test(nikValue)) {
       setNikChecking(true);
       nikCheckTimerRef.current = setTimeout(async () => {
@@ -125,7 +113,6 @@ export default function CustomerCreateScreen() {
             setExistingCustomer(null);
           }
         } catch {
-          // Graceful degradation — ignore error, allow normal flow
           setExistingCustomer(null);
         } finally {
           setNikChecking(false);
@@ -138,52 +125,15 @@ export default function CustomerCreateScreen() {
     };
   }, [nikValue]);
 
-  const fetchPackages = useCallback(
-    async (search: string, page: number) => {
-      const res = await packageService.getAll({ search, page, limit: 20 });
-      const packages = res?.data?.packages || [];
-      return {
-        data: packages.map((pkg: any) => ({
-          label: `${pkg.name} - ${pkg.speed}`,
-          value: pkg.id,
-          price: pkg.price,
-          speed: pkg.speed,
-          name: pkg.name,
-        })),
-        hasNextPage: res?.data?.pagination?.hasNextPage || false,
-      };
-    },
-    [],
-  );
-
-
   const handleNext = async () => {
-    // Validate current step fields before proceeding
     let fieldsToValidate: (keyof CreateCustomerInput)[] = [];
-
-    switch (currentStep) {
-      case 1:
-        // If existing customer found via NIK, skip personal data validation
-        if (existingCustomer) {
-          fieldsToValidate = [];
-        } else {
-          fieldsToValidate = ["name", "address"];
-        }
-        break;
-      case 2:
-        fieldsToValidate = ["package_id", "address_service"];
-        break;
+    if (currentStep === 1 && !existingCustomer) {
+      fieldsToValidate = ["name"];
     }
 
     if (fieldsToValidate.length > 0) {
       const isValid = await trigger(fieldsToValidate);
       if (!isValid) return;
-    }
-
-    // Step 1: KTP photo required (even for existing customer — new KTP for new service)
-    if (currentStep === 1 && !ktpPhoto) {
-      setKtpTouched(true);
-      return; // Don't proceed without KTP
     }
 
     if (currentStep < TOTAL_STEPS) {
@@ -200,91 +150,19 @@ export default function CustomerCreateScreen() {
   };
 
   const onSubmit = (data: CreateCustomerInput) => {
-    const formData = new FormData();
+    const formData = buildCreateCustomerFormData(data, {
+      ktpPhoto,
+      photoFront,
+      photoSide,
+      photoFar,
+      photoCustomer,
+      photoDevice,
+    });
 
-    // Customer fields
-    formData.append("name", data.name);
-    if (data.phone) formData.append("phone", data.phone);
-    if (data.email) formData.append("email", data.email);
-    if (data.nik) formData.append("nik", data.nik);
-    formData.append("address", data.address);
-    if (data.birth_place) formData.append("birth_place", data.birth_place);
-    if (data.birth_date) formData.append("birth_date", new Date(data.birth_date).toISOString());
-
-    // Service connection fields
-    formData.append("package_id", data.package_id);
-    formData.append("address_service", data.address_service);
-    if (data.lat) formData.append("lat", data.lat);
-    if (data.long) formData.append("long", data.long);
-    if (data.ip_address) formData.append("ip_address", data.ip_address);
-    if (data.mac_address) formData.append("mac_address", data.mac_address);
-    if (data.notes) formData.append("notes", data.notes);
-    if (data.odp_id) formData.append("odp_id", data.odp_id);
-
-    // Documents (KTP)
-    if (ktpPhoto) {
-      formData.append("documents", JSON.stringify([{ type: "ktp" }]));
-      const ext = ktpPhoto.uri.split(".").pop() || "jpg";
-      formData.append("documents", {
-        uri: ktpPhoto.uri,
-        name: `ktp-${Date.now()}.${ext}`,
-        type: `image/${ext === "jpg" ? "jpeg" : ext}`,
-      } as any);
-    }
-
-    // Photos
-    const photoTypes: { type: string; photo: PhotoState | null }[] = [
-      { type: "rumah_depan", photo: photoFront },
-      { type: "rumah_sisi_kanan", photo: photoSide },
-      { type: "rumah_sisi_kiri", photo: photoFar },
-      { type: "denganpelanggan", photo: photoCustomer },
-      { type: "alat", photo: photoDevice },
-    ];
-
-    const validPhotos = photoTypes.filter((p) => p.photo !== null);
-    if (validPhotos.length > 0) {
-      formData.append("photos", JSON.stringify(validPhotos.map((p) => ({ type: p.type }))));
-      validPhotos.forEach((p) => {
-        const ext = p.photo!.uri.split(".").pop() || "jpg";
-        formData.append("photos", {
-          uri: p.photo!.uri,
-          name: `${p.type}-${Date.now()}.${ext}`,
-          type: `image/${ext === "jpg" ? "jpeg" : ext}`,
-        } as any);
-      });
-    }
-
-    createCustomer.mutate(formData as unknown as CreateCustomerInput, {
+    createCustomer.mutate(formData, {
       onSuccess: () => router.back(),
     });
   };
-
-  const renderPhotoUpload = (
-    label: string,
-    photo: PhotoState | null,
-    onPress: () => void,
-    required = false,
-  ) => (
-    <View className="mb-4">
-      <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
-        {label} {required && <Text className="text-destructive">*</Text>}
-      </Text>
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
-        className="border-2 border-dashed border-border rounded-2xl h-40 items-center justify-center overflow-hidden bg-muted/20"
-      >
-        {photo ? (
-          <Image source={{ uri: photo.uri }} className="w-full h-full" resizeMode="cover" />
-        ) : (
-          <View className="items-center">
-            <Ionicons name="camera-outline" size={32} color={colors.textMuted} />
-            <Text className="text-muted-foreground text-xs mt-2">{t("customer.photoHint")}</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
     <ScreenWrapper headerTitle={t("customer.createTitle")} showBackButton>
@@ -292,7 +170,6 @@ export default function CustomerCreateScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
-        {/* Step Indicator */}
         <StepIndicator
           currentStep={currentStep}
           totalSteps={TOTAL_STEPS}
@@ -305,189 +182,32 @@ export default function CustomerCreateScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ═══ STEP 1: Personal Data ═══ */}
-          {currentStep === 1 && (
-            <>
-              <Card className="rounded-2xl p-4 mb-4">
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text weight="bold" className="text-base text-foreground">
-                    {t("customer.ktpLabel")} <Text className="text-destructive">*</Text>
-                  </Text>
-                </View>
-                <Text className="text-muted-foreground text-xs mb-3">{t("customer.ktpHint")}</Text>
-                <View className="gap-y-3">
-                  {/* KTP Upload */}
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => setShowKtpPicker(true)}
-                      activeOpacity={0.7}
-                      className="border-2 border-dashed border-border rounded-2xl h-36 items-center justify-center overflow-hidden bg-muted/20"
-                    >
-                      {ktpPhoto ? (
-                        <Image source={{ uri: ktpPhoto.uri }} className="w-full h-full" resizeMode="cover" />
-                      ) : (
-                        <View className="items-center">
-                          <Ionicons name="id-card-outline" size={32} color={colors.textMuted} />
-                          <Text className="text-muted-foreground text-xs mt-2">{t("customer.photoHint")}</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                    {ktpTouched && !ktpPhoto && (
-                      <Text className="text-destructive text-xs mt-1.5">{t("customer.photoRequired")}</Text>
-                    )}
-                  </View>
-
-                  {/* NIK — always editable, triggers check */}
-                  <FormInput control={control} name="nik" label={t("customer.nikLabel")} placeholder={t("customer.nikPlaceholder")} keyboardType="numeric" maxLength={16} />
-
-                  {/* NIK checking indicator */}
-                  {nikChecking && (
-                    <View className="flex-row items-center gap-x-2 px-1">
-                      <ActivityIndicator size="small" color={colors.primary} />
-                      <Text className="text-xs text-muted-foreground">Memeriksa NIK...</Text>
-                    </View>
-                  )}
-
-                  {/* Existing customer info card */}
-                  {existingCustomer && !nikChecking && (
-                    <View className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-                      <View className="flex-row items-center gap-x-2 mb-2">
-                        <Ionicons name="information-circle" size={20} color={colors.primary} />
-                        <Text weight="semibold" className="text-sm text-primary">NIK Sudah Terdaftar</Text>
-                      </View>
-                      <Text className="text-sm text-foreground">
-                        Customer <Text weight="bold">{existingCustomer.name}</Text> sudah terdaftar dengan NIK ini.
-                      </Text>
-                      <Text className="text-xs text-muted-foreground mt-1">
-                        Layanan baru akan ditambahkan ke customer ini. Data personal tidak perlu diisi ulang.
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </Card>
-
-              {/* Personal fields — disabled if existing customer */}
-              {!existingCustomer && (
-                <Card className="rounded-2xl p-4 mb-4">
-                  <Text weight="bold" className="text-base text-foreground mb-3">
-                    {t("customer.stepPersonal")}
-                  </Text>
-                  <View className="gap-y-3">
-                    <FormInput control={control} name="name" label={t("customer.nameLabel")} placeholder={t("customer.namePlaceholder")} />
-                    <FormInput control={control} name="phone" label={t("customer.phoneLabel")} placeholder={t("customer.phonePlaceholder")} keyboardType="phone-pad" />
-                    <FormInput control={control} name="email" label={t("customer.emailLabel")} placeholder={t("customer.emailPlaceholder")} keyboardType="email-address" autoCapitalize="none" />
-                    <FormInput control={control} name="birth_place" label={t("customer.birthPlaceLabel")} placeholder={t("customer.birthPlacePlaceholder")} />
-                    <FormDatePicker control={control} name="birth_date" label={t("customer.birthDateLabel")} placeholder={t("customer.birthDatePlaceholder")} maximumDate={new Date()} />
-                    <FormInput control={control} name="address" label={t("customer.addressLabel")} placeholder={t("customer.addressPlaceholder")} isTextarea />
-                  </View>
-                </Card>
-              )}
-            </>
-          )}
-
-          {/* ═══ STEP 2: Service Data ═══ */}
-          {currentStep === 2 && (
-            <Card className="rounded-2xl p-4 mb-4">
-              <Text weight="bold" className="text-base text-foreground mb-3">
-                {t("customer.stepService")}
-              </Text>
-              <View className="gap-y-3">
-                <AsyncSelect
-                  control={control}
-                  name="package_id"
-                  label={t("customer.packageLabel")}
-                  placeholder={t("customer.packagePlaceholder")}
-                  fetchOptions={fetchPackages}
-                  required
-                  onSelectFullObject={(item) => {
-                    setValue("package_name" as any, item.name);
-                    setValue("package_speed" as any, item.speed);
-                    setValue("package_price" as any, item.price);
-                  }}
-                />
-
-                {/* Same address checkbox */}
-                <View className="flex-row items-center justify-between py-3 border-t border-border/40 min-h-11">
-                  <Text className="text-sm text-foreground flex-1 mr-4">{t("customer.sameAddress")}</Text>
-                  <Switch
-                    value={sameAddress}
-                    onValueChange={setSameAddress}
-                    trackColor={{ false: colors.border, true: colors.primary }}
-                    thumbColor={sameAddress ? colors.white : colors.textMuted}
-                  />
-                </View>
-
-                {!sameAddress && (
-                  <FormInput control={control} name="address_service" label={t("customer.addressServiceLabel")} placeholder={t("customer.addressServicePlaceholder")} isTextarea />
-                )}
-
-                {/* Map Picker */}
-                <View>
-                  <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
-                    {t("customer.selectOnMap")}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setShowMap(true)}
-                    activeOpacity={0.7}
-                    className="flex-row items-center justify-between border border-border rounded-xl px-4 py-3 bg-muted/20 min-h-11"
-                  >
-                    <View className="flex-row items-center flex-1">
-                      <Ionicons name="location-outline" size={20} color={colors.icon} />
-                      <View className="ml-2 flex-1">
-                        {watch("lat") && watch("long") ? (
-                          <View>
-                            <Text className="text-foreground text-xs" numberOfLines={2}>
-                              {watch("address_service") || t("customer.locationSelected")}
-                            </Text>
-                            <Text className="text-muted-foreground text-[10px] mt-1">
-                              {watch("lat")}, {watch("long")}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text className="text-muted-foreground">{t("customer.selectOnMap")}</Text>
-                        )}
-                      </View>
-                    </View>
-                    <View className="bg-primary/10 p-2 rounded-lg">
-                      <Ionicons name="map" size={20} color={colors.primary} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-
-                <FormInput control={control} name="notes" label={t("customer.notesLabel")} placeholder={t("customer.notesPlaceholder")} isTextarea />
-              </View>
-            </Card>
-          )}
-
-
-          {/* ═══ STEP 3: House Photos ═══ */}
-          {currentStep === 3 && (
-            <Card className="rounded-2xl p-4 mb-4">
-              <Text weight="bold" className="text-base text-foreground mb-3">
-                {t("customer.stepHousePhotos")}
-              </Text>
-              {renderPhotoUpload(t("customer.photoFront"), photoFront, () => setShowFrontPicker(true))}
-              {renderPhotoUpload(t("customer.photoSide"), photoSide, () => setShowSidePicker(true))}
-              {renderPhotoUpload(t("customer.photoFar"), photoFar, () => setShowFarPicker(true))}
-            </Card>
-          )}
-
-          {/* ═══ STEP 4: Evidence Photos ═══ */}
-          {currentStep === 4 && (
-            <Card className="rounded-2xl p-4 mb-4">
-              <Text weight="bold" className="text-base text-foreground mb-3">
-                {t("customer.stepEvidence")}
-              </Text>
-              {renderPhotoUpload(t("customer.photoCustomer"), photoCustomer, () => setShowCustomerPicker(true))}
-              {renderPhotoUpload(t("customer.photoDevice"), photoDevice, () => setShowDevicePicker(true))}
-            </Card>
-          )}
+          <CustomerCreateSteps
+            currentStep={currentStep}
+            control={control}
+            setValue={setValue}
+            watch={watch}
+            sameAddress={sameAddress}
+            onToggleSameAddress={setSameAddress}
+            onOpenMap={() => setShowMap(true)}
+            nikChecking={nikChecking}
+            existingCustomer={existingCustomer}
+            ktpPhoto={ktpPhoto}
+            photoFront={photoFront}
+            photoSide={photoSide}
+            photoFar={photoFar}
+            photoCustomer={photoCustomer}
+            photoDevice={photoDevice}
+            onPickKtp={() => setShowKtpPicker(true)}
+            onPickFront={() => setShowFrontPicker(true)}
+            onPickSide={() => setShowSidePicker(true)}
+            onPickFar={() => setShowFarPicker(true)}
+            onPickCustomer={() => setShowCustomerPicker(true)}
+            onPickDevice={() => setShowDevicePicker(true)}
+          />
         </ScrollView>
 
-        {/* Fixed Bottom Buttons */}
-        <View
-          className="pt-3 pb-2 border-t border-border/10 bg-background"
-        >
+        <View className="pt-3 pb-2 border-t border-border/10 bg-background">
           <View className="flex-row gap-x-3">
             <Button
               title={currentStep === 1 ? t("customer.cancelBtn") : t("customer.back")}
@@ -496,7 +216,7 @@ export default function CustomerCreateScreen() {
               className="flex-1"
               onPress={handleBack}
             />
-            {currentStep < TOTAL_STEPS ? (
+            {!isSubmitStep ? (
               <Button
                 title={t("customer.next")}
                 size="lg"
@@ -505,7 +225,7 @@ export default function CustomerCreateScreen() {
               />
             ) : (
               <Button
-                title={isSubmitting ? t("customer.creating") : t("customer.submit")}
+                title={isSubmitting ? t("customer.creating") : canFinishAtStep2 ? t("common.save") : t("customer.submit")}
                 size="lg"
                 className="flex-1 shadow-lg shadow-primary/20"
                 onPress={handleSubmit(onSubmit)}
@@ -517,7 +237,6 @@ export default function CustomerCreateScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* ═══ MODALS ═══ */}
       <ImagePickerSheet visible={showKtpPicker} onClose={() => setShowKtpPicker(false)} onImageSelected={(uri, base64) => setKtpPhoto({ uri, base64 })} />
       <ImagePickerSheet visible={showFrontPicker} onClose={() => setShowFrontPicker(false)} onImageSelected={(uri, base64) => setPhotoFront({ uri, base64 })} />
       <ImagePickerSheet visible={showSidePicker} onClose={() => setShowSidePicker(false)} onImageSelected={(uri, base64) => setPhotoSide({ uri, base64 })} />
@@ -536,8 +255,8 @@ export default function CustomerCreateScreen() {
           }
         }}
         initialCoordinate={
-          watch("lat") && watch("long")
-            ? { latitude: parseFloat(watch("lat")!), longitude: parseFloat(watch("long")!) }
+          latValue && longValue
+            ? { latitude: parseFloat(latValue), longitude: parseFloat(longValue) }
             : null
         }
         initialAddress={watch("address_service")}

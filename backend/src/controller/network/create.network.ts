@@ -4,6 +4,7 @@ import { asyncHandler, AuthenticationError, ValidationError, NotFoundError } fro
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { createNodeSchema, createLinkSchema } from './validation/validation.network';
+import { trimOrNull } from '../../utils/request.utils';
 
 /**
  * POST /api/network/nodes
@@ -23,12 +24,13 @@ export const createNode = asyncHandler(async (req: Request, res: Response): Prom
   }
 
   const { type, name, lat, long, address, slot, notes, parent_id } = validationResult.data;
+  const normalizedParentId = trimOrNull(parent_id);
 
   // Jika ODP, validasi parent_id adalah Server milik tenant yang sama
-  if (type === 'ODP' && parent_id) {
+  if (type === 'ODP' && normalizedParentId) {
     const parentNode = await prisma.detso_Network_Node.findFirst({
       where: {
-        id: parent_id,
+        id: normalizedParentId,
         tenant_id,
         type: 'SERVER',
         deleted_at: null,
@@ -64,16 +66,16 @@ export const createNode = asyncHandler(async (req: Request, res: Response): Prom
       address: address || null,
       slot: slot || null,
       notes: notes || null,
-      parent_id: parent_id || null,
+      parent_id: normalizedParentId,
     },
   });
 
   // Auto-create FIBER link dari Server ke ODP baru
-  if (type === 'ODP' && parent_id) {
+  if (type === 'ODP' && normalizedParentId) {
     await prisma.detso_Network_Link.create({
       data: {
         tenant_id,
-        from_node_id: parent_id,
+        from_node_id: normalizedParentId,
         to_node_id: node.id,
         type: 'FIBER',
       },

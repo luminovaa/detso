@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { Request } from 'express';
 
 interface UploadedFile {
@@ -22,6 +23,12 @@ const ensureDirectoryExists = (dirPath: string): void => {
     }
 };
 
+const buildUniqueFilename = (file: Express.Multer.File): string => {
+    const ext = path.extname(file.originalname);
+    // Include UUID so concurrent/same-millisecond files under one field never overwrite each other
+    return `${file.fieldname}_${Date.now()}_${crypto.randomUUID()}${ext}`;
+};
+
 const createStorage = (destination: string | ((req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => void)) => {
     if (typeof destination === 'function') {
         return multer.diskStorage({
@@ -37,22 +44,20 @@ const createStorage = (destination: string | ((req: Request, file: Express.Multe
                     cb(null, dest);
                 });
             },
-            filename: (req, file, cb) => {
-                const fileName = `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`;
-                cb(null, fileName);
+            filename: (_req, file, cb) => {
+                cb(null, buildUniqueFilename(file));
             }
         });
     }
     
     return multer.diskStorage({
-        destination: (req, file, cb) => {
+        destination: (_req, _file, cb) => {
             const uploadDir = path.join(__dirname, '../..', destination);
             ensureDirectoryExists(uploadDir);
             cb(null, uploadDir);
         },
-        filename: (req, file, cb) => {
-            const fileName = `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`;
-            cb(null, fileName);
+        filename: (_req, file, cb) => {
+            cb(null, buildUniqueFilename(file));
         }
     });
 };

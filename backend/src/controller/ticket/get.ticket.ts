@@ -181,11 +181,12 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
 
     const ticketId = getParam(req.params.id);
 
-    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    // [NEW] 2. Cari Tiket dengan Filter Tenant (+ assigned_to bila TENANT_TEKNISI)
     const ticket = await prisma.detso_Ticket.findFirst({
         where: { 
             id: ticketId, 
             tenant_id: tenant_id, // <--- Filter Tenant
+            ...(user.role === Detso_Role.TENANT_TEKNISI ? { assigned_to: user.id } : {}),
             deleted_at: null 
         },
         include: {
@@ -283,11 +284,12 @@ export const getTicketHistory = asyncHandler(async (req: Request, res: Response)
 
     const ticketId = getParam(req.params.id);
 
-    // [NEW] 2. Pastikan Tiket Milik Tenant Ini sebelum ambil history
+    // [NEW] 2. Pastikan Tiket Milik Tenant Ini (+ assigned_to bila TENANT_TEKNISI) sebelum ambil history
     const ticketExists = await prisma.detso_Ticket.findFirst({
         where: { 
             id: ticketId, 
             tenant_id: tenant_id, // <--- Filter Tenant
+            ...(user.role === Detso_Role.TENANT_TEKNISI ? { assigned_to: user.id } : {}),
             deleted_at: null 
         },
         select: { id: true }
@@ -406,18 +408,22 @@ export const getTicketImageById = asyncHandler(async (req: Request, res: Respons
                 select: {
                     id: true,
                     deleted_at: true,
-                    tenant_id: true // <--- Select Tenant ID Tiket Induk
+                    tenant_id: true, // <--- Select Tenant ID Tiket Induk
+                    assigned_to: true
                 }
             }
         }
     });
 
-    // [NEW] 3. Cek apakah tiket induk milik tenant ini
+    // [NEW] 3. Cek apakah tiket induk milik tenant ini (+ assigned_to bila TENANT_TEKNISI)
     if (!history || history.ticket.deleted_at || !history.image) {
         throw new NotFoundError('Gambar tiket tidak ditemukan');
     }
 
-    if (history.ticket.tenant_id !== tenant_id) {
+    if (
+        history.ticket.tenant_id !== tenant_id ||
+        (user.role === Detso_Role.TENANT_TEKNISI && history.ticket.assigned_to !== user.id)
+    ) {
         throw new NotFoundError('Gambar tiket tidak ditemukan'); // Jangan kasih tau "Akses Ditolak" biar attacker bingung
     }
 

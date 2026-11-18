@@ -8,6 +8,7 @@ import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateUniqueIdPel } from '../../helper/random.idpel';
 import { PDFGeneratorService } from '../../services/generate.service.pdf';
 import { generateFullUrl } from '../../utils/generate-full-url';
+import { trimOrNull } from '../../utils/request.utils';
 
 interface CustomerUploadedFiles {
     documents?: Express.Multer.File[];
@@ -23,25 +24,6 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     const tenant_id = user.tenant_id!;
 
     const files = req.files as CustomerUploadedFiles;
-
-    const requestData = {
-        ...req.body,
-        documents: req.body.documents ? JSON.parse(req.body.documents) : [],
-        photos: req.body.photos ? JSON.parse(req.body.photos) : []
-    };
-
-    // Validasi Input (Zod Schema tidak perlu berubah)
-    const validationResult = createCustomerSchema.safeParse(requestData);
-    if (!validationResult.success) {
-        throw new ValidationError('Validasi gagal', validationResult.error.issues);
-    }
-
-    const {
-        name, phone, email, nik, package_id, address, address_service,
-        ip_address, lat, long, mac_address, birth_date, birth_place,
-        notes, documents, photos, odp_id,
-    } = validationResult.data;
-
     const documentFiles = files?.documents;
     const servicePhotoFiles = files?.photos;
 
@@ -59,13 +41,47 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
     };
 
     try {
+        let parsedDocuments = [];
+        let parsedPhotos = [];
+        try {
+            parsedDocuments = req.body.documents ? JSON.parse(req.body.documents) : [];
+            parsedPhotos = req.body.photos ? JSON.parse(req.body.photos) : [];
+        } catch {
+            throw new ValidationError('Format JSON dokumen atau foto tidak valid');
+        }
+
+        const requestData = {
+            ...req.body,
+            documents: parsedDocuments,
+            photos: parsedPhotos
+        };
+
+        // Validasi Input
+        const validationResult = createCustomerSchema.safeParse(requestData);
+        if (!validationResult.success) {
+            throw new ValidationError('Validasi gagal', validationResult.error.issues);
+        }
+
+        const {
+            name, phone, email, nik, package_id, address, address_service,
+            ip_address, lat, long, mac_address, birth_date, birth_place,
+            notes, documents, photos, odp_id,
+        } = validationResult.data;
+
+        const normalizedPackageId = package_id?.trim() || '';
+        const hasUploadedPhotos = Boolean((servicePhotoFiles && servicePhotoFiles.length > 0) || (photos && photos.length > 0));
+        if (!normalizedPackageId && hasUploadedPhotos) {
+            throw new ValidationError('Pilih paket layanan terlebih dahulu untuk mengunggah foto instalasi');
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             let customer;
 
+            const normalizedNik = trimOrNull(nik);
             // [NEW] 2. Cek customer hanya di dalam tenant ini
-            const existingCustomer = nik && nik.trim().length > 0 ? await tx.detso_Customer.findFirst({
+            const existingCustomer = normalizedNik ? await tx.detso_Customer.findFirst({
                 where: {
-                    nik: nik.trim(),
+                    nik: normalizedNik,
                     tenant_id: tenant_id, // Wajib filter by tenant
                     deleted_at: null
                 }
@@ -78,81 +94,109 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 customer = await tx.detso_Customer.create({
                     data: {
                         tenant_id: tenant_id, // Link ke tenant
-                        name,
-                        phone,
-                        email,
+                        name: name.trim(),
+                        phone: trimOrNull(phone),
+                        email: trimOrNull(email),
                         birth_date,
-                        birth_place,
-                        address,
-                        nik: nik && nik.trim().length > 0 ? nik.trim() : null,
+                        birth_place: trimOrNull(birth_place),
+                        address: trimOrNull(address),
+                        nik: normalizedNik,
                         created_at: new Date()
                     }
                 });
             }
 
-            // [NEW] 4. Validasi Paket (Pastikan paket milik tenant ini)
-            // Gunakan findFirst dengan filter tenant_id, bukan findUnique
-            const packageData = await tx.detso_Package.findFirst({
-                where: {
-                    id: package_id,
-                    tenant_id: tenant_id, // Security check: Paket harus milik ISP ini
-                    deleted_at: null
-                }
-            });
+            let serviceConnection = null;
+            let idPel: string | null = null;
+            const createdPhotos = [];
 
-            if (!packageData) {
-                throw new NotFoundError('Paket tidak ditemukan atau tidak tersedia untuk ISP ini');
-            }
-
-            const idPel = await generateUniqueIdPel();
-
-            // [NEW] 5. Create Service Connection dengan tenant_id
-            const serviceConnection = await tx.detso_Service_Connection.create({
-                data: {
-                    tenant_id: tenant_id, // Link ke tenant
-                    customer_id: customer.id,
-                    id_pel: idPel,
-                    package_id,
-                    address: address_service,
-                    package_name: packageData.name,
-                    package_price: packageData.price,
-                    lat,
-                    long,
-                    package_speed: packageData.speed,
-                    ip_address,
-                    mac_address,
-                    notes,
-                    created_at: new Date()
-                }
-            });
-
-            // Create DROP_CABLE link to ODP if odp_id provided
-            if (odp_id) {
-                const odpNode = await tx.detso_Network_Node.findFirst({
-                    where: { id: odp_id, tenant_id, deleted_at: null },
+            if (normalizedPackageId) {
+                // [NEW] 4. Validasi Paket (Pastikan paket milik tenant ini)
+                // Gunakan findFirst dengan filter tenant_id, bukan findUnique
+                const packageData = await tx.detso_Package.findFirst({
+                    where: {
+                        id: normalizedPackageId,
+                        tenant_id: tenant_id, // Security check: Paket harus milik ISP ini
+                        deleted_at: null
+                    }
                 });
-                if (!odpNode) {
-                    throw new NotFoundError('ODP tidak ditemukan');
+
+                if (!packageData) {
+                    throw new NotFoundError('Paket tidak ditemukan atau tidak tersedia untuk ISP ini');
                 }
 
-                // Check slot capacity
-                if (odpNode.slot) {
-                    const currentLinks = await tx.detso_Network_Link.count({
-                        where: { from_node_id: odp_id, to_service_id: { not: null } },
+                idPel = await generateUniqueIdPel();
+
+                // [NEW] 5. Create Service Connection dengan tenant_id
+                serviceConnection = await tx.detso_Service_Connection.create({
+                    data: {
+                        tenant_id: tenant_id, // Link ke tenant
+                        customer_id: customer.id,
+                        id_pel: idPel,
+                        package_id: normalizedPackageId,
+                        address: trimOrNull(address_service),
+                        package_name: packageData.name,
+                        package_price: packageData.price,
+                        lat: trimOrNull(lat),
+                        long: trimOrNull(long),
+                        package_speed: packageData.speed,
+                        ip_address: trimOrNull(ip_address),
+                        mac_address: trimOrNull(mac_address),
+                        notes: trimOrNull(notes),
+                        created_at: new Date()
+                    }
+                });
+
+                // Create DROP_CABLE link to ODP if odp_id provided
+                if (odp_id) {
+                    const odpNode = await tx.detso_Network_Node.findFirst({
+                        where: { id: odp_id, tenant_id, deleted_at: null },
                     });
-                    if (currentLinks >= odpNode.slot) {
-                        throw new ValidationError('Slot ODP sudah penuh');
+                    if (!odpNode) {
+                        throw new NotFoundError('ODP tidak ditemukan');
+                    }
+
+                    // Check slot capacity
+                    if (odpNode.slot) {
+                        const currentLinks = await tx.detso_Network_Link.count({
+                            where: { from_node_id: odp_id, to_service_id: { not: null } },
+                        });
+                        if (currentLinks >= odpNode.slot) {
+                            throw new ValidationError('Slot ODP sudah penuh');
+                        }
+                    }
+
+                    await tx.detso_Network_Link.create({
+                        data: {
+                            tenant_id,
+                            from_node_id: odp_id,
+                            to_service_id: serviceConnection.id,
+                            type: 'DROP_CABLE',
+                        },
+                    });
+                }
+
+                // Upload photos
+                if (photos && servicePhotoFiles) {
+                    for (let index = 0; index < photos.length; index++) {
+                        const photo = photos[index];
+                        const file = servicePhotoFiles[index];
+                        if (file) {
+                            const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/photos');
+                            const createdPhoto = await tx.detso_Service_Photo.create({
+                                data: {
+                                    service_id: serviceConnection.id,
+                                    photo_type: photo.type,
+                                    photo_url: fileInfo.path,
+                                    uploaded_at: new Date()
+                                }
+                            });
+                            createdPhotos.push(createdPhoto);
+                        }
                     }
                 }
-
-                await tx.detso_Network_Link.create({
-                    data: {
-                        tenant_id,
-                        from_node_id: odp_id,
-                        to_service_id: serviceConnection.id,
-                        type: 'DROP_CABLE',
-                    },
-                });
+            } else if (existingCustomer) {
+                throw new ValidationError('Pilih paket layanan untuk menambahkan layanan ke pelanggan yang sudah ada');
             }
 
             // Upload documents (Code tetap sama, relasi ke customer sudah aman)
@@ -176,27 +220,6 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 }
             }
 
-            // Upload photos (Code tetap sama)
-            const createdPhotos = [];
-            if (photos && servicePhotoFiles) {
-                for (let index = 0; index < photos.length; index++) {
-                    const photo = photos[index];
-                    const file = servicePhotoFiles[index];
-                    if (file) {
-                        const fileInfo = getUploadedFileInfo(file, 'storage/public/customer/photos');
-                        const createdPhoto = await tx.detso_Service_Photo.create({
-                            data: {
-                                service_id: serviceConnection.id,
-                                photo_type: photo.type,
-                                photo_url: fileInfo.path,
-                                uploaded_at: new Date()
-                            }
-                        });
-                        createdPhotos.push(createdPhoto);
-                    }
-                }
-            }
-
             return { customer, serviceConnection, createdDocuments, createdPhotos, idPel };
         });
 
@@ -208,23 +231,25 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
         let whatsappSent = false;
 
         try {
-            const pdfGenerator = new PDFGeneratorService();
-            pdfPath = await pdfGenerator.generateInstallationReport({
-                customer: result.customer,
-                serviceConnection: result.serviceConnection,
-                documents: result.createdDocuments,
-                photos: result.createdPhotos
-            });
+            if (result.serviceConnection) {
+                const pdfGenerator = new PDFGeneratorService();
+                pdfPath = await pdfGenerator.generateInstallationReport({
+                    customer: result.customer,
+                    serviceConnection: result.serviceConnection,
+                    documents: result.createdDocuments,
+                    photos: result.createdPhotos
+                });
 
-            await prisma.detso_Customer_PDF.create({
-                data: {
-                    customer_id: result.customer.id,
-                    service_connection_id: result.serviceConnection.id,
-                    pdf_type: 'installation_report',
-                    pdf_path: pdfPath,
-                    generated_at: new Date()
-                }
-            });
+                await prisma.detso_Customer_PDF.create({
+                    data: {
+                        customer_id: result.customer.id,
+                        service_connection_id: result.serviceConnection.id,
+                        pdf_type: 'installation_report',
+                        pdf_path: pdfPath,
+                        generated_at: new Date()
+                    }
+                });
+            }
 
             // // Kirim WA (Logic sama persis seperti kodemu)
             // if (pdfPath) {
@@ -266,13 +291,15 @@ export const createCustomer = asyncHandler(async (req: Request, res: Response): 
                 ...result.customer,
                 nik: isTeknisi ? null : result.customer.nik,
             },
-            serviceConnection: {
-                ...result.serviceConnection,
-                photos: result.createdPhotos.map(photo => ({
-                    ...photo,
-                    photo_url: generateFullUrl(photo.photo_url)
-                }))
-            },
+            serviceConnection: result.serviceConnection
+                ? {
+                    ...result.serviceConnection,
+                    photos: result.createdPhotos.map(photo => ({
+                        ...photo,
+                        photo_url: generateFullUrl(photo.photo_url)
+                    }))
+                }
+                : null,
             documents: visibleDocuments.map(doc => ({
                 ...doc,
                 document_url: generateFullUrl(doc.document_url)

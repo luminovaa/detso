@@ -1,8 +1,13 @@
 import React, { forwardRef, useState, useCallback, useEffect } from 'react';
 import { View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { router } from 'expo-router';
+import {
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
+import { Href, router } from 'expo-router';
 
 import { Text } from '@/src/components/global/text';
 import { Badge } from '@/src/components/global/badge';
@@ -11,10 +16,11 @@ import { CompleteScheduleSection } from './complete-schedule-section';
 
 import { useT, useLanguageStore } from '@/src/features/i18n/store';
 import { useAuthStore } from '@/src/features/auth/store';
-import { useSchedule, useUpdateSchedule, useDeleteSchedule, useCompleteSchedule } from '@/src/features/schedule/hooks';
+import { useSchedule, useDeleteSchedule, useCompleteSchedule } from '@/src/features/schedule/hooks';
 import { useUpdateTicketStatus } from '@/src/features/ticket/hooks';
 import { showToast } from '@/src/components/global/toast';
 import { showErrorToast } from '@/src/lib/api-error';
+import { appendFormDataFile } from '@/src/lib/form-data';
 
 import { Schedule } from '@/src/lib/types';
 import { formatScheduleTime, getScheduleStatusVariant } from '@/src/lib/schedule-utils';
@@ -42,7 +48,6 @@ function ScheduleDetailSheetInner(
   const schedule = scheduleData?.data as Schedule | undefined;
 
   // Mutations
-  const updateSchedule = useUpdateSchedule();
   const updateTicketStatus = useUpdateTicketStatus();
   const deleteSchedule = useDeleteSchedule();
   const completeSchedule = useCompleteSchedule();
@@ -68,6 +73,12 @@ function ScheduleDetailSheetInner(
   const canEdit = isAdminOrOwner && schedule?.status === 'SCHEDULED';
   const canDelete = isAdminOrOwner && schedule?.status === 'SCHEDULED';
 
+  const dismissSheet = useCallback(() => {
+    if (ref && typeof ref !== 'function') {
+      ref.current?.dismiss();
+    }
+  }, [ref]);
+
   const handleComplete = useCallback(async () => {
     if (!schedule) return;
 
@@ -77,29 +88,16 @@ function ScheduleDetailSheetInner(
       if (schedule.ticket_id) {
         // Scenario A: Schedule with Ticket
         // Update ticket status → auto-complete schedule
-        
-        if (!photo) {
-          showToast.error(t('common.error'), t('schedule.photoRequired'));
-          setIsCompleting(false);
-          return;
-        }
-
         const formData = new FormData();
         formData.append('status', 'RESOLVED');
-        
+
         if (notes.trim()) {
           formData.append('description', notes.trim());
         }
 
-        // Append photo
-        const filename = photo.split('/').pop() || 'photo.jpg';
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : 'image/jpeg';
-        formData.append('image', {
-          uri: photo,
-          name: filename,
-          type,
-        } as any);
+        if (photo) {
+          appendFormDataFile(formData, 'image', photo, `schedule-${schedule.ticket_id}`);
+        }
 
         await updateTicketStatus.mutateAsync({
           id: schedule.ticket_id,
@@ -109,25 +107,16 @@ function ScheduleDetailSheetInner(
       } else {
         // Scenario B: Schedule without Ticket
         // Send FormData to schedule endpoint (supports photo upload)
-        
         const formData = new FormData();
         formData.append('status', 'COMPLETED');
         formData.append('end_time', new Date().toISOString());
-        
+
         if (notes.trim()) {
           formData.append('notes', notes.trim());
         }
 
-        // Append photo if provided (optional for non-ticket schedules)
         if (photo) {
-          const filename = photo.split('/').pop() || 'photo.jpg';
-          const match = /\.(\w+)$/.exec(filename);
-          const type = match ? `image/${match[1]}` : 'image/jpeg';
-          formData.append('image', {
-            uri: photo,
-            name: filename,
-            type,
-          } as any);
+          appendFormDataFile(formData, 'image', photo, `schedule-${schedule.id}`);
         }
 
         await completeSchedule.mutateAsync({
@@ -138,7 +127,7 @@ function ScheduleDetailSheetInner(
 
       // Success
       showToast.success(t('common.success'), t('schedule.completeSuccess'));
-      (ref as any)?.current?.dismiss();
+      dismissSheet();
       onSuccess?.();
 
     } catch (error) {
@@ -146,14 +135,14 @@ function ScheduleDetailSheetInner(
     } finally {
       setIsCompleting(false);
     }
-  }, [schedule, photo, notes, t, updateTicketStatus, updateSchedule, ref, onSuccess]);
+  }, [schedule, photo, notes, t, updateTicketStatus, completeSchedule, dismissSheet, onSuccess]);
 
   const handleEdit = useCallback(() => {
     if (schedule) {
-      (ref as any)?.current?.dismiss();
+      dismissSheet();
       onEdit?.(schedule);
     }
-  }, [schedule, ref, onEdit]);
+  }, [schedule, dismissSheet, onEdit]);
 
   const handleDelete = useCallback(() => {
     if (!schedule) return;
@@ -169,7 +158,7 @@ function ScheduleDetailSheetInner(
           onPress: () => {
             deleteSchedule.mutate(schedule.id, {
               onSuccess: () => {
-                (ref as any)?.current?.dismiss();
+                dismissSheet();
                 onSuccess?.();
               },
             });
@@ -177,10 +166,10 @@ function ScheduleDetailSheetInner(
         },
       ]
     );
-  }, [schedule, t, deleteSchedule, ref, onSuccess]);
+  }, [schedule, t, deleteSchedule, dismissSheet, onSuccess]);
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={-1}
@@ -334,8 +323,8 @@ function ScheduleDetailSheetInner(
                   variant="outline"
                   className="mt-3"
                   onPress={() => {
-                    (ref as any)?.current?.dismiss();
-                    router.push(`/ticket/${schedule.ticket_id}/detail` as any);
+                    dismissSheet();
+                    router.push(`/ticket/${schedule.ticket_id}/detail` as Href);
                   }}
                 >
                   <View className="flex-row items-center gap-2">

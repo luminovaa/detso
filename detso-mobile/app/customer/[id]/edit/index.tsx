@@ -19,7 +19,8 @@ import { Card } from "@/src/components/global/card";
 import { useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
 import { isTechnicianRole } from "@/src/lib/route-roles";
-import { updateCustomerSchema, UpdateCustomerInput } from "@/src/features/customer/schema";
+import { updateCustomerSchema, UpdateCustomerInput, UpdateCustomerPayload } from "@/src/features/customer/schema";
+import { CustomerEditDetail } from "@/src/features/customer/form-helpers";
 import { useCustomer, useUpdateCustomer } from "@/src/features/customer/hooks";
 
 import { useThemeColor } from '@/src/lib/theme-colors';
@@ -45,13 +46,13 @@ export default function CustomerEditScreen() {
   const [long, setLong] = useState("");
 
   const { data: response, isLoading: isLoadingData } = useCustomer(isTeknisi ? "" : id!);
-  const customerData = response?.data as any;
+  const customerData = response?.data as CustomerEditDetail | undefined;
 
   const updateCustomer = useUpdateCustomer();
   const isSubmitting = updateCustomer.isPending;
 
   const { control, handleSubmit, setValue } = useForm<UpdateCustomerInput>({
-    resolver: zodResolver(updateCustomerSchema) as any,
+    resolver: zodResolver(updateCustomerSchema),
     defaultValues: {
       name: "",
       phone: "",
@@ -83,12 +84,12 @@ export default function CustomerEditScreen() {
   }, [customerData, setValue]);
 
   const onSubmit = (data: UpdateCustomerInput) => {
-    const payload: any = {};
-    if (data.name) payload.name = data.name;
-    if (data.phone) payload.phone = data.phone;
-    if (data.email) payload.email = data.email;
-    if (data.nik) payload.nik = data.nik;
-    if (data.birth_place) payload.birth_place = data.birth_place;
+    const payload: UpdateCustomerPayload = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.phone !== undefined) payload.phone = data.phone;
+    if (data.email !== undefined) payload.email = data.email;
+    if (data.nik !== undefined) payload.nik = data.nik;
+    if (data.birth_place !== undefined) payload.birth_place = data.birth_place;
     if (data.birth_date) payload.birth_date = new Date(data.birth_date).toISOString();
 
     updateCustomer.mutate(
@@ -124,7 +125,7 @@ export default function CustomerEditScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Personal Data Section */}
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("customer.stepPersonal")}
             </Text>
@@ -140,7 +141,7 @@ export default function CustomerEditScreen() {
 
           {/* Installation Location (read-only info) */}
           {(lat || long || serviceAddress) && (
-            <Card className="rounded-2xl p-4 mb-4">
+            <Card className="rounded-xl p-4 mb-4">
               <Text weight="bold" className="text-base text-foreground mb-3">
                 {t("customer.stepService")}
               </Text>

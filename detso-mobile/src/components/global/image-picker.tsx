@@ -60,7 +60,7 @@ export function ImagePickerSheet({
   showPreview = true,
   maxWidth,
   maxHeight,
-  aspectRatio = "4:3",
+  aspectRatio = "3:4",
   enableGeoTag,
 }: ImagePickerSheetProps) {
   const { t } = useT();

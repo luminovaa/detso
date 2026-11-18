@@ -5,7 +5,7 @@ import { updateCustomerSchema } from './validation/validation.customer';
 import { prisma } from '../../utils/prisma';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { generateFullUrl } from '../../utils/generate-full-url';
-import { getParam } from '../../utils/request.utils';
+import { getParam, trimOrNull } from '../../utils/request.utils';
 
 interface UpdateCustomerFiles {
   documents?: Express.Multer.File[];
@@ -22,35 +22,6 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   const customerId = getParam(req.params.id);
   const files = req.files as UpdateCustomerFiles;
 
-  const requestData = {
-    ...req.body,
-    documents: req.body.documents ? JSON.parse(req.body.documents) : undefined
-  };
-
-  const validationResult = updateCustomerSchema.safeParse(requestData);
-  if (!validationResult.success) {
-    throw new ValidationError('Validasi gagal', validationResult.error.issues);
-  }
-
-  const { name, phone, email, nik, birth_place, birth_date, documents } = validationResult.data;
-
-  // [NEW] 2. Cari customer dengan filter tenant_id
-  // Menggunakan findFirst bukan findUnique karena kita butuh filter tenant_id
-  const existingCustomer = await prisma.detso_Customer.findFirst({
-    where: { 
-        id: customerId,
-        tenant_id: tenant_id // WAJIB: Pastikan customer milik tenant ini
-    },
-    include: {
-      documents: true,
-    }
-  });
-
-  if (!existingCustomer) {
-    // Jika ID ada tapi tenant beda, tetap return NotFound demi keamanan
-    throw new NotFoundError('Customer tidak ditemukan');
-  }
-
   const cleanupUploadedFiles = async () => {
     if (files?.documents) {
       await Promise.all(
@@ -60,6 +31,41 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
   };
 
   try {
+    let parsedDocuments;
+    try {
+      parsedDocuments = req.body.documents ? JSON.parse(req.body.documents) : undefined;
+    } catch {
+      throw new ValidationError('Format JSON dokumen tidak valid');
+    }
+
+    const requestData = {
+      ...req.body,
+      documents: parsedDocuments
+    };
+
+    const validationResult = updateCustomerSchema.safeParse(requestData);
+    if (!validationResult.success) {
+      throw new ValidationError('Validasi gagal', validationResult.error.issues);
+    }
+
+    const { name, phone, email, nik, birth_place, birth_date, documents } = validationResult.data;
+
+    // [NEW] 2. Cari customer dengan filter tenant_id
+    // Menggunakan findFirst bukan findUnique karena kita butuh filter tenant_id
+    const existingCustomer = await prisma.detso_Customer.findFirst({
+      where: { 
+          id: customerId,
+          tenant_id: tenant_id // WAJIB: Pastikan customer milik tenant ini
+      },
+      include: {
+        documents: true,
+      }
+    });
+
+    if (!existingCustomer) {
+      // Jika ID ada tapi tenant beda, tetap return NotFound demi keamanan
+      throw new NotFoundError('Customer tidak ditemukan');
+    }
     // [NEW] 3. Cek Duplikasi NIK (Scoped per Tenant)
     if (nik && nik !== existingCustomer.nik) {
       const duplicate = await prisma.detso_Customer.findFirst({
@@ -81,11 +87,11 @@ export const editCustomer = asyncHandler(async (req: Request, res: Response): Pr
       const updatedCustomer = await tx.detso_Customer.update({
         where: { id: customerId }, // id unik global, tapi kita sudah verify di atas
         data: {
-          name,
-          phone,
-          email,
-          nik,
-          birth_place,
+          name: name?.trim(),
+          phone: phone !== undefined ? trimOrNull(phone) : undefined,
+          email: email !== undefined ? trimOrNull(email) : undefined,
+          nik: nik !== undefined ? trimOrNull(nik) : undefined,
+          birth_place: birth_place !== undefined ? trimOrNull(birth_place) : undefined,
           birth_date,
           updated_at: new Date()
         }

@@ -4,7 +4,7 @@ import { asyncHandler, AuthenticationError, ValidationError, NotFoundError } fro
 import { responseData } from '../../utils/response-handler';
 import { prisma } from '../../utils/prisma';
 import { editNodeSchema, editLinkSchema } from './validation/validation.network';
-import { getParam } from '../../utils/request.utils';
+import { getParam, trimOrNull } from '../../utils/request.utils';
 
 /**
  * PUT /api/network/nodes/:id
@@ -38,9 +38,10 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
   }
 
   const { name, lat, long, address, slot, notes, parent_id } = validationResult.data;
+  const normalizedParentId = parent_id !== undefined ? trimOrNull(parent_id) : undefined;
 
-  // If changing parent_id, validate it's a valid Server
-  if (parent_id !== undefined && parent_id !== null) {
+  // If changing parent_id to a non-null Server, validate it
+  if (normalizedParentId) {
     // Only ODP can have parent
     if (existingNode.type !== 'ODP') {
       throw new ValidationError('Hanya ODP yang bisa memiliki parent Server');
@@ -48,7 +49,7 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
 
     const parentNode = await prisma.detso_Network_Node.findFirst({
       where: {
-        id: parent_id,
+        id: normalizedParentId,
         tenant_id,
         type: 'SERVER',
         deleted_at: null,
@@ -78,14 +79,14 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
   }
 
   // Build update data (only include fields that are provided)
-  const updateData: any = {};
+  const updateData: Prisma.Detso_Network_NodeUncheckedUpdateInput = {};
   if (name !== undefined) updateData.name = name;
   if (lat !== undefined) updateData.lat = lat;
   if (long !== undefined) updateData.long = long;
   if (address !== undefined) updateData.address = address;
   if (slot !== undefined) updateData.slot = slot;
   if (notes !== undefined) updateData.notes = notes;
-  if (parent_id !== undefined) updateData.parent_id = parent_id;
+  if (normalizedParentId !== undefined) updateData.parent_id = normalizedParentId;
 
   const updatedNode = await prisma.detso_Network_Node.update({
     where: { id: nodeId },
@@ -94,9 +95,9 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
 
   // Jika parent_id berubah pada ODP → update FIBER link
   if (
-    parent_id !== undefined &&
+    normalizedParentId !== undefined &&
     existingNode.type === 'ODP' &&
-    parent_id !== existingNode.parent_id
+    normalizedParentId !== existingNode.parent_id
   ) {
     // Hapus link lama dari old parent ke ODP ini
     if (existingNode.parent_id) {
@@ -110,11 +111,11 @@ export const editNode = asyncHandler(async (req: Request, res: Response): Promis
     }
 
     // Buat link baru dari new parent ke ODP ini
-    if (parent_id) {
+    if (normalizedParentId) {
       await prisma.detso_Network_Link.create({
         data: {
           tenant_id,
-          from_node_id: parent_id,
+          from_node_id: normalizedParentId,
           to_node_id: nodeId,
           type: 'FIBER',
         },

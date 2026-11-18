@@ -37,8 +37,7 @@ export const useImagePicker = () => {
 
             const options: ImagePicker.ImagePickerOptions = {
                 mediaTypes: ['images'],
-                allowsEditing: true,
-                aspect: [1, 1],
+                allowsEditing: false,
                 // Capture at moderately high fidelity; heavy compression is delegated downstream
                 quality: 0.9,
                 // Delegate base64 conversion to the ImageManipulator pipeline exclusively

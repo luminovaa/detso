@@ -9,34 +9,37 @@ const documentSchema = z.object({
 export const updateCustomerSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, { message: 'Nama wajib diisi' })
     .max(100, { message: 'Nama maksimal 100 karakter' })
-    .optional()
-    .refine(val => val !== '', { message: 'Nama tidak boleh kosong' }),
+    .optional(),
 
   phone: z
     .string()
-    .min(1, { message: 'Nomor telepon wajib diisi' })
-    .regex(/^[\d+][\d\s\-()]{6,15}$/, { message: 'Nomor telepon tidak valid' })
-    .optional(),
+    .optional()
+    .nullable()
+    .or(z.literal('')),
 
   email: z
     .string()
     .email({ message: 'Email tidak valid' })
     .optional()
     .nullable()
-    .transform(val => val === '' ? null : val), // string kosong → null
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)), // string kosong → null
   birth_date: z.preprocess((arg) => {
     if (!arg || arg === '') return undefined;
     const date = new Date(String(arg));
     return isNaN(date.getTime()) ? undefined : date;
   }, z.date().optional()).optional(),
-  birth_place: z.string().optional(),
+  birth_place: z.string().optional().nullable(),
   nik: z
     .string()
     .length(16, { message: 'NIK harus tepat 16 digit' })
     .regex(/^\d{16}$/, { message: 'NIK hanya boleh angka' })
-    .optional(),
+    .optional()
+    .nullable()
+    .or(z.literal('')),
 
   // documents dikirim sebagai JSON string, jadi kita terima sebagai array object
   documents: z
@@ -62,13 +65,13 @@ const photoSchema = z.object({
 });
 
 export const createCustomerSchema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter'),
-  phone: z.string().min(8, 'Nomor telepon minimal 8 karakter').optional().or(z.literal('')),
-  email: z.string().email('Email tidak valid').optional().or(z.literal('')),
-  nik: z.string().min(16, 'NIK harus 16 karakter').optional().or(z.literal('')),
-  package_id: z.string().min(1, 'Package ID harus diisi'),
-  address_service: z.string().min(10, 'Alamat minimal 10 karakter'),
-  address: z.string().min(10, 'Alamat minimal 10 karakter'),
+  name: z.string().trim().min(1, 'Nama wajib diisi'),
+  phone: z.string().optional().nullable().or(z.literal('')),
+  email: z.string().email('Email tidak valid').optional().nullable().or(z.literal('')),
+  nik: z.string().regex(/^\d{16}$/, 'NIK harus 16 digit angka').optional().nullable().or(z.literal('')),
+  package_id: z.string().optional().nullable().or(z.literal('')),
+  address_service: z.string().optional().nullable().or(z.literal('')),
+  address: z.string().optional().nullable().or(z.literal('')),
   package_name: z.string().optional(),
   package_speed: z.string().optional(),
   package_price: z.number().optional(),

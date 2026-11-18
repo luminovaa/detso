@@ -47,6 +47,12 @@ export const useLanguageStore = create<LanguageState>((set) => ({
   },
 }));
 
+// Helper shortcut untuk schema Zod di luar React component tree
+export const translateSchema = (key: string, localeOverride?: Locale): string => {
+  const locale = localeOverride ?? useLanguageStore.getState().locale;
+  return i18n.t(key, { locale });
+};
+
 // Hook shortcut untuk terjemahan 
 export const useT = () => {
   // Ambil locale terbaru dari Zustand

@@ -1,27 +1,21 @@
 import { z } from 'zod';
-import { useLanguageStore } from '@/src/features/i18n/store';
-
-// Helper to get translation outside React components
-const t = (key: string) => {
-  const { locale, i18n } = useLanguageStore.getState();
-  return i18n.t(key, { locale });
-};
+import { translateSchema } from '@/src/features/i18n/store';
 
 const photoSchema = z.object({
-  type: z.string().min(1, t('validation.photoTypeRequired')),
+  type: z.string().min(1, translateSchema('validation.photoTypeRequired')),
   notes: z.string().optional().nullable(),
 });
 
 export const createServiceConnectionSchema = z.object({
-  customer_id: z.string().min(1, t('validation.customerIdRequired')),
-  package_id: z.string().min(1, t('validation.packageIdRequired')),
-  address: z.string().min(1, t('validation.addressRequired')),
-  package_name: z.string().min(1, t('validation.packageNameRequired')),
-  package_speed: z.string().min(1, t('validation.packageSpeedRequired')),
+  customer_id: z.string().min(1, translateSchema('validation.customerIdRequired')),
+  package_id: z.string().min(1, translateSchema('validation.packageIdRequired')),
+  address: z.string().optional().or(z.literal('')),
+  package_name: z.string().min(1, translateSchema('validation.packageNameRequired')),
+  package_speed: z.string().min(1, translateSchema('validation.packageSpeedRequired')),
   ip_address: z.ipv4().optional().or(z.literal('')),
   mac_address: z.string()
     .regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
-      message: t('validation.macInvalid'),
+      message: translateSchema('validation.macInvalid'),
     })
     .optional()
     .or(z.literal('')),
@@ -35,14 +29,14 @@ export const createServiceConnectionSchema = z.object({
 export type CreateServiceConnectionInput = z.infer<typeof createServiceConnectionSchema>;
 
 export const updateServiceConnectionSchema = z.object({
-  package_id: z.string().min(1, t('validation.packageIdRequired')).optional(),
-  address: z.string().min(1, t('validation.addressRequired')).optional(),
-  package_name: z.string().min(1, t('validation.packageNameRequired')).optional(),
-  package_speed: z.string().min(1, t('validation.packageSpeedRequired')).optional(),
+  package_id: z.string().min(1, translateSchema('validation.packageIdRequired')).optional(),
+  address: z.string().optional().or(z.literal('')),
+  package_name: z.string().min(1, translateSchema('validation.packageNameRequired')).optional(),
+  package_speed: z.string().min(1, translateSchema('validation.packageSpeedRequired')).optional(),
   ip_address: z.ipv4().optional().or(z.literal('')),
   mac_address: z.string()
     .regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, {
-      message: t('validation.macInvalid'),
+      message: translateSchema('validation.macInvalid'),
     })
     .optional()
     .or(z.literal('')),

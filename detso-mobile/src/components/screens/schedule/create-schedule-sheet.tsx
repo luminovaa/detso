@@ -172,23 +172,21 @@ function CreateScheduleSheetInner(
             placeholder={t('schedule.form.titlePlaceholder') || 'Contoh: Instalasi WiFi'}
           />
 
-          {/* Technician (Required) */}
+          {/* Technician */}
           <AsyncSelect
             control={control}
             name="technician_id"
             label={t('schedule.form.technician') || 'Teknisi'}
             placeholder={t('schedule.form.technicianPlaceholder')}
-            required
             fetchOptions={fetchTechnicians}
           />
 
-          {/* Start Date & Time (Required) */}
+          {/* Start Date & Time */}
           <FormDatePicker
             control={control}
             name="start_time"
             label={t('schedule.form.startTime') || 'Waktu Mulai'}
             mode="datetime"
-            required
             minimumDate={new Date()}
           />
 

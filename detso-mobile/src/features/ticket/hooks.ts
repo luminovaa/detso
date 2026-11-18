@@ -78,8 +78,12 @@ export function useCreateTicket() {
   return useMutation({
     mutationFn: (data: CreateTicketInput) => ticketService.create(data),
     onSuccess: (res) => {
+      const createdTicket = res?.data?.ticket;
       qc.invalidateQueries({ queryKey: ticketKeys.lists() });
-      eventBus.emit(EVENTS.TICKET.CREATED, { ticketId: res?.data?.id ?? '' });
+      eventBus.emit(EVENTS.TICKET.CREATED, {
+        ticketId: createdTicket?.id ?? '',
+        customerId: createdTicket?.customer_id,
+      });
       eventBus.emit(EVENTS.DASHBOARD.REFRESH, { reason: 'ticket_created' });
       showToast.success(t('common.success'), t('ticket.ticketCreated'));
     },

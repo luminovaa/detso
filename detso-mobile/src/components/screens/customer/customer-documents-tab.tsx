@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { View, ScrollView, TouchableOpacity, Linking, Alert } from "react-native";
+import { View, ScrollView, TouchableOpacity, Linking, Alert, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Image as ExpoImage } from "expo-image";
 
 import { Card } from "../../global/card";
 import { Text } from "../../global/text";
@@ -212,7 +211,7 @@ export function CustomerDocumentsTab({
                   key={photo.id}
                   activeOpacity={0.7}
                   onPress={() => openInstallationPhotoViewer(idx)}
-                  className="w-[47%] rounded-2xl border border-border overflow-hidden bg-card"
+                  className="w-[47%] rounded-xl border border-border overflow-hidden bg-card"
                 >
                   <DocThumb uri={photo.uri} />
                   <View className="p-2">
@@ -256,10 +255,10 @@ export function CustomerDocumentsTab({
                     key={doc.id}
                     activeOpacity={0.7}
                     onPress={() => openDocViewer(idx)}
-                    className="w-[47%] rounded-2xl border border-border overflow-hidden bg-card"
+                    className="w-[47%] rounded-xl border border-border overflow-hidden bg-card"
                   >
                     {isPdf ? (
-                      <View className="h-28 items-center justify-center bg-muted">
+                      <View className="w-full aspect-[3/4] items-center justify-center bg-muted">
                         <Ionicons name="document-text" size={36} color={colors.icon} />
                       </View>
                     ) : (
@@ -350,14 +349,11 @@ export function CustomerDocumentsTab({
   );
 }
 
-/** Document thumbnail using expo-image */
+/** Document thumbnail styled via outer NativeWind container to avoid inline styles */
 function DocThumb({ uri }: { uri: string }) {
   return (
-    <ExpoImage
-      source={{ uri }}
-      style={{ width: "100%", height: 112 }}
-      contentFit="cover"
-      cachePolicy="memory-disk"
-    />
+    <View className="w-full aspect-[3/4] bg-muted overflow-hidden">
+      <Image source={{ uri }} className="w-full h-full" resizeMode="contain" />
+    </View>
   );
 }

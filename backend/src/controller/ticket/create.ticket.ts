@@ -20,6 +20,8 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
 
     const created_by = user.id; // Gunakan user.id dari middleware
     const { service_id, title, description, priority, assigned_to, type } = validationResult.data;
+    // TENANT_TEKNISI hanya melihat & membuat tiket yang ditugaskan ke dirinya sendiri
+    const effectiveAssignedTo = user.role === 'TENANT_TEKNISI' ? user.id : assigned_to;
 
     let customer_id: string;
     let technicianData: { id: string; username: string; profile: { full_name: string } } | null = null;
@@ -45,10 +47,10 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     // [NEW] 3. Validasi Teknisi (Wajib Karyawan Tenant)
-    if (assigned_to) {
+    if (effectiveAssignedTo) {
         const technician = await prisma.detso_User.findFirst({
             where: {
-                id: assigned_to,
+                id: effectiveAssignedTo,
                 tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             },
@@ -85,7 +87,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
                 title,
                 description: description || '',
                 priority,
-                assigned_to: assigned_to || null,
+                assigned_to: effectiveAssignedTo || null,
                 status: 'OPEN',
                 type,
                 created_at: new Date(),
@@ -94,7 +96,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             include: {
                 customer: { select: { id: true, name: true, phone: true } },
                 service: { select: { id: true, id_pel: true, package_name: true } },
-                technician: assigned_to ? {
+                technician: effectiveAssignedTo ? {
                     select: {
                         id: true,
                         username: true,
@@ -118,12 +120,12 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         });
 
         let schedule = null;
-        if (assigned_to && technicianData) {
+        if (effectiveAssignedTo && technicianData) {
             // [NEW] 5. Create Schedule (Inject tenant_id)
             schedule = await tx.detso_Work_Schedule.create({
                 data: {
                     tenant_id: tenant_id, // <--- Inject Tenant (PENTING untuk fitur kalender)
-                    technician_id: assigned_to,
+                    technician_id: effectiveAssignedTo,
                     ticket_id: ticket.id,
                     start_time: new Date(),
                     status: 'SCHEDULED',

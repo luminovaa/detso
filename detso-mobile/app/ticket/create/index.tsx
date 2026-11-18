@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   ScrollView,
@@ -14,83 +14,53 @@ import { ScreenWrapper } from "@/src/components/global/screen-wrapper";
 import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
 import { Text } from "@/src/components/global/text";
-import { Badge } from "@/src/components/global/badge";
 import { AsyncSelect } from "@/src/components/global/select-searchable";
+import { TicketTypePriorityFields } from "@/src/components/screens/ticket/ticket-form-fields";
 
 import { useCreateTicket } from "@/src/features/ticket/hooks";
-import { createTicketSchema, CreateTicketInput } from "@/src/features/ticket/schema";
-import { useT } from "@/src/features/i18n/store";
+import { createCreateTicketSchema, CreateTicketInput } from "@/src/features/ticket/schema";
+import {
+  fetchTicketServiceOptions,
+  fetchTicketTechnicianOptions,
+} from "@/src/features/ticket/form-helpers";
+import { useLanguageStore, useT } from "@/src/features/i18n/store";
+import { useAuthStore } from "@/src/features/auth/store";
+import { isTechnicianRole } from "@/src/lib/route-roles";
 import { TicketPriority, TicketType } from "@/src/lib/types";
-import { BadgeVariantKey } from "@/src/lib/badge-variants";
-import api from "@/src/lib/api";
-
-const PRIORITY_OPTIONS: { value: TicketPriority; labelKey: string; variant: BadgeVariantKey }[] = [
-  { value: "LOW", labelKey: "ticket.priorityLow", variant: "neutral" },
-  { value: "MEDIUM", labelKey: "ticket.priorityMedium", variant: "info" },
-  { value: "HIGH", labelKey: "ticket.priorityHigh", variant: "warning" },
-  { value: "URGENT", labelKey: "ticket.priorityUrgent", variant: "error" },
-];
-
-const TYPE_OPTIONS: { value: TicketType; labelKey: string; variant: BadgeVariantKey }[] = [
-  { value: "PROBLEM", labelKey: "ticket.typeProblem", variant: "error" },
-  { value: "UPGRADE", labelKey: "ticket.typeUpgrade", variant: "success" },
-  { value: "DOWNGRADE", labelKey: "ticket.typeDowngrade", variant: "warning" },
-];
 
 export default function TicketCreateScreen() {
   const { t } = useT();
+  const locale = useLanguageStore((s) => s.locale);
+  const user = useAuthStore((s) => s.user);
+  const isTeknisi = isTechnicianRole(user?.role);
   const params = useLocalSearchParams<{ service_id?: string }>();
 
   const [type, setType] = useState<TicketType>("PROBLEM");
   const [priority, setPriority] = useState<TicketPriority>("MEDIUM");
 
-  const { control, handleSubmit, setValue, watch } = useForm<CreateTicketInput>({
-    resolver: zodResolver(createTicketSchema) as any,
+  const ticketSchema = useMemo(() => createCreateTicketSchema(locale), [locale]);
+
+  const { control, handleSubmit, setValue } = useForm<CreateTicketInput>({
+    resolver: zodResolver(ticketSchema),
     defaultValues: {
       service_id: params.service_id || "",
       title: "",
       description: "",
       type: "PROBLEM",
       priority: "MEDIUM",
-      assigned_to: "",
+      assigned_to: isTeknisi ? user?.id || "" : "",
     },
   });
 
   const createTicket = useCreateTicket();
 
-  // Fetch services for selector
-  const fetchServices = async (search: string, page: number) => {
-    const res = await api.get("/service-connection", { params: { search, page, limit: 10 } });
-    const services = res.data?.data?.services || [];
-    return {
-      data: services.map((s: any) => ({
-        label: `${s.customer?.name || "-"} - ${s.package_name}`,
-        value: s.id,
-      })),
-      hasNextPage: res.data?.data?.pagination?.hasNextPage || false,
-    };
-  };
-
-  // Fetch technicians for selector
-  const fetchTechnicians = async (search: string, page: number) => {
-    const res = await api.get("/user", { params: { search, page, limit: 10, role: "TENANT_TEKNISI" } });
-    const users = res.data?.data?.users || [];
-    return {
-      data: users.map((u: any) => ({
-        label: u.profile?.full_name || u.username,
-        value: u.id,
-      })),
-      hasNextPage: res.data?.data?.pagination?.hasNextPage || false,
-    };
-  };
-
   const onSubmit = (data: CreateTicketInput) => {
-    const payload = {
+    const payload: CreateTicketInput = {
       ...data,
       type,
       priority,
-      service_id: data.service_id || undefined,
-      assigned_to: data.assigned_to || undefined,
+      service_id: data.service_id,
+      assigned_to: isTeknisi ? user?.id : data.assigned_to || undefined,
       description: data.description || undefined,
     };
 
@@ -98,10 +68,6 @@ export default function TicketCreateScreen() {
       onSuccess: () => router.back(),
     });
   };
-
-  const title = watch("title");
-  const serviceId = watch("service_id");
-  const isValid = Boolean(serviceId) && (title?.trim()?.length || 0) >= 5;
 
   return (
     <ScreenWrapper headerTitle={t("ticket.createTitle")} showBackButton>
@@ -115,23 +81,20 @@ export default function TicketCreateScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("ticket.problemDetails")}
             </Text>
             <View className="gap-y-3">
-              {/* Service Selector */}
               <AsyncSelect
                 control={control}
                 name="service_id"
                 label={t("ticket.serviceLabel")}
                 placeholder={t("ticket.servicePlaceholder")}
-                fetchOptions={fetchServices}
-                required
+                fetchOptions={fetchTicketServiceOptions}
                 highlightSearch
               />
 
-              {/* Title */}
               <FormInput
                 control={control}
                 name="title"
@@ -139,7 +102,6 @@ export default function TicketCreateScreen() {
                 placeholder={t("ticket.titlePlaceholder")}
               />
 
-              {/* Description */}
               <FormInput
                 control={control}
                 name="description"
@@ -151,93 +113,50 @@ export default function TicketCreateScreen() {
             </View>
           </Card>
 
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("ticket.assignment")}
             </Text>
-            <View className="gap-y-3">
-              {/* Type Selector */}
-              <View>
-                <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
-                  {t("ticket.typeLabel")}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {TYPE_OPTIONS.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      activeOpacity={0.7}
-                      className="min-h-11 justify-center"
-                      onPress={() => {
-                        setType(option.value);
-                        setValue("type", option.value);
-                      }}
-                    >
-                      <Badge
-                        colorVariant={type === option.value ? option.variant : "neutral"}
-                        className={`px-4 py-1.5 ${type === option.value ? "opacity-100" : "opacity-50"}`}
-                      >
-                        {t(option.labelKey)}
-                      </Badge>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Priority Selector */}
-              <View>
-                <Text weight="medium" className="text-sm text-muted-foreground mb-1.5">
-                  {t("ticket.priorityLabel")}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {PRIORITY_OPTIONS.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      activeOpacity={0.7}
-                      className="min-h-11 justify-center"
-                      onPress={() => {
-                        setPriority(option.value);
-                        setValue("priority", option.value);
-                      }}
-                    >
-                      <Badge
-                        colorVariant={priority === option.value ? option.variant : "neutral"}
-                        className={`px-4 py-1.5 ${priority === option.value ? "opacity-100" : "opacity-50"}`}
-                      >
-                        {t(option.labelKey)}
-                      </Badge>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Assign to Technician */}
-              <AsyncSelect
-                control={control}
-                name="assigned_to"
-                label={t("ticket.assignToLabel")}
-                placeholder={t("ticket.assignToPlaceholder")}
-                fetchOptions={fetchTechnicians}
-                highlightSearch
+            <View className="gap-y-4">
+              <TicketTypePriorityFields
+                type={type}
+                priority={priority}
+                onSelectType={(value) => {
+                  setType(value);
+                  setValue("type", value);
+                }}
+                onSelectPriority={(value) => {
+                  setPriority(value);
+                  setValue("priority", value);
+                }}
               />
+
+              {!isTeknisi && (
+                <AsyncSelect
+                  control={control}
+                  name="assigned_to"
+                  label={t("ticket.assignToLabel")}
+                  placeholder={t("ticket.assignToPlaceholder")}
+                  fetchOptions={fetchTicketTechnicianOptions}
+                  highlightSearch
+                />
+              )}
             </View>
           </Card>
         </ScrollView>
 
-        {/* Fixed Bottom Button */}
-        <View
-          className="border-t border-border bg-background pt-3 pb-2"
-        >
+        <View className="border-t border-border bg-background pt-3 pb-2">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit(onSubmit)}
-            disabled={!isValid || createTicket.isPending}
+            disabled={createTicket.isPending}
             className={`h-12 rounded-xl items-center justify-center ${
-              isValid && !createTicket.isPending ? "bg-primary" : "bg-muted"
+              !createTicket.isPending ? "bg-primary" : "bg-muted"
             }`}
           >
             <Text
               weight="semibold"
-              className={`text-base ${isValid && !createTicket.isPending ? "text-primary-foreground" : "text-muted-foreground"}`}
+              className={`text-base ${!createTicket.isPending ? "text-primary-foreground" : "text-muted-foreground"}`}
             >
               {createTicket.isPending ? t("ticket.creating") : t("ticket.createBtn")}
             </Text>

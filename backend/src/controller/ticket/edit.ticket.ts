@@ -3,7 +3,7 @@ import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } fro
 import { responseData } from '../../utils/response-handler';
 import { updateTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
-import { TicketAction } from '@prisma/client';
+import { Detso_Role, Prisma, TicketAction } from '@prisma/client';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
 import { getParam } from '../../utils/request.utils';
 import { generateFullUrl } from '../../utils/generate-full-url';
@@ -45,17 +45,21 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
         title, description, priority, type, status, assigned_to, service_id, resolved_at, image
     } = validationResult.data;
 
+    const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
+    // TENANT_TEKNISI hanya boleh mengedit tiket yang ditugaskan ke dirinya dan tidak boleh mengubah penugasan
+    const effectiveAssignedTo = isTeknisi ? undefined : assigned_to;
     const updated_by = user.id;
 
-    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    // [NEW] 2. Cari Tiket dengan Filter Tenant (+ assigned_to bila TENANT_TEKNISI)
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
             tenant_id: tenant_id, // <--- Filter Tenant
+            ...(isTeknisi ? { assigned_to: user.id } : {}),
             deleted_at: null
         },
         include: {
-            technician: assigned_to ? {
+            technician: effectiveAssignedTo ? {
                 select: { id: true, username: true }
             } : undefined
         }
@@ -89,10 +93,10 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     }
 
     // [NEW] 4. Validasi Teknisi Baru (Wajib Karyawan Tenant ini)
-    if (assigned_to) {
+    if (effectiveAssignedTo) {
         const technician = await prisma.detso_User.findFirst({
             where: {
-                id: assigned_to,
+                id: effectiveAssignedTo,
                 tenant_id: tenant_id, // <--- Filter Tenant
                 deleted_at: null
             }
@@ -106,8 +110,8 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
 
     try {
         const result = await prisma.$transaction(async (tx) => {
-            const historyEntries = [];
-            const updateData: any = {
+            const historyEntries: { action: TicketAction; description: string; image?: string }[] = [];
+            const updateData: Prisma.Detso_TicketUncheckedUpdateInput = {
                 updated_at: new Date()
             };
 
@@ -175,7 +179,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                     descriptionText = `Ticket dibuka kembali`;
                 }
 
-                const historyEntry: any = {
+                const historyEntry: { action: TicketAction; description: string; image?: string } = {
                     action,
                     description: descriptionText
                 };
@@ -199,10 +203,10 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
             }
 
             // Logic Assignment Technician
-            if (assigned_to !== undefined && assigned_to !== existingTicket.assigned_to) {
-                updateData.assigned_to = assigned_to;
+            if (effectiveAssignedTo !== undefined && effectiveAssignedTo !== existingTicket.assigned_to) {
+                updateData.assigned_to = effectiveAssignedTo;
 
-                if (assigned_to) {
+                if (effectiveAssignedTo) {
                     historyEntries.push({
                         action: 'ASSIGNED' as const,
                         description: `Ticket ditugaskan kepada teknisi baru`
@@ -217,7 +221,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                         await tx.detso_Work_Schedule.update({
                             where: { id: existingSchedule.id },
                             data: {
-                                technician_id: assigned_to,
+                                technician_id: effectiveAssignedTo,
                                 updated_at: new Date()
                             }
                         });
@@ -226,7 +230,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                         await tx.detso_Work_Schedule.create({
                             data: {
                                 tenant_id: tenant_id, // <--- INJECT (PENTING)
-                                technician_id: assigned_to,
+                                technician_id: effectiveAssignedTo,
                                 ticket_id: id,
                                 start_time: new Date(),
                                 status: 'SCHEDULED'
@@ -256,7 +260,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 include: {
                     customer: { select: { id: true, name: true, phone: true } },
                     service: { select: { id: true, id_pel: true, package_name: true } },
-                    technician: assigned_to !== undefined ? {
+                    technician: effectiveAssignedTo !== undefined ? {
                         select: { id: true, username: true, profile: { select: { full_name: true } } }
                     } : undefined
                 }
@@ -324,11 +328,12 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
         throw new ValidationError('Status tidak valid');
     }
 
-    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    // [NEW] 2. Cari Tiket dengan Filter Tenant (+ assigned_to bila TENANT_TEKNISI)
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
             tenant_id: tenant_id, // <--- Filter Tenant
+            ...(user.role === Detso_Role.TENANT_TEKNISI ? { assigned_to: user.id } : {}),
             deleted_at: null
         }
     });
@@ -340,7 +345,7 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
 
     try {
         const result = await prisma.$transaction(async (tx) => {
-            const updateData: any = {
+            const updateData: Prisma.Detso_TicketUncheckedUpdateInput = {
                 status,
                 updated_at: new Date()
             };
@@ -384,7 +389,7 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
                 });
             }
 
-            const historyData: any = {
+            const historyData: Prisma.Detso_Ticket_HistoryUncheckedCreateInput = {
                 ticket_id: id,
                 action,
                 description,
@@ -447,11 +452,12 @@ export const addTicketNote = asyncHandler(async (req: Request, res: Response): P
         throw new ValidationError('Catatan atau gambar harus disertakan');
     }
 
-    // [NEW] 2. Cari Tiket dengan Filter Tenant
+    // [NEW] 2. Cari Tiket dengan Filter Tenant (+ assigned_to bila TENANT_TEKNISI)
     const existingTicket = await prisma.detso_Ticket.findFirst({
         where: {
             id,
             tenant_id: tenant_id, // <--- Filter Tenant
+            ...(user.role === Detso_Role.TENANT_TEKNISI ? { assigned_to: user.id } : {}),
             deleted_at: null
         }
     });

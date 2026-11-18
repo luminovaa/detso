@@ -39,7 +39,7 @@ export function CompleteScheduleSection({
 
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.7,
-      allowsEditing: true,
+      allowsEditing: false,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -51,7 +51,7 @@ export function CompleteScheduleSection({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.7,
-      allowsEditing: true,
+      allowsEditing: false,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -69,16 +69,15 @@ export function CompleteScheduleSection({
       <View className="mb-4">
         <Text className="text-sm text-muted-foreground mb-2">
           {t('schedule.completePhotoLabel')}
-          {hasTicket && <Text className="text-destructive"> *</Text>}
         </Text>
 
         {/* Photo Preview (if uploaded) */}
         {photo ? (
-          <View className="relative">
+          <View className="relative aspect-[3/4] w-44 self-center rounded-xl overflow-hidden bg-muted">
             <Image
               source={{ uri: photo }}
-              className="w-full h-48 rounded-lg"
-              resizeMode="cover"
+              className="w-full h-full"
+              resizeMode="contain"
             />
             {/* Remove Photo Button */}
             <TouchableOpacity
@@ -136,7 +135,6 @@ export function CompleteScheduleSection({
       {/* Complete Button */}
       <Button
         onPress={onComplete}
-        disabled={hasTicket && !photo}
         isLoading={isLoading}
       >
         <View className="flex-row items-center gap-2">
@@ -149,13 +147,6 @@ export function CompleteScheduleSection({
           </Text>
         </View>
       </Button>
-
-      {/* Helper Text */}
-      {hasTicket && !photo && (
-        <Text className="text-xs text-muted-foreground mt-2 text-center">
-          {t('schedule.photoRequired')}
-        </Text>
-      )}
     </View>
   );
 }

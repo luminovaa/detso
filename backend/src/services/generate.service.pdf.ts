@@ -234,7 +234,9 @@ export class PDFGeneratorService {
             ['Alamat', serviceConnection.address || '-'],
             ['No.WA Aktif', customer.phone || '-'],
             ['Email', customer.email || '-'],
-            ['Titik Lokasi', `https://maps.google.com/place/${serviceConnection.lat},${serviceConnection.long}`],
+            ['Titik Lokasi', serviceConnection.lat && serviceConnection.long
+                ? `https://maps.google.com/place/${serviceConnection.lat},${serviceConnection.long}`
+                : '-'],
         ];
 
         let totalTableHeight = 0;

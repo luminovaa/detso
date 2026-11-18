@@ -11,7 +11,7 @@ import { Text } from "@/src/components/global/text";
 import { Button } from "@/src/components/global/button";
 import { Card } from "@/src/components/global/card";
 import { FormInput } from "@/src/components/global/form-input";
-import { AsyncSelect } from "@/src/components/global/select-searchable";
+import { AsyncSelect, SelectOption } from "@/src/components/global/select-searchable";
 import { MapLocationPicker } from "@/src/components/global/map-picker";
 
 // --- State & Logic ---
@@ -20,9 +20,15 @@ import { useAuthStore } from "@/src/features/auth/store";
 import { isTechnicianRole } from "@/src/lib/route-roles";
 import { createServiceConnectionSchema, CreateServiceConnectionInput } from "@/src/features/connection-service/schema";
 import { useCreateServiceConnection } from "@/src/features/connection-service/hooks";
-import { packageService } from "@/src/features/package/service";
+import { fetchPackageSelectOptions } from "@/src/features/customer/form-helpers";
 import { customerService } from "@/src/features/customer/service";
+import { CustomerListItem } from "@/src/lib/types";
 import { useThemeColor } from '@/src/lib/theme-colors';
+
+interface SelectedPackageMeta {
+  name: string;
+  speed: string;
+}
 
 export default function ServiceCreateScreen() {
   const { t } = useT();
@@ -41,11 +47,11 @@ export default function ServiceCreateScreen() {
   const createService = useCreateServiceConnection();
   const isSubmitting = createService.isPending;
   const [showMap, setShowMap] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [selectedPackage, setSelectedPackage] = useState<SelectedPackageMeta | null>(null);
   const [location, setLocation] = useState<{ lat: string; lng: string } | null>(null);
 
   const { control, handleSubmit, setValue, watch } = useForm<CreateServiceConnectionInput>({
-    resolver: zodResolver(createServiceConnectionSchema) as any,
+    resolver: zodResolver(createServiceConnectionSchema),
     defaultValues: {
       customer_id: "",
       package_id: "",
@@ -61,42 +67,32 @@ export default function ServiceCreateScreen() {
   const fetchCustomers = useCallback(
     async (search: string, page: number) => {
       const res = await customerService.getAll({ search, page, limit: 20 });
-      const customers = res?.data?.customers || [];
+      const customers: CustomerListItem[] = res?.data?.customers || [];
       return {
-        data: customers.map((c: any) => ({
+        data: customers.map((c) => ({
           label: `${c.name || "-"} • ${c.phone || "-"}`,
           value: c.id,
         })),
-        hasNextPage: res?.data?.pagination?.hasNextPage || false,
+        hasNextPage: Boolean(res?.data?.pagination?.hasNextPage),
       };
     },
     [],
   );
 
-  const fetchPackages = useCallback(
-    async (search: string, page: number) => {
-      const res = await packageService.getAll({ search, page, limit: 20 });
-      const packages = res?.data?.packages || [];
-      return {
-        data: packages.map((pkg: any) => ({
-          label: `${pkg.name} - ${pkg.speed}`,
-          value: pkg.id,
-          name: pkg.name,
-          speed: pkg.speed,
-          price: pkg.price,
-        })),
-        hasNextPage: res?.data?.pagination?.hasNextPage || false,
-      };
-    },
-    [],
-  );
+  const handleSelectPackage = (item: SelectOption) => {
+    const pkgName = typeof item.name === "string" ? item.name : "";
+    const pkgSpeed = typeof item.speed === "string" ? item.speed : "";
+    setSelectedPackage({ name: pkgName, speed: pkgSpeed });
+    setValue("package_name", pkgName);
+    setValue("package_speed", pkgSpeed);
+  };
 
 
   const onSubmit = (data: CreateServiceConnectionInput) => {
     const formData = new FormData();
     formData.append("customer_id", data.customer_id);
     formData.append("package_id", data.package_id);
-    formData.append("address", data.address);
+    if (data.address) formData.append("address", data.address);
     formData.append("package_name", data.package_name || selectedPackage?.name || "");
     formData.append("package_speed", data.package_speed || selectedPackage?.speed || "");
     if (location) {
@@ -126,7 +122,7 @@ export default function ServiceCreateScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("customer.stepService")}
             </Text>
@@ -138,7 +134,6 @@ export default function ServiceCreateScreen() {
                 label={t("service.customerLabel")}
                 placeholder={t("service.customerPlaceholder")}
                 fetchOptions={fetchCustomers}
-                required
                 highlightSearch
               />
 
@@ -148,14 +143,9 @@ export default function ServiceCreateScreen() {
                 name="package_id"
                 label={t("service.packageLabel")}
                 placeholder={t("service.packagePlaceholder")}
-                fetchOptions={fetchPackages}
-                required
+                fetchOptions={fetchPackageSelectOptions}
                 highlightSearch
-                onSelectFullObject={(item) => {
-                  setSelectedPackage(item);
-                  setValue("package_name", item.name);
-                  setValue("package_speed", item.speed);
-                }}
+                onSelectFullObject={handleSelectPackage}
               />
 
               <FormInput
@@ -196,7 +186,7 @@ export default function ServiceCreateScreen() {
             </View>
           </Card>
 
-          <Card className="rounded-2xl p-4 mb-4">
+          <Card className="rounded-xl p-4 mb-4">
             <Text weight="bold" className="text-base text-foreground mb-3">
               {t("customer.stepTechnical")}
             </Text>

@@ -25,3 +25,12 @@ export const getParam = (value: string | string[] | undefined | null): string =>
   }
   return value;
 };
+
+/**
+ * Normalizes optional string inputs to trimmed non-empty string or null.
+ */
+export const trimOrNull = (value?: string | null): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};

@@ -189,25 +189,23 @@ function EditScheduleSheetInner(
             placeholder={t('schedule.form.titlePlaceholder')}
           />
 
-          {/* Technician (Required) */}
+          {/* Technician */}
           <AsyncSelect
             key={`technician-${schedule?.id}`}
             control={control}
             name="technician_id"
             label={t('schedule.form.technician')}
             placeholder={t('schedule.form.technicianPlaceholder')}
-            required
             fetchOptions={fetchTechnicians}
             initialLabel={schedule?.technician?.full_name || schedule?.technician?.username || ''}
           />
 
-          {/* Start Date & Time (Required) */}
+          {/* Start Date & Time */}
           <FormDatePicker
             control={control}
             name="start_time"
             label={t('schedule.form.startTime')}
             mode="datetime"
-            required
             minimumDate={new Date()}
           />
 
