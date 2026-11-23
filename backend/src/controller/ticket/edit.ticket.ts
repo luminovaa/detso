@@ -5,7 +5,7 @@ import { updateTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
 import { Detso_Role, Prisma, TicketAction } from '@prisma/client';
 import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
-import { getParam } from '../../utils/request.utils';
+import { getParam, trimOrNull } from '../../utils/request.utils';
 import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const editTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -42,12 +42,18 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
     }
 
     const {
-        title, description, priority, type, status, assigned_to, service_id, resolved_at, image
+        title, description, priority, type, status, assigned_to, service_id: rawServiceId, resolved_at, image
     } = validationResult.data;
 
     const isTeknisi = user.role === Detso_Role.TENANT_TEKNISI;
     // TENANT_TEKNISI hanya boleh mengedit tiket yang ditugaskan ke dirinya dan tidak boleh mengubah penugasan
-    const effectiveAssignedTo = isTeknisi ? undefined : assigned_to;
+    const effectiveAssignedTo = isTeknisi
+        ? undefined
+        : assigned_to === undefined
+            ? undefined
+            : trimOrNull(assigned_to);
+    const service_id = rawServiceId === undefined ? undefined : trimOrNull(rawServiceId);
+    const normalizedDescription = description === undefined ? undefined : description ?? '';
     const updated_by = user.id;
 
     // [NEW] 2. Cari Tiket dengan Filter Tenant (+ assigned_to bila TENANT_TEKNISI)
@@ -124,8 +130,8 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
                 });
             }
 
-            if (description !== undefined && description !== existingTicket.description) {
-                updateData.description = description;
+            if (normalizedDescription !== undefined && normalizedDescription !== existingTicket.description) {
+                updateData.description = normalizedDescription;
                 historyEntries.push({
                     action: 'UPDATED' as const,
                     description: `Deskripsi diubah`
@@ -251,7 +257,7 @@ export const editTicket = asyncHandler(async (req: Request, res: Response): Prom
             }
 
             if (resolved_at !== undefined) {
-                updateData.resolved_at = new Date(resolved_at);
+                updateData.resolved_at = resolved_at ? new Date(resolved_at) : null;
             }
 
             const updatedTicket = await tx.detso_Ticket.update({
@@ -307,7 +313,8 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
     const tenant_id = user.tenant_id;
 
     const id = getParam(req.params.id);
-    const { status } = req.body;
+    const { status, description: rawNote, notes: rawLegacyNote } = req.body;
+    const customNote = trimOrNull(rawNote ?? rawLegacyNote);
     const updated_by = user.id;
 
     const cleanupUploadedFile = async () => {
@@ -367,6 +374,10 @@ export const updateTicketStatus = asyncHandler(async (req: Request, res: Respons
                 action = 'REOPENED';
                 description = 'Ticket dibuka kembali';
                 updateData.resolved_at = null;
+            }
+
+            if (customNote) {
+                description = `${description}: ${customNote}`;
             }
 
             const updatedTicket = await tx.detso_Ticket.update({

@@ -3,6 +3,7 @@ import { asyncHandler, NotFoundError, ValidationError, AuthenticationError } fro
 import { responseData } from '../../utils/response-handler';
 import { createTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
+import { trimOrNull } from '../../utils/request.utils';
 
 export const createTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // [NEW] 1. Ambil tenant_id
@@ -19,14 +20,24 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     const created_by = user.id; // Gunakan user.id dari middleware
-    const { service_id, title, description, priority, assigned_to, type } = validationResult.data;
+    const {
+        service_id: rawServiceId,
+        customer_id: rawCustomerId,
+        title,
+        description,
+        priority,
+        assigned_to,
+        type,
+    } = validationResult.data;
+    const service_id = trimOrNull(rawServiceId);
+    const inputCustomerId = trimOrNull(rawCustomerId);
     // TENANT_TEKNISI hanya melihat & membuat tiket yang ditugaskan ke dirinya sendiri
-    const effectiveAssignedTo = user.role === 'TENANT_TEKNISI' ? user.id : assigned_to;
+    const effectiveAssignedTo = user.role === 'TENANT_TEKNISI' ? user.id : trimOrNull(assigned_to);
 
     let customer_id: string;
     let technicianData: { id: string; username: string; profile: { full_name: string } } | null = null;
 
-    // [NEW] 2. Validasi Layanan (Wajib Milik Tenant)
+    // [NEW] 2. Validasi Layanan atau Pelanggan langsung (untuk pelanggan lama tanpa paket)
     if (service_id) {
         const service = await prisma.detso_Service_Connection.findFirst({
             where: {
@@ -42,8 +53,23 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         }
 
         customer_id = service.customer_id;
+    } else if (inputCustomerId) {
+        const customer = await prisma.detso_Customer.findFirst({
+            where: {
+                id: inputCustomerId,
+                tenant_id: tenant_id,
+                deleted_at: null,
+            },
+            select: { id: true },
+        });
+
+        if (!customer) {
+            throw new NotFoundError('Pelanggan tidak ditemukan atau akses ditolak');
+        }
+
+        customer_id = customer.id;
     } else {
-        throw new ValidationError('Layanan (service_id) harus diisi untuk menentukan customer');
+        throw new ValidationError('Layanan atau pelanggan harus dipilih');
     }
 
     // [NEW] 3. Validasi Teknisi (Wajib Karyawan Tenant)

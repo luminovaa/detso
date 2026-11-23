@@ -70,16 +70,24 @@ export default function TicketEditScreen() {
   }, [ticket, reset]);
 
   const onSubmit = (data: UpdateTicketInput) => {
+    const resolvedAssignedTo = isTeknisi
+      ? undefined
+      : data.assigned_to?.trim()
+        ? data.assigned_to.trim()
+        : ticket?.assigned_to
+          ? null
+          : undefined;
+
     updateTicket.mutate(
       {
         id,
         data: {
-          title: data.title || undefined,
-          description: data.description || undefined,
+          title: data.title?.trim() || undefined,
+          description: data.description ?? "",
           type,
           priority,
           // Teknisi cannot reassign or unassign tickets ("khusus yang ditugaskan")
-          assigned_to: isTeknisi ? undefined : data.assigned_to || undefined,
+          assigned_to: resolvedAssignedTo,
         },
       },
       {
@@ -146,6 +154,7 @@ export default function TicketEditScreen() {
 
               {!isTeknisi && (
                 <AsyncSelect
+                  key={`technician-${ticket?.id}-${ticket?.assigned_to ?? "none"}`}
                   control={control}
                   name="assigned_to"
                   label={t("ticket.assignToLabel")}

@@ -11,14 +11,20 @@ export const getAllTicketSchema = basePaginationSchema.extend({
 export type GetAllTicketInput = z.infer<typeof getAllTicketSchema>;
 
 export const createCreateTicketSchema = (locale?: 'en' | 'id') =>
-  z.object({
-    service_id: z.string().min(1, translateSchema('validation.serviceRequired', locale)),
-    title: z.string().trim().min(1, translateSchema('validation.ticketTitleRequired', locale)),
-    description: z.string().optional().nullable(),
-    type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional(),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-    assigned_to: z.string().optional().nullable(),
-  });
+  z
+    .object({
+      service_id: z.string().optional().or(z.literal('')),
+      customer_id: z.string().optional().or(z.literal('')),
+      title: z.string().trim().min(1, translateSchema('validation.ticketTitleRequired', locale)),
+      description: z.string().optional().nullable(),
+      type: z.enum(['PROBLEM', 'UPGRADE', 'DOWNGRADE']).optional(),
+      priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+      assigned_to: z.string().optional().nullable(),
+    })
+    .refine((data) => Boolean(data.service_id?.trim() || data.customer_id?.trim()), {
+      message: translateSchema('validation.serviceOrCustomerRequired', locale),
+      path: ['service_id'],
+    });
 
 export const createTicketSchema = createCreateTicketSchema();
 

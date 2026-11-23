@@ -190,6 +190,27 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
             deleted_at: null 
         },
         include: {
+            customer: {
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    email: true,
+                    nik: true
+                }
+            },
+            technician: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile: {
+                        select: {
+                            full_name: true,
+                            avatar: true
+                        }
+                    }
+                }
+            },
             service: {
                 select: {
                     id: true,
@@ -235,11 +256,29 @@ export const getTicketById = asyncHandler(async (req: Request, res: Response): P
         id: ticket.id,
         title: ticket.title,
         description: ticket.description,
+        type: ticket.type,
         priority: ticket.priority,
         status: ticket.status,
+        assigned_to: ticket.assigned_to,
         created_at: ticket.created_at,
         updated_at: ticket.updated_at,
         resolved_at: ticket.resolved_at,
+        customer: ticket.customer
+            ? {
+                ...ticket.customer,
+                nik: isTeknisi ? null : ticket.customer.nik,
+            }
+            : null,
+        technician: ticket.technician
+            ? {
+                id: ticket.technician.id,
+                username: ticket.technician.username,
+                profile: {
+                    full_name: ticket.technician.profile?.full_name || null,
+                    avatar: generateFullUrl(ticket.technician.profile?.avatar || null),
+                },
+            }
+            : null,
         
         service: ticket.service ? {
             id: ticket.service.id,

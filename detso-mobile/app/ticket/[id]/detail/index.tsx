@@ -139,31 +139,41 @@ export default function TicketDetailScreen() {
 
   const statusLabel = statusLabelMap[ticket.status] || ticket.status;
   const priorityLabel = priorityLabelMap[ticket.priority] || ticket.priority;
+  const ticketCustomer = ticket.customer || ticket.service?.customer;
   const customerRows: { label: string; value: string }[] = [];
-  if (ticket.service?.customer) {
+  if (ticketCustomer) {
     customerRows.push({
       label: t("customer.nameLabel") || "Nama",
-      value: ticket.service.customer.name,
+      value: ticketCustomer.name,
     });
-    if (ticket.service.customer.phone) {
+    if (ticketCustomer.phone) {
       customerRows.push({
         label: t("isp.phone"),
-        value: ticket.service.customer.phone,
+        value: ticketCustomer.phone,
       });
     }
-    if (ticket.service.address) {
+    if (ticket.service?.address) {
       customerRows.push({
         label: t("isp.address"),
         value: ticket.service.address,
       });
     }
-    if (ticket.service.package_name) {
+    if (ticket.service?.package_name) {
       customerRows.push({
         label: t("package.title") || "Paket",
         value: `${ticket.service.package_name}${ticket.service.package_speed ? ` (${ticket.service.package_speed})` : ""}`,
       });
     }
   }
+
+  const assignedTechnician = ticket.schedule?.technician || (ticket.technician
+    ? {
+        id: ticket.technician.id,
+        username: ticket.technician.username,
+        full_name: ticket.technician.profile?.full_name,
+        avatar: ticket.technician.profile?.avatar,
+      }
+    : null);
 
   return (
     <ScreenWrapper headerTitle={t("ticket.detailTitle")} showBackButton>
@@ -240,24 +250,24 @@ export default function TicketDetailScreen() {
 
         {/* Assignment */}
         <GroupedSection title={t("ticket.assignment")}>
-          {ticket.schedule?.technician ? (
+          {assignedTechnician ? (
             <>
               <View
-                className={`flex-row items-center justify-between px-4 py-3.5 gap-3 ${ticket.schedule.start_time ? "border-b border-border/60" : ""}`}
+                className={`flex-row items-center justify-between px-4 py-3.5 gap-3 ${ticket.schedule?.start_time ? "border-b border-border/60" : ""}`}
               >
                 <Text className="text-sm text-muted-foreground">{t("ticket.assignment")}</Text>
                 <View className="flex-row items-center justify-end flex-1 gap-2">
                   <Avatar
-                    src={ticket.schedule.technician.avatar}
-                    alt={ticket.schedule.technician.full_name || ticket.schedule.technician.username}
+                    src={assignedTechnician.avatar}
+                    alt={assignedTechnician.full_name || assignedTechnician.username}
                     size="sm"
                   />
                   <Text weight="semibold" className="text-sm text-foreground text-right">
-                    {ticket.schedule.technician.full_name || ticket.schedule.technician.username}
+                    {assignedTechnician.full_name || assignedTechnician.username}
                   </Text>
                 </View>
               </View>
-              {ticket.schedule.start_time && (
+              {ticket.schedule?.start_time && (
                 <View className="flex-row items-center justify-between px-4 py-3.5 gap-3">
                   <Text className="text-sm text-muted-foreground">{t("ticket.scheduleLabel")}</Text>
                   <Text weight="semibold" className="text-sm text-foreground text-right flex-1">

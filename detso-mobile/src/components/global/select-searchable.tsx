@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -94,6 +94,10 @@ export const AsyncSelect = <T extends FieldValues>({
   const [selectedDisplayLabel, setSelectedDisplayLabel] =
     useState(initialLabel);
   const searchRef = useRef("");
+
+  useEffect(() => {
+    setSelectedDisplayLabel(initialLabel);
+  }, [initialLabel]);
 
   const loadOptions = async (
     pageNum: number,
@@ -192,7 +196,7 @@ export const AsyncSelect = <T extends FieldValues>({
               )}
               numberOfLines={1}
             >
-              {selectedDisplayLabel || resolvedPlaceholder}
+              {(value ? selectedDisplayLabel || value : "") || resolvedPlaceholder}
             </Text>
             <Ionicons
               name="chevron-down-outline"

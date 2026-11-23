@@ -1,8 +1,8 @@
-import React, { forwardRef, useState, useCallback } from "react";
+import React, { forwardRef, useState, useCallback, useEffect } from "react";
 import { View, TouchableOpacity, Image } from "react-native";
 import {
   BottomSheetModal,
-  BottomSheetView,
+  BottomSheetScrollView,
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetTextInput,
@@ -40,6 +40,10 @@ function UpdateStatusSheetInner(
     const [note, setNote] = useState("");
     const [photo, setPhoto] = useState<string | null>(null);
     const updateStatus = useUpdateTicketStatus();
+
+    useEffect(() => {
+      setSelectedStatus(currentStatus);
+    }, [currentStatus]);
 
     const isResolvingOrClosing = selectedStatus === "RESOLVED" || selectedStatus === "CLOSED";
     const canSubmit = selectedStatus !== currentStatus;
@@ -104,12 +108,17 @@ function UpdateStatusSheetInner(
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={["65%"]}
+        snapPoints={["80%"]}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.card }}
         handleIndicatorStyle={{ backgroundColor: colors.textMuted }}
       >
-        <BottomSheetView className="flex-1 px-6 pt-2 pb-6">
+        <BottomSheetScrollView
+          className="flex-1 px-6 pt-2"
+          contentContainerStyle={{ paddingBottom: 36 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Title */}
           <Text weight="bold" className="text-lg text-foreground mb-4">
             {t("ticket.selectNewStatus")}
@@ -215,7 +224,7 @@ function UpdateStatusSheetInner(
               {updateStatus.isPending ? t("ticket.updating") : t("ticket.confirmStatusUpdate")}
             </Text>
           </TouchableOpacity>
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     );
 }
