@@ -4,18 +4,35 @@ import { responseData } from '../../utils/response-handler';
 import { createTicketSchema } from './validation/validation.ticket';
 import { prisma } from '../../utils/prisma';
 import { trimOrNull } from '../../utils/request.utils';
+import { deleteFile, getUploadedFileInfo } from '../../config/upload-file';
+import { generateFullUrl } from '../../utils/generate-full-url';
 
 export const createTicket = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const cleanupUploadedFile = async () => {
+        if (req.file) {
+            await deleteFile(req.file.path).catch(err =>
+                console.error('Gagal menghapus file:', err)
+            );
+        }
+    };
+
     // [NEW] 1. Ambil tenant_id
     const user = req.user;
     if (!user || !user.tenant_id) {
+        await cleanupUploadedFile();
         throw new AuthenticationError('Sesi tidak valid atau Tenant ID tidak ditemukan');
     }
     const tenant_id = user.tenant_id;
 
+    let uploadedImage: { path: string; fileName: string; fullPath: string } | undefined;
+    if (req.file) {
+        uploadedImage = getUploadedFileInfo(req.file, 'storage/public/tickets');
+    }
+
     const validationResult = createTicketSchema.safeParse(req.body);
 
     if (!validationResult.success) {
+        await cleanupUploadedFile();
         throw new ValidationError('Validasi gagal', validationResult.error.issues);
     }
 
@@ -49,6 +66,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         });
 
         if (!service) {
+            await cleanupUploadedFile();
             throw new NotFoundError('Layanan tidak ditemukan atau akses ditolak');
         }
 
@@ -64,11 +82,13 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         });
 
         if (!customer) {
+            await cleanupUploadedFile();
             throw new NotFoundError('Pelanggan tidak ditemukan atau akses ditolak');
         }
 
         customer_id = customer.id;
     } else {
+        await cleanupUploadedFile();
         throw new ValidationError('Layanan atau pelanggan harus dipilih');
     }
 
@@ -90,6 +110,7 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
         });
 
         if (!technician) {
+            await cleanupUploadedFile();
             throw new NotFoundError('Teknisi tidak ditemukan di perusahaan Anda');
         }
 
@@ -103,74 +124,81 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
     }
 
     // Buat ticket dalam transaksi
-    const result = await prisma.$transaction(async (tx) => {
-        // [NEW] 4. Create Ticket (Inject tenant_id)
-        const ticket = await tx.detso_Ticket.create({
-            data: {
-                tenant_id: tenant_id, // <--- Inject Tenant
-                customer_id,
-                service_id: service_id || null,
-                title,
-                description: description || '',
-                priority,
-                assigned_to: effectiveAssignedTo || null,
-                status: 'OPEN',
-                type,
-                created_at: new Date(),
-                updated_at: new Date(),
-            },
-            include: {
-                customer: { select: { id: true, name: true, phone: true } },
-                service: { select: { id: true, id_pel: true, package_name: true } },
-                technician: effectiveAssignedTo ? {
-                    select: {
-                        id: true,
-                        username: true,
-                        profile: { select: { full_name: true } }
-                    }
-                } : undefined
-            }
-        });
-
-        // History tidak perlu tenant_id secara eksplisit (biasanya) karena ikut relasi tiket,
-        // tapi di schema kamu sepertinya tidak ada field tenant_id di history.
-        // Jika history TIDAK punya tenant_id, aman. Jika punya, harus diisi.
-        const ticketHistory = await tx.detso_Ticket_History.create({
-            data: {
-                ticket_id: ticket.id,
-                action: 'CREATED',
-                description: `Ticket dibuat dengan status: OPEN, priority: ${priority}, type: ${type}`,
-                created_by: created_by || null,
-                created_at: new Date(),
-            }
-        });
-
-        let schedule = null;
-        if (effectiveAssignedTo && technicianData) {
-            // [NEW] 5. Create Schedule (Inject tenant_id)
-            schedule = await tx.detso_Work_Schedule.create({
+    let result;
+    try {
+        result = await prisma.$transaction(async (tx) => {
+            // [NEW] 4. Create Ticket (Inject tenant_id)
+            const ticket = await tx.detso_Ticket.create({
                 data: {
-                    tenant_id: tenant_id, // <--- Inject Tenant (PENTING untuk fitur kalender)
-                    technician_id: effectiveAssignedTo,
-                    ticket_id: ticket.id,
-                    start_time: new Date(),
-                    status: 'SCHEDULED',
+                    tenant_id: tenant_id, // <--- Inject Tenant
+                    customer_id,
+                    service_id: service_id || null,
+                    title,
+                    description: description || '',
+                    priority,
+                    assigned_to: effectiveAssignedTo || null,
+                    status: 'OPEN',
+                    type,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+                },
+                include: {
+                    customer: { select: { id: true, name: true, phone: true } },
+                    service: { select: { id: true, id_pel: true, package_name: true } },
+                    technician: effectiveAssignedTo ? {
+                        select: {
+                            id: true,
+                            username: true,
+                            profile: { select: { full_name: true } }
+                        }
+                    } : undefined
                 }
             });
 
-            await tx.detso_Ticket_History.create({
+            // History tidak perlu tenant_id secara eksplisit (biasanya) karena ikut relasi tiket,
+            // tapi di schema kamu sepertinya tidak ada field tenant_id di history.
+            // Jika history TIDAK punya tenant_id, aman. Jika punya, harus diisi.
+            const ticketHistory = await tx.detso_Ticket_History.create({
                 data: {
                     ticket_id: ticket.id,
-                    action: 'ASSIGNED',
-                    description: `Ticket ditugaskan kepada teknisi: ${technicianData.profile.full_name} (${technicianData.username})`,
+                    action: 'CREATED',
+                    description: `Ticket dibuat dengan status: OPEN, priority: ${priority}, type: ${type}`,
+                    image: uploadedImage?.path || null,
                     created_by: created_by || null,
                     created_at: new Date(),
                 }
             });
-        }
 
-        return { ticket, ticketHistory, schedule, technicianData };
-    });
+            let schedule = null;
+            if (effectiveAssignedTo && technicianData) {
+                // [NEW] 5. Create Schedule (Inject tenant_id)
+                schedule = await tx.detso_Work_Schedule.create({
+                    data: {
+                        tenant_id: tenant_id, // <--- Inject Tenant (PENTING untuk fitur kalender)
+                        technician_id: effectiveAssignedTo,
+                        ticket_id: ticket.id,
+                        start_time: new Date(),
+                        status: 'SCHEDULED',
+                    }
+                });
+
+                await tx.detso_Ticket_History.create({
+                    data: {
+                        ticket_id: ticket.id,
+                        action: 'ASSIGNED',
+                        description: `Ticket ditugaskan kepada teknisi: ${technicianData.profile.full_name} (${technicianData.username})`,
+                        created_by: created_by || null,
+                        created_at: new Date(),
+                    }
+                });
+            }
+
+            return { ticket, ticketHistory, schedule, technicianData };
+        });
+    } catch (error) {
+        await cleanupUploadedFile();
+        throw error;
+    }
 
     responseData(res, 201, 'Ticket berhasil dibuat', {
         ticket: {
@@ -182,6 +210,9 @@ export const createTicket = asyncHandler(async (req: Request, res: Response): Pr
             } : null
         },
         schedule: result.schedule,
-        history: result.ticketHistory
+        history: {
+            ...result.ticketHistory,
+            image: generateFullUrl(result.ticketHistory.image),
+        }
     });
 });

@@ -5,7 +5,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,11 +29,14 @@ import {
 } from "@/src/features/ticket/form-helpers";
 import { useLanguageStore, useT } from "@/src/features/i18n/store";
 import { useAuthStore } from "@/src/features/auth/store";
+import { appendFormDataFile } from "@/src/lib/form-data";
 import { isTechnicianRole } from "@/src/lib/route-roles";
+import { useThemeColor } from "@/src/lib/theme-colors";
 import { TicketPriority, TicketType } from "@/src/lib/types";
 
 export default function TicketCreateScreen() {
   const { t } = useT();
+  const colors = useThemeColor();
   const locale = useLanguageStore((s) => s.locale);
   const user = useAuthStore((s) => s.user);
   const isTeknisi = isTechnicianRole(user?.role);
@@ -38,6 +44,7 @@ export default function TicketCreateScreen() {
 
   const [type, setType] = useState<TicketType>("PROBLEM");
   const [priority, setPriority] = useState<TicketPriority>("MEDIUM");
+  const [photo, setPhoto] = useState<string | null>(null);
 
   const ticketSchema = useMemo(() => createCreateTicketSchema(locale), [locale]);
 
@@ -58,17 +65,64 @@ export default function TicketCreateScreen() {
 
   const createTicket = useCreateTicket();
 
+  const handlePickPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsEditing: false,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setPhoto(result.assets[0].uri);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.7,
+      allowsEditing: false,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setPhoto(result.assets[0].uri);
+    }
+  };
+
   const onSubmit = (data: CreateTicketInput) => {
     const cleanServiceId = data.service_id?.trim() || undefined;
     const cleanCustomerId = !cleanServiceId ? data.customer_id?.trim() || undefined : undefined;
+    const cleanAssignedTo = isTeknisi ? user?.id : data.assigned_to?.trim() || undefined;
+    const cleanDescription = data.description?.trim() || undefined;
+
+    if (photo) {
+      const formData = new FormData();
+      formData.append("title", data.title.trim());
+      formData.append("type", type);
+      formData.append("priority", priority);
+      if (cleanServiceId) formData.append("service_id", cleanServiceId);
+      if (cleanCustomerId) formData.append("customer_id", cleanCustomerId);
+      if (cleanAssignedTo) formData.append("assigned_to", cleanAssignedTo);
+      if (cleanDescription) formData.append("description", cleanDescription);
+      appendFormDataFile(formData, "image", photo, "ticket-evidence");
+
+      createTicket.mutate(formData, {
+        onSuccess: () => router.back(),
+      });
+      return;
+    }
+
     const payload: CreateTicketInput = {
       ...data,
+      title: data.title.trim(),
       type,
       priority,
       service_id: cleanServiceId,
       customer_id: cleanCustomerId,
-      assigned_to: isTeknisi ? user?.id : data.assigned_to || undefined,
-      description: data.description || undefined,
+      assigned_to: cleanAssignedTo,
+      description: cleanDescription,
     };
 
     createTicket.mutate(payload, {
@@ -167,6 +221,54 @@ export default function TicketCreateScreen() {
                 />
               )}
             </View>
+          </Card>
+
+          <Card className="rounded-xl p-4 mb-4">
+            <Text weight="bold" className="text-base text-foreground mb-1">
+              {t("ticket.evidenceTitle")}
+            </Text>
+            <Text className="text-xs text-muted-foreground mb-3">
+              {t("ticket.evidenceHint")}
+            </Text>
+
+            {photo ? (
+              <View className="relative aspect-[3/4] w-48 self-center rounded-xl overflow-hidden bg-muted border border-border">
+                <Image
+                  source={{ uri: photo }}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+                <TouchableOpacity
+                  onPress={() => setPhoto(null)}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 items-center justify-center"
+                >
+                  <Ionicons name="close" size={16} color={colors.white} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View className="flex-row gap-x-3">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handleTakePhoto}
+                  className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
+                >
+                  <Ionicons name="camera-outline" size={24} color={colors.textMuted} />
+                  <Text className="text-xs text-muted-foreground mt-1">
+                    {t("ticket.cameraLabel")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handlePickPhoto}
+                  className="flex-1 h-20 rounded-xl border border-dashed border-border items-center justify-center"
+                >
+                  <Ionicons name="image-outline" size={24} color={colors.textMuted} />
+                  <Text className="text-xs text-muted-foreground mt-1">
+                    {t("ticket.galleryLabel")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </Card>
         </ScrollView>
 

@@ -19,10 +19,13 @@ export const ticketService = {
   },
 
   /**
-   * Create a new ticket.
+   * Create a new ticket (supports optional image upload via FormData).
    */
-  create: async (data: CreateTicketInput) => {
-    const response = await api.post('/ticket', data);
+  create: async (data: CreateTicketInput | FormData) => {
+    const isFormData = data instanceof FormData;
+    const response = await api.post('/ticket', data, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
+    });
     return response.data;
   },
 

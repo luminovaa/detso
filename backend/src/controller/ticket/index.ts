@@ -12,6 +12,7 @@ ticketRouter.post(
   '/',
   authMiddleware,
   requireRole(ALL_STAFF),
+  ticketUpload.single('image'),
   createTicket
 );
 ticketRouter.get('/', authMiddleware, requireRole(ALL_STAFF), getAllTickets);

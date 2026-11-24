@@ -76,7 +76,7 @@ export function useCreateTicket() {
   const { t } = useT();
 
   return useMutation({
-    mutationFn: (data: CreateTicketInput) => ticketService.create(data),
+    mutationFn: (data: CreateTicketInput | FormData) => ticketService.create(data),
     onSuccess: (res) => {
       const createdTicket = res?.data?.ticket;
       qc.invalidateQueries({ queryKey: ticketKeys.lists() });

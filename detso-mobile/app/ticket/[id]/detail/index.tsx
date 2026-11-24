@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   View,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -15,6 +16,7 @@ import { GroupedSection } from "@/src/components/screens/dashboard/grouped-secti
 import { Text } from "@/src/components/global/text";
 import { Badge } from "@/src/components/global/badge";
 import { Avatar } from "@/src/components/global/avatar";
+import { ImageViewer, ImageViewerImage } from "@/src/components/global/image-viewer";
 
 import { useTicket, useTicketHistory, useDeleteTicket } from "@/src/features/ticket/hooks";
 import { useT, useLanguageStore } from "@/src/features/i18n/store";
@@ -74,7 +76,32 @@ export default function TicketDetailScreen() {
   const deleteTicket = useDeleteTicket();
 
   const ticket = ticketRes?.data?.ticket;
-  const histories = historyRes?.data?.histories || [];
+  const histories = useMemo(
+    () => historyRes?.data?.histories || [],
+    [historyRes?.data?.histories],
+  );
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  const initialEvidenceHistory = useMemo(
+    () => histories.find((h: { action?: string; image?: string | null }) => h.action === "CREATED" && Boolean(h.image)),
+    [histories],
+  );
+
+  const viewerImages = useMemo<ImageViewerImage[]>(() => {
+    return histories
+      .filter((h: { image?: string | null }) => Boolean(h.image))
+      .map((h: { action: string; image: string }) => ({
+        uri: h.image,
+        label: h.action === "CREATED" ? t("ticket.evidenceSectionTitle") : h.action.replace(/_/g, " "),
+      }));
+  }, [histories, t]);
+
+  const openPhotoViewer = (uri: string) => {
+    const idx = viewerImages.findIndex((img) => img.uri === uri);
+    setViewerIndex(idx >= 0 ? idx : 0);
+    setViewerVisible(true);
+  };
 
   const handleUpdateStatus = () => {
     statusSheetRef.current?.present();
@@ -210,6 +237,25 @@ export default function TicketDetailScreen() {
           </Text>
         </View>
 
+        {/* Initial Evidence Photo (Bukti Kendala) */}
+        {initialEvidenceHistory?.image && (
+          <GroupedSection title={t("ticket.evidenceSectionTitle")}>
+            <View className="p-4 items-center">
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => openPhotoViewer(initialEvidenceHistory.image)}
+                className="aspect-[3/4] w-52 rounded-xl overflow-hidden bg-muted border border-border"
+              >
+                <Image
+                  source={{ uri: initialEvidenceHistory.image }}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
+            </View>
+          </GroupedSection>
+        )}
+
         {/* Ticket Metadata Grouped Info */}
         <GroupedSection title={t("ticket.problemDetails")}>
           <View className="flex-row items-center justify-between px-4 py-3.5 gap-3 border-b border-border/60">
@@ -325,6 +371,19 @@ export default function TicketDetailScreen() {
                         {history.created_by.full_name || history.created_by.username}
                       </Text>
                     )}
+                    {history.image && (
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => openPhotoViewer(history.image)}
+                        className="mt-2 aspect-[3/4] w-24 rounded-lg overflow-hidden bg-muted border border-border"
+                      >
+                        <Image
+                          source={{ uri: history.image }}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="contain"
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
                   <Text className="text-xs text-muted-foreground text-right">
                     {formatRelativeTime(history.created_at, locale)}
@@ -375,6 +434,14 @@ export default function TicketDetailScreen() {
         ref={statusSheetRef}
         ticketId={id}
         currentStatus={ticket.status}
+      />
+
+      {/* Fullscreen Photo Viewer */}
+      <ImageViewer
+        visible={viewerVisible}
+        images={viewerImages}
+        initialIndex={viewerIndex}
+        onClose={() => setViewerVisible(false)}
       />
     </ScreenWrapper>
   );
